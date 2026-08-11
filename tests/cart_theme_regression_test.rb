@@ -117,8 +117,11 @@ assert(!featured.include?("fetch('/cart/add.js'"), 'featured collection retains 
 assert(!collection.include?("fetch('/cart/add.js'"), 'collection retains duplicate cart controller')
 
 assert(slideshow.include?('slideshow__btn'), 'slideshow CTA hook missing')
+assert(slideshow.include?('class="btn slideshow__btn"'), 'desktop slideshow CTA does not share the CTA hook')
 assert(slideshow_css.match?(/\.slideshow__btn[\s\S]{0,400}min-height:\s*48px/), 'hero CTA lacks 48px minimum height')
 assert(slideshow_css.match?(/\.slideshow__btn[\s\S]{0,400}padding:/), 'hero CTA lacks component padding')
+assert(slideshow_css.include?('[data-section-type="ona-slideshow"] .slideshow__btn,'), 'hero CTA treatment is not scoped to the ONA slideshow')
+assert(!slideshow_css.match?(/\.slideshow__btn\s*\{[\s\S]{0,300}line-height:\s*2\.2/), 'hero CTA retains the conflicting line height')
 
 assert(product_template.include?('truncatewords: 45'), 'PDP compact summary is not capped at 45 words')
 assert(product_template.include?('ona_subscription_reserve'), 'PDP lacks subscription reservation block')
