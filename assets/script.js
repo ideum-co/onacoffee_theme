@@ -1462,25 +1462,6 @@ function preorderProduct() {
 	
 }
 
-function customCartRemove() {
-
-
-
-  
-  	jQuery('.custom-cart-remove-line').click(function() {
-      	var item_id = jQuery(this).parents('.cart__row').attr('data-item-id');
-        jQuery.ajax({
-            url:'/cart/change.js',
-            type: 'post',
-            dataType: 'json',
-            data: { quantity:0, id:item_id },
-            success: function(msg) {
-               location.reload();
-            }
-        });
-	});
-}
-
 function productTab() {
 	jQuery('.coffee-tab ul li button').click(function() {
 		jQuery(this).parent().siblings().removeClass('active');
@@ -1567,7 +1548,6 @@ jQuery(document).ready(function(jQuery) {
     // also removed.
     jQuery('.w-webflow-badge').remove();
     // wowo();
-    customCartRemove();
 	preorderProduct();
     menuHamburger();
     syncOnaDropdown();
