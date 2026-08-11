@@ -20,11 +20,9 @@ active_templates.each do |path, main|
   details = main.fetch('blocks').fetch('product-details')
   blocks = details.fetch('blocks')
   order = details.fetch('block_order')
-  description = blocks.fetch('text_aEtTtq').fetch('settings').fetch('text')
+  summary = blocks.fetch('ona_product_summary')
 
-  assert(description.include?('truncatewords: 45'), "#{File.basename(path)} lacks the compact summary")
-  assert(description.include?("'accessibility.product_details' | t"), "#{File.basename(path)} full-details link is not localized")
-  assert(description != '{{ closest.product.description }}', "#{File.basename(path)} duplicates the full description above the controls")
+  assert(summary.fetch('type') == 'ona-product-summary', "#{File.basename(path)} does not use the Shopify-safe summary block")
   assert(blocks.fetch('ona_subscription_reserve').fetch('type') == 'ona-subscription-reserve', "#{File.basename(path)} lacks the reserve block")
   assert(order.index('group_dm4fkV') < order.index('ona_subscription_reserve'), "#{File.basename(path)} reserve precedes controls")
   assert(order.index('ona_subscription_reserve') < order.index('buy_buttons_eYQEYi'), "#{File.basename(path)} reserve follows buy buttons")
@@ -32,6 +30,10 @@ end
 
 product_section = File.read(File.join(ROOT, 'sections/ona-product-information.liquid'))
 assert(product_section.include?("{{ 'accessibility.product_details' | t }}"), 'long-form details heading is not localized')
+
+summary_block = File.read(File.join(ROOT, 'blocks/ona-product-summary.liquid'))
+assert(summary_block.include?('strip_html | truncatewords: 45'), 'compact summary does not sanitize and truncate the description')
+assert(summary_block.include?("'accessibility.product_details' | t"), 'compact summary link is not localized')
 
 reserve_block = File.read(File.join(ROOT, 'blocks/ona-subscription-reserve.liquid'))
 script_index = reserve_block.index("'ona-subscription-reserve.js' | asset_url")

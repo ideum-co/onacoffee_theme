@@ -49,6 +49,7 @@ card_js = read_repo('assets/ona-product-card.js')
 slideshow = read_repo('sections/ona-slideshow.liquid')
 slideshow_css = read_repo('assets/ona-fixes.css')
 product_template = read_repo('templates/product.default.json')
+product_summary_block = read_repo('blocks/ona-product-summary.liquid')
 product_section = read_repo('sections/ona-product-information.liquid')
 subscription_block = read_repo('blocks/ona-subscription-reserve.liquid')
 subscription_js = read_repo('assets/ona-subscription-reserve.js')
@@ -131,9 +132,10 @@ assert(slideshow_css.match?(/\.slideshow__btn[\s\S]{0,400}padding:/), 'hero CTA 
 assert(slideshow_css.include?('[data-section-type="ona-slideshow"] .slideshow__btn,'), 'hero CTA treatment is not scoped to the ONA slideshow')
 assert(!slideshow_css.match?(/\.slideshow__btn\s*\{[\s\S]{0,300}line-height:\s*2\.2/), 'hero CTA retains the conflicting line height')
 
-assert(product_template.include?('truncatewords: 45'), 'PDP compact summary is not capped at 45 words')
-summary_with_link = %r{\{% if closest\.product\.description != blank %\}.*truncatewords: 45.*href=\\?"#ona-product-full-details\\?".*\{% endif %\}}
-assert(product_template.match?(summary_with_link), 'PDP renders a full-details link for a blank description')
+assert(product_template.include?('ona-product-summary'), 'PDP does not reference the Shopify-safe summary block')
+assert(product_summary_block.include?('truncatewords: 45'), 'PDP compact summary is not capped at 45 words')
+summary_with_link = %r{\{% if closest\.product\.description != blank %\}.*truncatewords: 45.*href="#ona-product-full-details".*\{% endif %\}}m
+assert(product_summary_block.match?(summary_with_link), 'PDP renders a full-details link for a blank description')
 assert(product_template.include?('ona_subscription_reserve'), 'PDP lacks subscription reservation block')
 assert(subscription_block.include?('closest.product.selling_plan_groups'), 'subscription reserve is not product-aware')
 assert(subscription_block.match?(/@media \(max-width: 749px\).*?\.ona-subscription-reserve\s*\{[^}]*min-block-size:\s*148px/m), 'mobile subscription reserve is not 148px tall')

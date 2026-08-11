@@ -1,0 +1,18 @@
+{% if closest.product.description != blank %}
+  <div class="ona-product-summary rte">
+    <p>{{ closest.product.description | strip_html | truncatewords: 45 }}</p>
+    <p>
+      <a href="#ona-product-full-details">
+        {{- 'accessibility.product_details' | t -}}
+      </a>
+    </p>
+  </div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "ONA product summary",
+  "tag": null,
+  "settings": []
+}
+{% endschema %}
