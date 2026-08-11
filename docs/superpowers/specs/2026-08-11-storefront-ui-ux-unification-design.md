@@ -1,7 +1,7 @@
 # Storefront UI/UX Unification Design
 
-**Date:** 2026-08-11  
-**Branch:** `staging`  
+**Date:** 2026-08-11
+**Branch:** `staging`
 **Status:** Approved design, pending implementation plan
 
 ## Objective
