@@ -88,7 +88,23 @@ class CartDrawerComponent extends DialogComponent {
     liveRegion.textContent = `${Theme.translations.cart_count}: ${cartCount}`;
   }
 
-  open() {
+  /**
+   * Opens the drawer for an enhanced cart-link activation.
+   * Modified/non-primary clicks keep their native link behavior.
+   * @param {MouseEvent} [event]
+   */
+  open(event) {
+    const dialog = this.refs.dialog;
+    if (!this.isConnected || !(dialog instanceof HTMLDialogElement)) return;
+
+    if (event instanceof MouseEvent) {
+      const isPlainPrimaryClick =
+        event.button === 0 && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey;
+
+      if (event.defaultPrevented || !isPlainPrimaryClick) return;
+      event.preventDefault();
+    }
+
     this.showDialog();
 
     /**

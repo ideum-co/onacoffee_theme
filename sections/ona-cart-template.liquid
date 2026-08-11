@@ -69,9 +69,19 @@
                       </ul>
                     {%- endif -%}
 
-                    <p class="cart__remove">
-                      <button type="button" class="custom-cart-remove-line button-unstyled" on:click="/onLineItemRemove/{{ item.index | plus: 1 }}" aria-label="Remove {{ item.title | escape }}">Remove</button>
-                    </p>
+                    {%- assign can_remove = item.instructions.can_remove | default: true, allow_false: true -%}
+                    {%- if can_remove -%}
+                      <p class="cart__remove">
+                        <button
+                          type="button"
+                          class="custom-cart-remove-line button-unstyled"
+                          on:click="/onLineItemRemove/{{ item.index | plus: 1 }}"
+                          aria-label="{{ 'accessibility.remove_item' | t: title: item.title | escape }}"
+                        >
+                          {{- 'accessibility.remove' | t -}}
+                        </button>
+                      </p>
+                    {%- endif -%}
                   </div>
                 </div>
               </td>

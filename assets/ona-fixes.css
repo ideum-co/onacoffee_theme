@@ -469,19 +469,24 @@ body.index header .container {
   justify-content: center;
   min-height: 48px;
   padding: 12px 24px;
-  border: 1px solid var(--color-btn-primary-text);
-  background: var(--color-btn-primary-text);
-  color: var(--color-btn-primary);
+  border: 1px solid var(--color-primary-button-border, #661a34);
+  background: var(--color-primary-button-background, #fff);
+  color: var(--color-primary-button-text, #661a34);
   line-height: 1.2;
   text-decoration: none;
   transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease; }
 
 [data-section-type="ona-slideshow"] .slideshow__btn:hover,
+[data-section-type="ona-slideshow"] .slideshow__btn--mobile:hover {
+  border-color: var(--color-primary-button-hover-border, #661a34);
+  background: var(--color-primary-button-hover-background, #661a34);
+  color: var(--color-primary-button-hover-text, #fff); }
+
 [data-section-type="ona-slideshow"] .slideshow__btn:focus-visible,
-[data-section-type="ona-slideshow"] .slideshow__btn--mobile:hover,
 [data-section-type="ona-slideshow"] .slideshow__btn--mobile:focus-visible {
-  background: transparent;
-  color: var(--color-btn-primary-text); }
+  outline: 3px solid var(--color-primary-button-background, #fff);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px var(--color-primary-button-border, #661a34); }
 
   @media only screen and (max-width: 749px) {
     [data-section-type="ona-slideshow"] .slideshow__btn:not(.slideshow__btn--mobile) {
