@@ -1,0 +1,133 @@
+.ona-card {
+  display: grid;
+  grid-template-rows: auto minmax(1.2rem, auto) minmax(2.8em, auto) auto auto auto;
+  align-content: start;
+  min-width: 0;
+  height: 100%;
+  color: var(--color-foreground, #2b2c30);
+}
+
+.ona-card__media {
+  display: block;
+  aspect-ratio: 168 / 250;
+  overflow: hidden;
+}
+
+.ona-card__media img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  transition: transform 200ms ease;
+}
+
+.ona-card__badge {
+  min-height: 1.2rem;
+  margin-top: 12px;
+  text-align: center;
+}
+
+.ona-card__title {
+  margin: 4px 0;
+  min-height: 2.4em;
+  font: 700 1.3125rem/1.2 var(--font-subheading--family, Karla, sans-serif);
+  text-align: center;
+}
+
+.ona-card__title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.ona-card__price {
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.ona-card__options {
+  align-self: end;
+  text-align: center;
+}
+
+.ona-card__option-label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.ona-card__pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ona-card__pill {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 9px 14px;
+  border: 1px solid var(--color-border, #9e9f9b);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.ona-card__pill[aria-checked='true'] {
+  color: var(--color-background, #fff);
+  background: var(--color-foreground, #2b2c30);
+}
+
+.ona-card__pill[aria-disabled='true'] {
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+
+.ona-card__action {
+  align-self: end;
+  margin-top: 12px;
+}
+
+.ona-card__action form {
+  width: 100%;
+}
+
+.ona-card__atc,
+.ona-card__choose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 18px;
+  border: 1px solid var(--color-foreground, #2b2c30);
+  background: var(--color-foreground, #2b2c30);
+  color: var(--color-background, #fff);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.075em;
+}
+
+.ona-card__atc:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ona-card__pill:focus-visible,
+.ona-card__atc:focus-visible,
+.ona-card__choose:focus-visible {
+  outline: 2px solid var(--color-primary, #661a34);
+  outline-offset: 3px;
+}
+
+.ona-card:hover .ona-card__media img {
+  transform: scale(1.025);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ona-card__media img {
+    transition: none;
+  }
+
+  .ona-card:hover .ona-card__media img {
+    transform: none;
+  }
+}
