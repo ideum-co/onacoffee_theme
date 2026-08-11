@@ -124,6 +124,8 @@ assert(slideshow_css.include?('[data-section-type="ona-slideshow"] .slideshow__b
 assert(!slideshow_css.match?(/\.slideshow__btn\s*\{[\s\S]{0,300}line-height:\s*2\.2/), 'hero CTA retains the conflicting line height')
 
 assert(product_template.include?('truncatewords: 45'), 'PDP compact summary is not capped at 45 words')
+summary_with_link = %r{\{% if closest\.product\.description != blank %\}.*truncatewords: 45.*href=\\?"#ona-product-full-details\\?".*\{% endif %\}}
+assert(product_template.match?(summary_with_link), 'PDP renders a full-details link for a blank description')
 assert(product_template.include?('ona_subscription_reserve'), 'PDP lacks subscription reservation block')
 assert(subscription_block.include?('closest.product.selling_plan_groups'), 'subscription reserve is not product-aware')
 assert(subscription_js.include?('8000'), 'Appstle failure timeout is not eight seconds')

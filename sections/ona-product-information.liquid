@@ -182,17 +182,42 @@
 {%- elsif _pt_override == 'dark' -%}{%- assign _pt_tone = 'is-light-bg' -%}{%- endif -%}
 <section class="product-top {{ _pt_tone }}"{% if product.metafields.accentuate.colour != blank %} style="background-color: {{ product.metafields.accentuate.colour }};"{% endif %}>
 <style>
-  /* qty to the left of variant-picker: visually pair the two consecutive blocks.
-     Targets the standalone quantity block we added before variant-picker. */
-  .product-top .product-details-container .quantity-component-wrapper { display: inline-flex; vertical-align: top; margin-inline-end: 16px; }
-  .product-top .product-details-container variant-picker { display: inline-block; vertical-align: top; }
-  @media (max-width: 749px) {
-    .product-top .product-details-container .quantity-component-wrapper,
-    .product-top .product-details-container variant-picker { display: block; width: 100%; margin-inline-end: 0; }
+  .product-top .product-details-container .qty-options-row,
+  .product-top .product-details .qty-options-row,
+  .product-top .product-details-container .group-block-content:has(> .quantity-selector-wrapper + variant-picker),
+  .product-top .product-details .group-block-content:has(> .quantity-selector-wrapper + variant-picker) {
+    display: grid;
+    grid-template-columns: minmax(120px, auto) minmax(0, 1fr);
+    gap: 12px;
+    align-items: end;
   }
+
+  .product-top .product-details-container :is(.quantity-component, .quantity-selector, .variant-option__button-label),
+  .product-top .product-details :is(.quantity-component, .quantity-selector, .variant-option__button-label) {
+    min-height: 44px;
+  }
+
+  .product-top .product-details-container add-to-cart-component .button,
+  .product-top .product-details add-to-cart-component .button {
+    min-height: 48px;
+    width: 100%;
+  }
+
+  @media (max-width: 749px) {
+    .product-top .product-details-container .qty-options-row,
+    .product-top .product-details .qty-options-row,
+    .product-top .product-details-container .group-block-content:has(> .quantity-selector-wrapper + variant-picker),
+    .product-top .product-details .group-block-content:has(> .quantity-selector-wrapper + variant-picker) {
+      grid-template-columns: 1fr;
+    }
+  }
+
   /* Hide the quantity that buy-buttons block renders internally (we show qty
      to the left of the variant picker instead). */
-  .product-top .product-details-container product-form-component .quantity-component-wrapper { display: none !important; }
+  .product-top .product-details-container product-form-component .quantity-component-wrapper,
+  .product-top .product-details product-form-component .quantity-component-wrapper {
+    display: none !important;
+  }
 </style>
 {% render 'product-information-content',
   product_media_size: closest.product.media.size,
@@ -204,7 +229,19 @@
 %}
 </section>
 
+{% if closest.product.description != blank %}
+  <section id="ona-product-full-details" class="ona-product-full-details page-width">
+    <h2 class="visually-hidden">Full product details</h2>
+    <div class="rte">{{ closest.product.description }}</div>
+  </section>
+{% endif %}
+
 {% stylesheet %}
+  .ona-product-full-details {
+    padding-block: var(--padding-xl);
+    scroll-margin-block-start: var(--header-group-height, 0);
+  }
+
   .sticky-add-to-cart__bar {
     position: fixed;
     bottom: 20px;

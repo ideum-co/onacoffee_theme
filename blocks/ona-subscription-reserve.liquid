@@ -1,0 +1,49 @@
+{% if closest.product.selling_plan_groups.size > 0 %}
+  <div
+    class="ona-subscription-reserve"
+    data-ona-subscription-reserve
+    data-state="loading"
+    role="status"
+    aria-live="polite"
+  >
+    <span class="ona-subscription-reserve__label">Loading subscription options…</span>
+  </div>
+  <script src="{{ 'ona-subscription-reserve.js' | asset_url }}" type="module" fetchpriority="low"></script>
+{% endif %}
+
+{% stylesheet %}
+  .ona-subscription-reserve {
+    min-block-size: 136px;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    border: 1px dashed color-mix(in srgb, currentColor 40%, transparent);
+  }
+
+  .ona-subscription-reserve[data-state='ready'] {
+    display: none;
+  }
+
+  .ona-subscription-reserve[data-state='unavailable'] {
+    min-block-size: 136px;
+  }
+
+  .ona-subscription-reserve__label {
+    font-size: 0.875rem;
+    text-align: center;
+  }
+
+  @media (max-width: 749px) {
+    .ona-subscription-reserve {
+      min-block-size: 148px;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "ONA subscription reserve",
+  "tag": null,
+  "settings": []
+}
+{% endschema %}
