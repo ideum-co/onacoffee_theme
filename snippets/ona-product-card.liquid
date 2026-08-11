@@ -1,37 +1,57 @@
-{{ 'ona-product-card.css' | asset_url | stylesheet_tag }}
-<script src="{{ 'ona-product-card.js' | asset_url }}" type="module" fetchpriority="low"></script>
-
 {%- comment -%}
   Shared free-standing product card.
   Usage: {% render 'ona-product-card', product: product, index: forloop.index %}
 {%- endcomment -%}
 {%- if product.handle != 'ona-tote' -%}
-  {%- assign selected_variant = product.selected_or_first_available_variant -%}
-  <article class="ona-card" data-ona-card data-product-id="{{ product.id }}">
+  {%- liquid
+    assign selected_variant = product.selected_or_first_available_variant
+    assign selected_compare_at_price = selected_variant.compare_at_price
+    assign selected_on_sale = false
+    if selected_compare_at_price > selected_variant.price
+      assign selected_on_sale = true
+    endif
+    assign card_uid = section.id | default: 'card' | append: '-' | append: product.id | append: '-' | append: index
+  -%}
+  <article
+    class="ona-card"
+    data-ona-card
+    data-product-id="{{ product.id }}"
+    data-variant-available="{{ selected_variant.available }}"
+    data-label-add-to-cart="{{ 'products.product.add_to_cart' | t | escape }}"
+    data-label-adding="{{ 'products.product.adding_to_cart' | t | escape }}"
+    data-label-sold-out="{{ 'products.product.sold_out' | t | escape }}"
+    data-label-add-error="{{ 'products.product.add_to_cart_error' | t | escape }}"
+  >
     <a href="{{ product.url }}" class="ona-card__media" aria-label="{{ product.title | escape }}">
       {%- assign featured_image = product.featured_image -%}
-      <img
-        src="{{ featured_image | image_url: width: 600 }}"
-        srcset="{{ featured_image | image_url: width: 400 }} 400w,
-                {{ featured_image | image_url: width: 600 }} 600w,
-                {{ featured_image | image_url: width: 900 }} 900w"
-        sizes="(max-width: 575px) calc(50vw - 16px),
-               (max-width: 990px) calc(33vw - 16px),
-               280px"
-        width="{{ featured_image.width | default: 1024 }}"
-        height="{{ featured_image.height | default: 1024 }}"
-        {% if index == 1 %}
-          loading="eager"
-          fetchpriority="high"
-        {% elsif index != blank and index <= 4 %}
-          loading="eager"
-          decoding="async"
-        {% else %}
-          loading="lazy"
-          decoding="async"
-        {% endif %}
-        alt="{{ featured_image.alt | default: product.title | escape }}"
-      >
+      {%- if featured_image -%}
+        <img
+          src="{{ featured_image | image_url: width: 600 }}"
+          srcset="{{ featured_image | image_url: width: 400 }} 400w,
+                  {{ featured_image | image_url: width: 600 }} 600w,
+                  {{ featured_image | image_url: width: 900 }} 900w"
+          sizes="(max-width: 575px) calc(50vw - 16px),
+                 (max-width: 990px) calc(33vw - 16px),
+                 280px"
+          width="{{ featured_image.width }}"
+          height="{{ featured_image.height }}"
+          {% if index == 1 %}
+            loading="eager"
+            fetchpriority="high"
+          {% elsif index != blank and index <= 4 %}
+            loading="eager"
+            decoding="async"
+          {% else %}
+            loading="lazy"
+            decoding="async"
+          {% endif %}
+          alt="{{ featured_image.alt | default: product.title | escape }}"
+        >
+      {%- else -%}
+        <span class="ona-card__placeholder" aria-hidden="true">
+          {{- 'product-1' | placeholder_svg_tag: 'ona-card__placeholder-svg' -}}
+        </span>
+      {%- endif -%}
     </a>
 
     <div class="ona-card__badge">
@@ -42,59 +62,62 @@
       <a href="{{ product.url }}">{{ product.title | escape }}</a>
     </h3>
 
-    {%- liquid
-      assign product_price = product.price | money
-      assign compare_at_price = product.compare_at_price
-      assign on_sale = false
-      if compare_at_price > product.price
-        assign on_sale = true
-      endif
-    -%}
-    <div class="ona-card__price{% if on_sale %} price--on-sale{% endif %}" data-card-price>
-      {%- if product.price_varies -%}
-        <span class="price-item">{{ 'products.product.from_lowest_price_html' | t: lowest_price: product_price }}</span>
-      {%- else -%}
-        <span class="price-item">{{ selected_variant.price | money }}</span>
-      {%- endif -%}
-      {%- if on_sale -%}
-        <span class="price-item price-item--compare"><s>{{ compare_at_price | money }}</s></span>
-      {%- endif -%}
+    <div class="ona-card__price{% if selected_on_sale %} price--on-sale{% endif %}" data-card-price>
+      <span class="price-item" data-card-current-price>{{ selected_variant.price | money }}</span>
+      <span class="price-item price-item--compare" data-card-compare-price{% unless selected_on_sale %} hidden{% endunless %}>
+        <s data-card-compare-value>{% if selected_on_sale %}{{ selected_compare_at_price | money }}{% endif %}</s>
+      </span>
     </div>
 
     <div class="ona-card__options">
       {%- if product.variants.size > 1 and product.options.size == 1 -%}
         {%- assign option_name = product.options.first -%}
-        <div class="ona-card__option">
-          <span class="ona-card__option-label">
+        <fieldset class="ona-card__option">
+          <legend class="ona-card__option-label">
             {{ option_name }}: <strong data-card-opt-value>{{ selected_variant.title }}</strong>
-          </span>
-          <div class="ona-card__pills" role="radiogroup" aria-label="{{ option_name | escape }}">
+          </legend>
+          <div class="ona-card__pills">
             {%- for variant in product.variants -%}
-              <button
-                type="button"
-                class="ona-card__pill{% if variant.id == selected_variant.id %} ona-card__pill--active{% endif %}{% unless variant.available %} ona-card__pill--sold-out{% endunless %}"
-                data-card-pill
+              {%- liquid
+                assign variant_on_sale = false
+                if variant.compare_at_price > variant.price
+                  assign variant_on_sale = true
+                endif
+                assign radio_id = 'ona-card-variant-' | append: card_uid | append: '-' | append: variant.id
+              -%}
+              <input
+                type="radio"
+                class="visually-hidden ona-card__radio"
+                id="{{ radio_id }}"
+                name="ona-card-variant-{{ card_uid }}"
+                value="{{ variant.id }}"
+                data-card-radio
                 data-variant-id="{{ variant.id }}"
                 data-variant-title="{{ variant.title | escape }}"
                 data-variant-price="{{ variant.price | money | escape }}"
+                data-variant-compare-at-price="{% if variant_on_sale %}{{ variant.compare_at_price | money | escape }}{% endif %}"
+                data-variant-on-sale="{{ variant_on_sale }}"
                 data-variant-available="{{ variant.available }}"
-                role="radio"
-                aria-checked="{% if variant.id == selected_variant.id %}true{% else %}false{% endif %}"
-                {% unless variant.available %}disabled aria-disabled="true"{% endunless %}
+                {% if variant.id == selected_variant.id %}checked{% endif %}
+                {% unless variant.available %}disabled{% endunless %}
+              >
+              <label
+                class="ona-card__pill{% if variant.id == selected_variant.id %} ona-card__pill--active{% endif %}{% unless variant.available %} ona-card__pill--sold-out{% endunless %}"
+                for="{{ radio_id }}"
               >
                 {{- variant.title -}}
-              </button>
+              </label>
             {%- endfor -%}
           </div>
-        </div>
+        </fieldset>
       {%- endif -%}
     </div>
 
     <div class="ona-card__action">
       {%- if product.options.size >= 2 -%}
-        <a class="ona-card__choose" href="{{ product.url }}">Choose options</a>
+        <a class="ona-card__choose" href="{{ product.url }}">{{ 'actions.show_all_options' | t }}</a>
       {%- else -%}
-        <form action="{{ routes.cart_add_url }}" method="post" data-card-form>
+        <form action="{{ routes.cart_add_url }}" method="post" data-card-form data-cart-url="{{ routes.cart_url }}">
           <input type="hidden" name="id" value="{{ selected_variant.id }}" data-card-variant-input>
           <input type="hidden" name="quantity" value="1">
           <button
@@ -103,8 +126,13 @@
             data-card-atc
             {% unless selected_variant.available %}disabled aria-disabled="true"{% endunless %}
           >
-            {%- if selected_variant.available -%}Add to cart{%- else -%}Sold out{%- endif -%}
+            {%- if selected_variant.available -%}
+              {{- 'products.product.add_to_cart' | t -}}
+            {%- else -%}
+              {{- 'products.product.sold_out' | t -}}
+            {%- endif -%}
           </button>
+          <p class="ona-card__error" data-card-error role="alert" hidden></p>
         </form>
       {%- endif -%}
     </div>

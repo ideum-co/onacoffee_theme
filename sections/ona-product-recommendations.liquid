@@ -1,3 +1,6 @@
+{{ 'ona-product-card.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'ona-product-card.js' | asset_url }}" type="module" fetchpriority="low"></script>
+
 {%- liquid
   assign show = section.settings.show_product_recommendations
   assign heading = section.settings.heading
@@ -31,34 +34,14 @@
           </div>
         {%- endif -%}
         <div class="shop-list">
+          {%- assign card_index = 0 -%}
           {%- for p in products limit: limit -%}
-            <div class="list">
-              <a href="{{ p.url }}" class="list-box">
-                <div class="img">
-                  <img src="{{ p.featured_media | img_url: '1024x1024' }}" alt="{{ p.featured_image.alt | default: p.title | escape }}" loading="lazy" decoding="async">
-                </div>
-                <div class="text">
-                  {%- liquid
-                    assign price = p.price | money
-                    assign on_sale = false
-                    if p.compare_at_price > p.price
-                      assign on_sale = true
-                    endif
-                  -%}
-                  <div class="price{% if on_sale %} price--on-sale{% endif %}">
-                    {%- if p.price_varies -%}
-                      <span class="price-item">from {{ price }}</span>
-                    {%- else -%}
-                      <span class="price-item">{{ price }}</span>
-                    {%- endif -%}
-                    {%- if on_sale -%}
-                      <span class="price-item price-item--compare"><s>{{ p.compare_at_price | money }}</s></span>
-                    {%- endif -%}
-                  </div>
-                  <p>{{ p.title }}</p>
-                </div>
-              </a>
-            </div>
+            {%- unless p.handle == 'ona-tote' -%}
+              {%- assign card_index = card_index | plus: 1 -%}
+              <div class="list">
+                {% render 'ona-product-card', product: p, index: card_index %}
+              </div>
+            {%- endunless -%}
           {%- endfor -%}
         </div>
       </div>
