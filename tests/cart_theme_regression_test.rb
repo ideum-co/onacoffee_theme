@@ -99,10 +99,19 @@ recommendations_card_css = recommendations.index("'ona-product-card.css' | asset
 recommendations_card_js = recommendations.index("'ona-product-card.js' | asset_url")
 assert(recommendations_card_css && recommendations_card_css < recommendations_root, 'recommendations can hydrate cards before shared card CSS loads')
 assert(recommendations_card_js && recommendations_card_js < recommendations_root, 'recommendations can hydrate cards before shared card controller loads')
-collection_card_wrapper = %r{<div class="list">\s*\{% render 'ona-product-card', product: product, index: forloop\.index %\}\s*</div>}
-search_card_wrapper = %r{<div class="list">\s*\{% render 'ona-product-card', product: item, index: forloop\.index %\}\s*</div>}
+collection_card_wrapper = %r{<div class="list">\s*\{% render 'ona-product-card', product: product, index: [^ ]+ %\}\s*</div>}
+search_card_wrapper = %r{<div class="list">\s*\{% render 'ona-product-card', product: item, index: [^ ]+ %\}\s*</div>}
 assert(collection.match?(collection_card_wrapper), 'collection card bypasses the responsive grid item hook')
 assert(search.match?(search_card_wrapper), 'search product card bypasses the responsive grid item hook')
+featured_exclusion = %r{unless p\.handle == 'ona-tote'.*<li class="ona-fc__item">.*render 'ona-product-card', product: p, index: card_index.*</li>.*endunless}m
+collection_exclusion = %r{unless product\.handle == 'ona-tote'.*<div class="list">.*render 'ona-product-card', product: product, index: card_index.*</div>.*endunless}m
+search_exclusion = %r{if item\.object_type == 'product'.*unless item\.handle == 'ona-tote'.*<div class="list">.*render 'ona-product-card', product: item, index: card_index.*</div>.*endunless.*else}m
+recommendations_exclusion = %r{if product == blank or product\.handle != 'ona-tote'.*<div class="resource-list__item">.*if product != blank.*render 'ona-product-card', product: product, index: rendered_item_count.*</div>.*endif}m
+assert(featured.match?(featured_exclusion), 'featured collection can render an empty list item for an excluded product')
+assert(collection.match?(collection_exclusion), 'collection can render an empty grid item for an excluded product')
+assert(search.match?(search_exclusion), 'search can render an empty grid item for an excluded product')
+assert(recommendations.match?(recommendations_exclusion), 'recommendations can render an empty item for an excluded product')
+assert(recommendations.scan(/slide_count: rendered_item_count/).length == 2, 'recommendation carousel counts excluded products as slides')
 assert(!featured.include?('ona-fc__pill'), 'featured collection retains duplicate card UI')
 assert(!featured.include?("fetch('/cart/add.js'"), 'featured collection retains duplicate cart controller')
 assert(!collection.include?("fetch('/cart/add.js'"), 'collection retains duplicate cart controller')

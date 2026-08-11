@@ -117,10 +117,14 @@
       </div>
     </div>
     <div class="shop-list test" data-count="{{ collection.products_count }}">
+      {% assign card_index = 0 %}
       {% for product in collection.products %}
-        <div class="list">
-          {% render 'ona-product-card', product: product, index: forloop.index %}
-        </div>
+        {% unless product.handle == 'ona-tote' %}
+          {% assign card_index = card_index | plus: 1 %}
+          <div class="list">
+            {% render 'ona-product-card', product: product, index: card_index %}
+          </div>
+        {% endunless %}
       {% endfor %}
     </div>
 

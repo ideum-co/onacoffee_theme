@@ -12,14 +12,19 @@
     <div class="ona-fc__header"><h2>{{ section.settings.title | escape }}</h2></div>
   {%- endif -%}
 
+  {%- assign card_index = 0 -%}
   <ul class="ona-fc__grid ona-fc__grid--{{ per_row }}">
     {%- for p in col.products limit: limit -%}
-      <li class="ona-fc__item">
-        {% render 'ona-product-card', product: p, index: forloop.index %}
-      </li>
-    {%- else -%}
-      <li class="ona-fc__empty">No products to show.</li>
+      {%- unless p.handle == 'ona-tote' -%}
+        {%- assign card_index = card_index | plus: 1 -%}
+        <li class="ona-fc__item">
+          {% render 'ona-product-card', product: p, index: card_index %}
+        </li>
+      {%- endunless -%}
     {%- endfor -%}
+    {%- if card_index == 0 -%}
+      <li class="ona-fc__empty">No products to show.</li>
+    {%- endif -%}
   </ul>
 
   {%- if section.settings.show_view_all and col.all_products_count > limit -%}

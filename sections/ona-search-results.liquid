@@ -19,11 +19,15 @@
         {% render 'ona-filter-drawer-skin' %}
         {% content_for 'block', type: 'filters', id: 'filters', results: search, results_size: search.results_count %}
         <div class="shop-list">
+          {% assign card_index = 0 %}
           {% for item in search.results %}
             {% if item.object_type == 'product' %}
-              <div class="list">
-                {% render 'ona-product-card', product: item, index: forloop.index %}
-              </div>
+              {% unless item.handle == 'ona-tote' %}
+                {% assign card_index = card_index | plus: 1 %}
+                <div class="list">
+                  {% render 'ona-product-card', product: item, index: card_index %}
+                </div>
+              {% endunless %}
             {% else %}
               <div class="list">
                 <a href="{{ item.url }}" class="list-box{% if item.image == null %} page-center{% endif %}">
