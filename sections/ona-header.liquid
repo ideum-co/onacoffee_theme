@@ -174,14 +174,13 @@
                   class="header-actions__cart-icon{% unless cart == empty %} header-actions__cart-icon--has-cart{% endunless %}"
                   data-testid="cart-icon"
                 >
-                  {%- comment -%} Trigger is a plain link to /cart. Drawer still
-                       auto-opens on add-to-cart via cart-drawer-component's
-                       auto-open attribute. {%- endcomment -%}
                   <a
                     href="{{ routes.cart_url }}"
                     class="ona-cart-trigger"
                     aria-label="{{ 'accessibility.cart' | t }}"
-                    data-testid="cart-link"
+                    aria-haspopup="dialog"
+                    on:click="cart-drawer-component/open"
+                    data-testid="cart-drawer-trigger"
                   >
                     <span class="icon-shop" aria-hidden="true"></span>
                     {%- render 'cart-bubble', limit: 100 -%}
