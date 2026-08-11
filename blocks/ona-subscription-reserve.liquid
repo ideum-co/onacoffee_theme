@@ -3,13 +3,16 @@
     class="ona-subscription-reserve"
     data-ona-subscription-reserve
     data-state="loading"
+    data-loading-label="{{ 'products.product.loading_subscription_options' | t | escape }}"
+    data-unavailable-label="{{ 'products.product.subscription_options_unavailable' | t | escape }}"
     role="status"
     aria-live="polite"
   >
-    <span class="ona-subscription-reserve__label">Loading subscription options…</span>
+    <span class="ona-subscription-reserve__label">{{ 'products.product.loading_subscription_options' | t }}</span>
   </div>
-  <script src="{{ 'ona-subscription-reserve.js' | asset_url }}" type="module" fetchpriority="low"></script>
 {% endif %}
+
+<script src="{{ 'ona-subscription-reserve.js' | asset_url }}" type="module" fetchpriority="low"></script>
 
 {% stylesheet %}
   .ona-subscription-reserve {

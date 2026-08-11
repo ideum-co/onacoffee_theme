@@ -338,6 +338,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Загрузка вариантов подписки…",
+      "subscription_options_unavailable": "Варианты подписки временно недоступны.",
       "add_to_cart": "Добавить в корзину",
       "adding_to_cart": "Добавление...",
       "added_to_cart": "Товар добавлен в корзину",

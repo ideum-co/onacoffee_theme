@@ -301,6 +301,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "サブスクリプションのオプションを読み込んでいます…",
+      "subscription_options_unavailable": "サブスクリプションのオプションは一時的にご利用いただけません。",
       "add_to_cart": "カートに追加する",
       "added_to_cart": "カートに追加済み",
       "adding_to_cart": "追加中...",

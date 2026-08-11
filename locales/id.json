@@ -301,6 +301,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Memuat opsi langganan…",
+      "subscription_options_unavailable": "Opsi langganan sementara tidak tersedia.",
       "add_to_cart": "Tambahkan ke keranjang",
       "added_to_cart": "Ditambahkan ke keranjang",
       "adding_to_cart": "Menambahkan...",

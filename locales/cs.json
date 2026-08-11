@@ -313,6 +313,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Načítání možností předplatného…",
+      "subscription_options_unavailable": "Možnosti předplatného jsou dočasně nedostupné.",
       "add_to_cart": "Přidat do košíku",
       "adding_to_cart": "Přidávání do košíku...",
       "added_to_cart": "Přidáno do košíku",

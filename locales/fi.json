@@ -301,6 +301,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Ladataan tilausvaihtoehtoja…",
+      "subscription_options_unavailable": "Tilausvaihtoehdot eivät ole tilapäisesti saatavilla.",
       "add_to_cart": "Lisää ostoskoriin",
       "added_to_cart": "Lisätty ostoskoriin",
       "adding_to_cart": "Lisätään...",

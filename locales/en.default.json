@@ -352,6 +352,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Loading subscription options…",
+      "subscription_options_unavailable": "Subscription options are temporarily unavailable.",
       "add_to_cart": "Add to cart",
       "adding_to_cart": "Adding...",
       "added_to_cart": "Added to cart",

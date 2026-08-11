@@ -301,6 +301,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Зареждане на опции за абонамент…",
+      "subscription_options_unavailable": "Опциите за абонамент временно не са налични.",
       "add_to_cart": "Добавяне към количката",
       "adding_to_cart": "Добавяне...",
       "added_to_cart": "Добавено в количката",

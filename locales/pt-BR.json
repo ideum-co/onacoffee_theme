@@ -307,6 +307,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Carregando opções de assinatura…",
+      "subscription_options_unavailable": "As opções de assinatura estão temporariamente indisponíveis.",
       "add_to_cart": "Adicionar ao carrinho",
       "added_to_cart": "Adicionado ao carrinho",
       "adding_to_cart": "Adicionando...",

@@ -301,6 +301,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "กำลังโหลดตัวเลือกการสมัครสมาชิก…",
+      "subscription_options_unavailable": "ตัวเลือกการสมัครสมาชิกไม่พร้อมใช้งานชั่วคราว",
       "add_to_cart": "เพิ่มลงในตะกร้าสินค้า",
       "added_to_cart": "เพิ่มลงในตะกร้าสินค้าแล้ว",
       "adding_to_cart": "กำลังเพิ่ม...",

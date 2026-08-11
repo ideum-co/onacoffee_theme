@@ -7,10 +7,17 @@ const listeners = new Map();
 const observers = [];
 const timers = new Map();
 const clearedTimers = [];
+const documentReserves = [];
+let globalObserver;
 let timerId = 0;
 
-function createReserve({ wrapperInitially = false, productDetailsPresent = true } = {}) {
-  const label = { textContent: 'Loading subscription options…' };
+function createReserve({
+  loadingLabel = 'Cargando opciones de suscripción…',
+  productDetailsPresent = true,
+  unavailableLabel = 'Las opciones de suscripción no están disponibles temporalmente.',
+  wrapperInitially = false,
+} = {}) {
+  const label = { textContent: loadingLabel };
   let wrapperPresent = wrapperInitially;
 
   const details = {
@@ -18,7 +25,7 @@ function createReserve({ wrapperInitially = false, productDetailsPresent = true 
   };
 
   const reserve = {
-    dataset: {},
+    dataset: { loadingLabel, state: 'loading', unavailableLabel },
     isConnected: true,
     matches: (selector) => selector === '[data-ona-subscription-reserve]',
     closest: () => (productDetailsPresent ? details : null),
@@ -30,9 +37,12 @@ function createReserve({ wrapperInitially = false, productDetailsPresent = true 
     details,
     label,
     reserve,
+    hideWrapper() {
+      wrapperPresent = false;
+    },
     revealWrapper() {
       wrapperPresent = true;
-      reserve.observer.callback();
+      reserve.observer?.callback([{ addedNodes: [{}], removedNodes: [] }]);
     },
   };
 }
@@ -44,8 +54,8 @@ function createRoot(reserves) {
   };
 }
 
-const initial = createReserve();
-const documentRoot = createRoot([initial.reserve]);
+const documentRoot = createRoot(documentReserves);
+documentRoot.documentElement = documentRoot;
 documentRoot.addEventListener = (name, callback) => {
   const callbacks = listeners.get(name) || [];
   callbacks.push(callback);
@@ -62,7 +72,12 @@ class FakeMutationObserver {
   observe(target, options) {
     this.target = target;
     this.options = options;
-    const reserve = [initial, ...dynamicReserves].find((entry) => entry.details === target);
+    if (target === documentRoot) {
+      globalObserver = this;
+      return;
+    }
+
+    const reserve = allReserves.find((entry) => entry.details === target);
     if (reserve) reserve.reserve.observer = this;
   }
 
@@ -71,7 +86,7 @@ class FakeMutationObserver {
   }
 }
 
-const dynamicReserves = [];
+const allReserves = [];
 const windowObject = {
   clearTimeout(id) {
     clearedTimers.push(id);
@@ -99,54 +114,80 @@ function dispatch(name, target) {
   for (const listener of listeners.get(name) || []) listener({ target });
 }
 
+function morph({ added = [], removed = [] }) {
+  globalObserver.callback([{ addedNodes: added.map((entry) => entry.reserve), removedNodes: removed.map((entry) => entry.reserve) }]);
+}
+
+// Initially ineligible: the module still installs one document observer and lifecycle listeners.
 evaluateModule();
-assert.equal(initial.reserve.dataset.initialized, 'true');
-assert.equal(initial.reserve.observer.options.childList, true);
-assert.equal(initial.reserve.observer.options.subtree, true);
-assert.equal(timers.size, 1);
+assert.ok(globalObserver, 'module does not observe combined-listing morphs');
+assert.equal(globalObserver.options.childList, true);
+assert.equal(globalObserver.options.subtree, true);
 assert.equal(listeners.get('shopify:section:load')?.length, 1);
 assert.equal(listeners.get('shopify:section:unload')?.length, 1);
+assert.equal(timers.size, 0);
 
 evaluateModule();
 assert.equal(listeners.get('shopify:section:load').length, 1, 'module re-evaluation adds a load listener');
 assert.equal(listeners.get('shopify:section:unload').length, 1, 'module re-evaluation adds an unload listener');
-assert.equal(observers.length, 1, 'module re-evaluation adds an observer');
-assert.equal(timers.size, 1, 'module re-evaluation adds a timer');
+assert.equal(observers.filter((observer) => observer.target === documentRoot).length, 1, 'module re-evaluation adds a document observer');
 
+// Combined listing ineligible -> eligible: a reserve introduced by morph initializes.
+const eligible = createReserve();
+allReserves.push(eligible);
+documentReserves.push(eligible.reserve);
+morph({ added: [eligible] });
+assert.equal(eligible.reserve.dataset.initialized, 'true');
+assert.equal(eligible.reserve.observer.options.childList, true);
+assert.equal(eligible.reserve.observer.options.subtree, true);
+assert.equal(timers.size, 1);
+
+eligible.revealWrapper();
+assert.equal(eligible.reserve.dataset.state, 'ready');
+assert.equal(eligible.label.textContent, '');
+assert.equal(eligible.reserve.observer.disconnected, true);
+assert.equal(timers.size, 0);
+
+// Combined listing eligible -> eligible: old lifecycle is cleaned and replacement starts fresh.
+const replacement = createReserve();
+allReserves.push(replacement);
+eligible.reserve.isConnected = false;
+documentReserves.splice(documentReserves.indexOf(eligible.reserve), 1, replacement.reserve);
+morph({ added: [replacement], removed: [eligible] });
+assert.equal(eligible.reserve.dataset.initialized, undefined);
+assert.equal(replacement.reserve.dataset.initialized, 'true');
+assert.equal(timers.size, 1);
+
+// A ready reserve whose Appstle subtree is removed in-place is reset by the global lifecycle observer.
+replacement.revealWrapper();
+replacement.hideWrapper();
+morph({ added: [], removed: [] });
+assert.equal(replacement.reserve.dataset.state, 'loading');
+assert.equal(replacement.label.textContent, replacement.reserve.dataset.loadingLabel);
+assert.equal(timers.size, 1);
+
+// Theme-editor section load/unload remains supported and cleans observers/timers.
 const loaded = createReserve();
-dynamicReserves.push(loaded);
+allReserves.push(loaded);
 const loadedRoot = createRoot([loaded.reserve]);
+const timersBeforeLoad = new Set(timers.keys());
 dispatch('shopify:section:load', loadedRoot);
 assert.equal(loaded.reserve.dataset.initialized, 'true');
-assert.equal(timers.size, 2);
-
-const loadedTimerId = [...timers.keys()].find((id) => id !== 1);
+const loadedTimerId = [...timers.keys()].find((id) => !timersBeforeLoad.has(id));
 dispatch('shopify:section:unload', loadedRoot);
 assert.equal(loaded.reserve.observer.disconnected, true);
 assert.equal(clearedTimers.includes(loadedTimerId), true);
 assert.equal(loaded.reserve.dataset.initialized, undefined);
 
-const replacement = createReserve();
-dynamicReserves.push(replacement);
-dispatch('shopify:section:load', createRoot([replacement.reserve]));
-assert.equal(replacement.reserve.dataset.initialized, 'true');
-replacement.revealWrapper();
-assert.equal(replacement.reserve.dataset.state, 'ready');
-assert.equal(replacement.reserve.observer.disconnected, true);
-assert.equal(replacement.label.textContent, '');
-
-initial.reserve.isConnected = false;
-initial.reserve.observer.callback();
-assert.equal(initial.reserve.observer.disconnected, true);
-assert.equal(clearedTimers.includes(1), true);
-
+// Timeout uses the localized label supplied by Liquid, never an English JS literal.
 const timedOut = createReserve();
-dynamicReserves.push(timedOut);
+allReserves.push(timedOut);
+const timersBeforeTimeoutReserve = new Set(timers.keys());
 dispatch('shopify:section:load', createRoot([timedOut.reserve]));
-const timeoutId = [...timers.keys()][0];
+const timeoutId = [...timers.keys()].find((id) => !timersBeforeTimeoutReserve.has(id));
 timers.get(timeoutId)();
 assert.equal(timedOut.reserve.dataset.state, 'unavailable');
-assert.equal(timedOut.label.textContent, 'Subscription options are temporarily unavailable');
+assert.equal(timedOut.label.textContent, timedOut.reserve.dataset.unavailableLabel);
 assert.equal(timedOut.reserve.observer.disconnected, true);
 
-console.log('PASS: subscription reserve lifecycle');
+console.log('PASS: subscription reserve morph and section lifecycle');

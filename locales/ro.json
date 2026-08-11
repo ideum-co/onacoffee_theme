@@ -331,6 +331,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Se încarcă opțiunile de abonament…",
+      "subscription_options_unavailable": "Opțiunile de abonament sunt temporar indisponibile.",
       "add_to_cart": "Adaugă în coș",
       "adding_to_cart": "Se adaugă...",
       "added_to_cart": "Adăugat în coș",

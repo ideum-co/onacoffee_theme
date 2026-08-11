@@ -301,6 +301,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Φόρτωση επιλογών συνδρομής…",
+      "subscription_options_unavailable": "Οι επιλογές συνδρομής είναι προσωρινά μη διαθέσιμες.",
       "add_to_cart": "Προσθήκη στο καλάθι",
       "added_to_cart": "Προστέθηκε στο καλάθι",
       "adding_to_cart": "Προσθήκη...",

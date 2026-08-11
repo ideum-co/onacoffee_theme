@@ -307,6 +307,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Cargando opciones de suscripción…",
+      "subscription_options_unavailable": "Las opciones de suscripción no están disponibles temporalmente.",
       "add_to_cart": "Agregar al carrito",
       "added_to_cart": "Agregado al carrito",
       "adding_to_cart": "Agregando...",

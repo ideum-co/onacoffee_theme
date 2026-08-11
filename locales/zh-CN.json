@@ -301,6 +301,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "正在加载订阅选项…",
+      "subscription_options_unavailable": "订阅选项暂时不可用。",
       "add_to_cart": "添加到购物车",
       "added_to_cart": "添加到购物车",
       "adding_to_cart": "正在添加...",

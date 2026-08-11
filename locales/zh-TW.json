@@ -324,6 +324,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "正在載入訂閱選項…",
+      "subscription_options_unavailable": "訂閱選項暫時無法使用。",
       "add_to_cart": "加入購物車",
       "adding_to_cart": "正在新增…",
       "added_to_cart": "已放入購物車",

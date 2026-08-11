@@ -301,6 +301,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "구독 옵션을 불러오는 중…",
+      "subscription_options_unavailable": "구독 옵션을 일시적으로 사용할 수 없습니다.",
       "add_to_cart": "카트에 추가",
       "added_to_cart": "카트에 추가됨",
       "adding_to_cart": "추가 중...",

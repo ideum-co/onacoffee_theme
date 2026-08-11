@@ -301,6 +301,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Indlæser abonnementsmuligheder…",
+      "subscription_options_unavailable": "Abonnementsmuligheder er midlertidigt utilgængelige.",
       "add_to_cart": "Læg i indkøbskurven",
       "added_to_cart": "Lagt i indkøbskurv",
       "adding_to_cart": "Tilføjer...",

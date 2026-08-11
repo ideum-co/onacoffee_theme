@@ -338,6 +338,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Ładowanie opcji subskrypcji…",
+      "subscription_options_unavailable": "Opcje subskrypcji są tymczasowo niedostępne.",
       "add_to_cart": "Dodaj do koszyka",
       "adding_to_cart": "Trwa dodawanie...",
       "added_to_cart": "Dodano do koszyka",

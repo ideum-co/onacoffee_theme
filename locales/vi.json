@@ -324,6 +324,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Đang tải các tùy chọn đăng ký…",
+      "subscription_options_unavailable": "Các tùy chọn đăng ký hiện tạm thời không khả dụng.",
       "add_to_cart": "Thêm vào giỏ hàng",
       "adding_to_cart": "Đang thêm...",
       "added_to_cart": "Đã thêm vào giỏ hàng",

@@ -237,7 +237,7 @@
 
 {% if closest.product.description != blank %}
   <section id="ona-product-full-details" class="ona-product-full-details page-width">
-    <h2 class="visually-hidden">Full product details</h2>
+    <h2 class="visually-hidden">{{ 'accessibility.product_details' | t }}</h2>
     <div class="rte">{{ closest.product.description }}</div>
   </section>
 {% endif %}

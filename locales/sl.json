@@ -313,6 +313,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Nalaganje možnosti naročnine…",
+      "subscription_options_unavailable": "Možnosti naročnine začasno niso na voljo.",
       "add_to_cart": "Dodaj v košarico",
       "added_to_cart": "Dodano v košarico",
       "adding_to_cart": "Dodajanje ...",

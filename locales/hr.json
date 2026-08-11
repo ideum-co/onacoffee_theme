@@ -307,6 +307,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Učitavanje opcija pretplate…",
+      "subscription_options_unavailable": "Opcije pretplate trenutačno nisu dostupne.",
       "add_to_cart": "Dodaj u košaricu",
       "added_to_cart": "Dodano u košaricu",
       "adding_to_cart": "Dodavanje...",

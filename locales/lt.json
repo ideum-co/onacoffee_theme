@@ -338,6 +338,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Įkeliamos prenumeratos parinktys…",
+      "subscription_options_unavailable": "Prenumeratos parinktys laikinai nepasiekiamos.",
       "add_to_cart": "Įdėti į krepšelį",
       "adding_to_cart": "Pridedama…",
       "added_to_cart": "Įdėta į krepšelį",

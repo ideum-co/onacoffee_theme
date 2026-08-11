@@ -301,6 +301,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Abonnementoptionen werden geladen…",
+      "subscription_options_unavailable": "Abonnementoptionen sind vorübergehend nicht verfügbar.",
       "add_to_cart": "In den Warenkorb legen",
       "added_to_cart": "Zum Warenkorb hinzugefügt",
       "adding_to_cart": "Wird hinzugefügt...",

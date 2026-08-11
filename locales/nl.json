@@ -324,6 +324,8 @@
   },
   "products": {
     "product": {
+      "loading_subscription_options": "Abonnementsopties laden…",
+      "subscription_options_unavailable": "Abonnementsopties zijn tijdelijk niet beschikbaar.",
       "add_to_cart": "Aan winkelwagen toevoegen",
       "adding_to_cart": "Toevoegen...",
       "added_to_cart": "Toegevoegd aan winkelwagen",
