@@ -1,0 +1,100 @@
+{%- assign donation_total = shop.metafields.custom.donation_total.value | default: 0 -%}
+{%- assign amount = donation_total | floor -%}
+{%- assign collection = shop.metafields.custom.donation_collection.value -%}
+
+<section class="donation-counter" style="background-color: {{ section.settings.bg_color }};">
+  <div class="donation-counter__inner">
+    {% if section.settings.title != blank %}
+      <h2 class="donation-counter__heading">{{ section.settings.title }}</h2>
+    {% endif %}
+    <div class="donation-counter__display" data-amount="{{ amount }}">
+      <div class="donation-counter__cards">
+        <div class="donation-counter__card donation-counter__card--symbol">
+          <span>$</span>
+        </div>
+        {%- assign num_str = amount | append: '' -%}
+        {%- assign num_len = num_str | size -%}
+        {%- for i in (1..num_len) -%}
+          {%- assign char_index = i | minus: 1 -%}
+          {%- assign digit = num_str | slice: char_index, 1 -%}
+
+          <div class="donation-counter__card">
+            <span>{{ digit }}</span>
+          </div>
+
+          {%- assign pos = num_len | minus: i -%}
+          {%- assign pos_mod = pos | modulo: 3 -%}
+          {%- if pos > 0 and pos_mod == 0 -%}
+            <div class="donation-counter__card donation-counter__card--comma">
+              <span>,</span>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </div>
+    {% if section.settings.subtitle != blank %}
+      <p class="donation-counter__subtitle">{{ section.settings.subtitle }}</p>
+    {% endif %}
+    <div class="donation-counter__actions">
+      {%- if section.settings.learn_more_text != blank -%}
+        <a href="{{ section.settings.learn_more_url }}" class="donation-counter__cta">
+          {{- section.settings.learn_more_text -}}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": {
+    "en": "Contribution Counter"
+  },
+  "settings": [
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": {
+        "en": "Background color"
+      },
+      "default": "#3b1a2e"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": {
+        "en": "Title text"
+      },
+      "default": "DOLLARS CONTRIBUTED SO FAR"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": {
+        "en": "Subtitle text"
+      },
+      "default": "Enjoy great coffee while helping fund clean water access."
+    },
+    {
+      "type": "text",
+      "id": "learn_more_text",
+      "label": "Link text"
+    },
+    {
+      "type": "url",
+      "id": "learn_more_url",
+      "label": "Link url"
+    }
+  ],
+  "presets": [
+    {
+      "name": {
+        "en": "Contribution Counter"
+      },
+      "category": {
+        "en": "Custom"
+      }
+    }
+  ]
+}
+{% endschema %}

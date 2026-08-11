@@ -1,0 +1,41 @@
+<section class="add-faqs-section " id="{{ section.settings.id }}">
+    {% render 'accordion', 
+        title: section.settings.title
+        content: section.settings.content 
+      %}
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Accordion"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "id",
+      "label": {
+        "en": "ID"
+      }
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": {
+		"en": "Tips"
+      }
+    }
+  ],
+  "presets": [
+    {
+      "name": "Accordion"
+    }
+  ]
+}
+{% endschema %}

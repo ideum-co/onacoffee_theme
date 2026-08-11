@@ -1,0 +1,58 @@
+{% paginate search.results by 24 %}
+<section class="page-title">
+  <div class="container">
+    {% if search.performed == false %}
+      <h1>{{ 'general.search.title' | t }}</h1>
+    {% else %}
+      <h1>
+        <span class="visually-hidden">{{ 'general.search.heading' | t: count: search.results_count }}:</span>
+        {{ 'general.search.results_with_count' | t: terms: search.terms, count: search.results_count }}
+      </h1>
+    {% endif %}
+  </div>
+</section>
+
+<section class="shop-content">
+  <div class="container">
+    {% if search.performed %}
+      {% if search.results_count > 0 %}
+        {% render 'ona-filter-drawer-skin' %}
+        {% content_for 'block', type: 'filters', id: 'filters', results: search, results_size: search.results_count %}
+        <div class="shop-list">
+          {% for item in search.results %}
+            {% if item.object_type == 'product' %}
+              {% render 'ona-product-card', product: item, index: forloop.index %}
+            {% else %}
+              <div class="list">
+                <a href="{{ item.url }}" class="list-box{% if item.image == null %} page-center{% endif %}">
+                  {% unless item.image == null %}
+                    <div class="img">
+                      <img src="{{ item.image.src | img_url: '1024x1024' }}" alt="{{ item.image.alt | escape }}">
+                    </div>
+                  {% endunless %}
+                  <div class="text">
+                    <p>{{ item.title }}</p>
+                    <span class="a-link">View</span>
+                  </div>
+                </a>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+        {%- if paginate.pages > 1 -%}
+          {% include 'pagination', paginate: paginate %}
+        {%- endif -%}
+      {% else %}
+        <p style="text-align:center;padding:40px 0;">{{ 'general.search.no_results' | t: terms: search.terms }}</p>
+      {% endif %}
+    {% endif %}
+  </div>
+</section>
+{% endpaginate %}
+
+{% schema %}
+{
+  "name": "ONA search results",
+  "settings": []
+}
+{% endschema %}

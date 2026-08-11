@@ -1,0 +1,97 @@
+{% comment %}
+  The contents of the product.liquid template can be found in /sections/product-template.liquid
+{% endcomment %}
+
+{% section 'product-template-3' %}
+{% section 'product-recommendations' %}
+
+<div id="backToCollection"></div>
+
+<script>
+  theme.productStrings = {
+    addToCart: {{ 'products.product.add_to_cart' | t | json }},
+    soldOut: {{ 'products.product.sold_out' | t | json }},
+    unavailable: {{ 'products.product.unavailable' | t | json }}
+  };
+
+  if(sessionStorage.backToCollection) {
+    theme.backToCollection = {};
+    theme.backToCollection.collection = JSON.parse(sessionStorage.backToCollection);
+    var productCollections = {{ product.collections | json }};
+    var showCollection = false;
+    if (productCollections) {
+      productCollections.forEach(function(collection) {
+        if (collection.title === theme.backToCollection.collection.title) {
+          showCollection = true;
+        }
+      });
+    }
+    if(showCollection) {
+      var backToCollectionHTML = '<div class="text-center return-link-wrapper page-width"><a href="' + theme.backToCollection.collection.link + '" class="btn btn--secondary btn--has-icon-before">{% include 'icon-arrow-left' %}{{ 'products.product.back_to_collection' | t }} ' + theme.backToCollection.collection.title + '</a></div>';
+      var backToCollectionContainer = document.getElementById('backToCollection');
+      backToCollectionContainer.insertAdjacentHTML('afterbegin', backToCollectionHTML);
+    }
+  }
+</script>
+
+{% assign current_variant = product.selected_or_first_available_variant %}
+
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org/",
+  "@type": "Product",
+  "name": {{ product.title | json }},
+  "url": {{ shop.url | append: product.url | json }},
+  {% if product.featured_media %}
+    {% assign media_size = product.featured_media.preview_image.width | append: 'x' %}
+    "image": [
+      {{ product.featured_media | img_url: media_size | prepend: "https:" | json }}
+    ],
+  {% endif %}
+  "description": {{ product.description | strip_html | json }},
+  {% if current_variant.sku != blank %}
+    "sku": {{ current_variant.sku | json }},
+  {% endif %}
+  "brand": {
+    "@type": "Thing",
+    "name": {{ product.vendor | json }}
+  }
+}
+</script>
+
+<form method="post" action="/cart/add" enctype="multipart/form-data" id="product-form-{{ product.id }}">
+  <input type="hidden" name="id" id="variant-id" value="{{ product.selected_or_first_available_variant.id }}" />
+
+  {% for option in product.options_with_values %}
+    <div class="product-form__input">
+      <label for="Option-{{ option.name }}">{{ option.name }}</label>
+      <select
+        id="Option-{{ option.name }}"
+        name="options[{{ option.name }}]"
+        data-index="option{{ forloop.index }}"
+        class="single-option-selector single-option-selector-{{ section.id }} product-form__input"
+      >
+        {% for value in option.values %}
+          <option value="{{ value | escape }}"{% if option.selected_value == value %} selected{% endif %}>
+            {{ value }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  {% endfor %}
+
+  <div class="product-form__input">
+    <label for="Quantity-{{ section.id }}">{{ 'products.product.quantity.label' | t }}</label>
+    <input type="number" id="Quantity-{{ section.id }}" name="quantity" value="1" min="1">
+  </div>
+
+  <button type="submit" class="product-form__submit">
+    {{ 'products.product.add_to_cart' | t }}
+  </button>
+</form>
+
+{% if request.params.debug == 'true' %}
+  <pre style="white-space: pre-wrap; background: #f3f3f3; padding: 1em; margin-top: 2em; border: 1px solid #ccc;">
+    {{ product.options_with_values | json }}
+  </pre>
+{% endif %}

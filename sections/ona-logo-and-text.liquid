@@ -1,0 +1,66 @@
+<section class="water-for-good-banner">
+  <div class="page-container">
+    <div class="banner-logo">
+      {% if section.settings.logo != blank %}
+        <img src="{{ section.settings.logo | img_url: 'master' }}" alt="Water for Good Logo" loading="lazy">
+      {% endif %}
+    </div>
+
+    <div class="banner-content">
+      <h2 class="banner-title">{{ section.settings.title | default: 'Supporting Clean Water with Every Bag' }}</h2>
+
+      {% assign end_date = shop.metafields.custom.donation_end_date.value %}
+      <p class="banner-campaign">
+        Campaign running now until {{ end_date | date: '%B %d' | default: '22 March' }} (International Water Day)
+      </p>
+
+      <div class="banner-description">
+          {{ section.settings.description }}
+      </div>
+
+      <a href="{{ section.settings.cta_url | default: '#' }}" class="banner-cta">
+        {{- section.settings.cta_text | default: 'LEARN MORE' -}}
+      </a>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Logo and text",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "logo"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Supporting Clean Water with Every Bag"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description"
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "Button text",
+      "default": "LEARN MORE"
+    },
+    {
+      "type": "url",
+      "id": "cta_url",
+      "label": "Button link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Logo and text"
+    }
+  ]
+}
+{% endschema %}

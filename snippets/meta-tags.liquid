@@ -1,0 +1,147 @@
+{% doc %}
+  Renders all meta tags for the page including Open Graph, Twitter Cards, and SEO tags.
+
+  @param {object} [product] - The product object, available on product pages for price meta tags.
+{% enddoc %}
+
+<meta charset="utf-8">
+<meta
+  http-equiv="X-UA-Compatible"
+  content="IE=edge"
+>
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1"
+>
+<meta
+  name="view-transition"
+  content="same-origin"
+>
+<meta
+  name="theme-color"
+  content=""
+>
+
+{%- liquid
+  assign og_title = page_title | default: shop.name
+  assign og_url = canonical_url | default: request.origin
+  assign og_type = 'website'
+  assign og_description = page_description | default: shop.description | default: shop.name
+
+  if request.page_type == 'product'
+    assign og_type = 'product'
+  elsif request.page_type == 'article'
+    assign og_type = 'article'
+  elsif request.page_type == 'password'
+    assign og_url = request.origin
+  endif
+
+  # Per-page og_image with fallbacks. Shopify's built-in `page_image` returns
+  # the shop-wide social image on collection pages, so shared collection URLs
+  # show the generic site banner instead of collection-relevant imagery.
+  assign og_image = page_image
+  if request.page_type == 'collection'
+    if collection.image
+      assign og_image = collection.image
+    elsif collection.products.first.featured_image
+      assign og_image = collection.products.first.featured_image
+    endif
+  endif
+%}
+
+<meta
+  property="og:site_name"
+  content="{{ shop.name }}"
+>
+<meta
+  property="og:url"
+  content="{{ og_url }}"
+>
+<meta
+  property="og:title"
+  content="{{ og_title | escape }}"
+>
+<meta
+  property="og:type"
+  content="{{ og_type }}"
+>
+<meta
+  property="og:description"
+  content="{{ og_description | escape }}"
+>
+
+{%- if og_image -%}
+  {%- comment -%} `image_url` on this store returns a protocol-relative `//host/...` URL, so we prepend `https:` explicitly. Meta's OG crawler prioritises `og:image` over `og:image:secure_url`, and an `http://` value is rejected for ad creatives. {%- endcomment -%}
+  {%- assign og_image_url = og_image | image_url: width: 1200 | prepend: 'https:' -%}
+  <meta
+    property="og:image"
+    content="{{ og_image_url }}"
+  >
+  <meta
+    property="og:image:secure_url"
+    content="{{ og_image_url }}"
+  >
+  <meta
+    property="og:image:width"
+    content="{{ og_image.width }}"
+  >
+  <meta
+    property="og:image:height"
+    content="{{ og_image.height }}"
+  >
+{%- endif -%}
+
+{%- if request.page_type == 'product' -%}
+  <meta
+    property="og:price:amount"
+    content="{{ product.price | money_without_currency | strip_html }}"
+  >
+  <meta
+    property="og:price:currency"
+    content="{{ cart.currency.iso_code }}"
+  >
+{%- endif -%}
+
+{%- if settings.social_twitter_link != blank -%}
+  <meta
+    name="twitter:site"
+    content="{{ settings.social_twitter_link | split: 'twitter.com/' | last | prepend: '@' }}"
+  >
+{%- endif -%}
+<meta
+  name="twitter:card"
+  content="summary_large_image"
+>
+<meta
+  name="twitter:title"
+  content="{{ og_title | escape }}"
+>
+<meta
+  name="twitter:description"
+  content="{{ og_description | escape }}"
+>
+{%- if og_image -%}
+  <meta
+    name="twitter:image"
+    content="{{ og_image | image_url: width: 1200 | prepend: 'https:' }}"
+  >
+{%- endif -%}
+
+<title>
+  {{ page_title }}
+  {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' }}"{% endif -%}
+  {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
+  {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+</title>
+
+<link
+  rel="canonical"
+  href="{{ canonical_url }}"
+>
+
+{% if page_description %}
+  <meta
+    name="description"
+    content="{{ page_description | escape }}"
+  >
+{% endif %}

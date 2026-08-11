@@ -1,0 +1,36 @@
+{%- liquid
+  assign p = product
+  assign has_content = false
+  if p.metafields.accentuate.image_origin or p.metafields.accentuate.content_origin
+    assign has_content = true
+  endif
+-%}
+{%- if has_content -%}
+<section class="image-text">
+  <div class="container">
+    <div class="content">
+      <div class="image wowo fadeInUp">
+        {% if p.metafields.accentuate.image_origin %}
+          <img src="{{ p.metafields.accentuate.image_origin }}" alt="map" loading="lazy" decoding="async">
+        {% endif %}
+      </div>
+      <div class="text wowo fadeInUp">
+        <div class="text-box">
+          <h2>{{ section.settings.heading | default: 'Origin' }}</h2>
+          {{ p.metafields.accentuate.content_origin }}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Product · Origin",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Origin" }
+  ],
+  "enabled_on": { "templates": ["product"] }
+}
+{% endschema %}

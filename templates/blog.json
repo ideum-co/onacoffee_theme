@@ -1,0 +1,13 @@
+{
+  "sections": {
+    "main": {
+      "type": "ona-blog-template",
+      "settings": {
+        "layout": "list",
+        "blog_show_author": true,
+        "blog_show_date": true
+      }
+    }
+  },
+  "order": ["main"]
+}

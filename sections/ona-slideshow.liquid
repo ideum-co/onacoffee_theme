@@ -1,0 +1,429 @@
+<!-- CANARY-NEWDEV-1776933804 -->
+<!-- CANARY-R27-2026-04-28 slideshow width 2000 -> 1500 -->
+{%- comment -%}
+  ONA Slideshow — self-contained reimplementation.
+  Uses live's class names (.slideshow-wrapper, .slideshow__slide, .slideshow__arrow,
+  .slick-dots) so main.css rules apply, but JS is vanilla + scoped per-section to
+  avoid conflicts with Horizon's native Web Components.
+{%- endcomment -%}
+
+{%- assign text_alignments = section.settings.text_alignment | split: ' ' -%}
+{%- assign h_align = text_alignments.first -%}
+{%- assign v_align = text_alignments.last | strip -%}
+
+
+<div data-section-id="{{ section.id }}" data-section-type="ona-slideshow">
+  {%- if section.blocks.size > 0 -%}
+    <div
+      id="SlideshowWrapper-{{ section.id }}"
+      class="slideshow-wrapper"
+      role="region"
+      aria-label="slideshow"
+      tabindex="-1"
+    >
+      <div
+        class="slideshow slideshow--{{ section.settings.slideshow_height }}"
+        id="Slideshow-{{ section.id }}"
+        data-ona-slideshow
+        data-autorotate="{{ section.settings.autorotate }}"
+        data-speed="{{ section.settings.autorotate_speed | times: 1000 }}"
+      >
+        {%- for block in section.blocks -%}
+          {%- assign block_image = block.settings.image -%}
+          <div
+            class="slideshow__slide slideshow__slide--{{ block.id }}{% if forloop.first %} slideshow__slide--active{% endif %}"
+            data-slide-index="{{ forloop.index0 }}"
+            {{ block.shopify_attributes }}
+          >
+            {%- if block_image == blank -%}
+              <div class="slideshow__image">
+                <div class="placeholder-background">
+                  {% capture current %}{% cycle 1, 2 %}{% endcapture %}
+                  {{ 'lifestyle-' | append: current | placeholder_svg_tag: 'placeholder-svg' }}
+                </div>
+              </div>
+            {%- else -%}
+              {%- if forloop.first and template.name == 'index' -%}
+                {%- comment -%}
+                  R27 — cut width:2000 down to 1500 (preload + inline kept in sync to avoid
+                  double-download). Desktop 1350vp at 1.11x density still sharp; mobile saves
+                  ~25% bytes.
+                  R13 Perf P4 — hero LCP hint for homepage first slide.
+                {%- endcomment -%}
+                <link rel="preload" as="image" href="{{ block_image | image_url: width: 1500 }}" fetchpriority="high">
+              {%- endif -%}
+              <div
+                class="slideshow__image"
+                style="background-image: url('{{ block_image | image_url: width: 1500 }}'); background-position: {{ block.settings.alignment }};"
+                role="img"
+                aria-label="{{ block_image.alt | escape }}"
+              >
+                {% if section.settings.show_overlay %}<div class="slideshow__overlay"></div>{% endif %}
+              </div>
+            {%- endif -%}
+
+            {%- if block.settings.slide_title != blank or block.settings.subheading != blank or block.settings.button_label != blank -%}
+              <div class="slideshow__text-wrap slideshow__text-wrap--desktop">
+                <div
+                  class="slideshow__text-content slideshow__text-content--{{ section.settings.text_size }}"
+                  style="text-align: {{ h_align }}; align-items: {{ v_align }};"
+                >
+                  {%- if block.settings.slide_title != blank -%}
+                    {%- if forloop.first and template.name == 'index' -%}
+                      <h1 class="slideshow__title">{{ block.settings.slide_title | escape }}</h1>
+                    {%- else -%}
+                      <h2 class="slideshow__title">{{ block.settings.slide_title | escape }}</h2>
+                    {%- endif -%}
+                  {%- endif -%}
+                  {%- if block.settings.subheading != blank -%}
+                    <div class="slideshow__subtitle">{{ block.settings.subheading }}</div>
+                  {%- endif -%}
+                  {%- if block.settings.button_label != blank -%}
+                    <a
+                      href="{{ block.settings.button_link | default: '#' }}"
+                      class="btn slideshow__button"
+                    >{{ block.settings.button_label | escape }}</a>
+                  {%- endif -%}
+                </div>
+              </div>
+            {%- endif -%}
+          </div>
+        {%- endfor -%}
+      </div>
+
+      {%- comment -%}
+        Arrows + dots 结构完全对齐 live：
+        .slideshow__controls > .slideshow__arrows > (prev + next + slick-dots)
+        prev/next 用 order 在 CSS 里调整视觉顺序（prev:-1 左, next:1 右, dots 居中）。
+      {%- endcomment -%}
+      {%- if section.blocks.size > 1 -%}
+        {%- assign arrows_width = section.blocks.size | times: 18 | plus: 115 -%}
+        <div class="slideshow__controls">
+          <div class="slideshow__arrows" style="width: {{ arrows_width }}px">
+            <button type="button" class="slideshow__arrow slideshow__arrow-previous" aria-label="Previous slide" data-ona-slide-prev>
+              {%- render 'icon-chevron-left' -%}
+            </button>
+            <button type="button" class="slideshow__arrow slideshow__arrow-next" aria-label="Next slide" data-ona-slide-next>
+              {%- render 'icon-chevron-right' -%}
+            </button>
+            {%- comment -%}
+              slick 的 appendDots 期望接 <div> 容器，它会在里面创建 <ul class="slick-dots">。
+              之前这里是 <ul>，结果 slick 在 <ul> 里又 append 一个 <ul>，导致桌面 dots 双层嵌套。
+            {%- endcomment -%}
+            <div data-ona-slide-dots></div>
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%}
+      Mobile-only text + dots wrap (mirrors live/sections/slideshow.liquid:144-192).
+      Shown below the slideshow image at mobile breakpoints; slick-dots here are
+      synced from the desktop dots via JS in this section's {% javascript %}.
+    {%- endcomment -%}
+    <div class="slideshow__text-wrap slideshow__text-wrap--mobile">
+      {%- if section.blocks.size > 1 -%}
+        {%- comment -%}
+          Dots <li>/<a> markup 预渲染 — 结构对齐 live/sections/slideshow.liquid:146-157。
+          预渲染的好处：
+            1) 首屏即存在 dot DOM，避免 script.js hide_single_dots() 的 setTimeout(10)
+               在 slick init 前遇到空 ul 而永久 display:none（MODIFICATION_NOTES #16）。
+            2) 结构化的 aria-controls / data-slide-number 为将来 a11y / 无 slick 降级
+               提供可达的交互面。保留 dev 的 data-ona-slide-dots-mobile 供 section 内
+               JS 识别；slick 接管后会补充 .slick-active class 与 aria-state。
+        {%- endcomment -%}
+        <div class="slideshow__arrows slideshow__arrows--mobile">
+          <button type="button" class="slideshow__arrow slideshow__arrow-previous" aria-label="Previous slide" data-ona-slide-prev>
+            {%- render 'icon-chevron-left' -%}
+          </button>
+          <button type="button" class="slideshow__arrow slideshow__arrow-next" aria-label="Next slide" data-ona-slide-next>
+            {%- render 'icon-chevron-right' -%}
+          </button>
+          <ul class="slick-dots" data-ona-slide-dots-mobile data-slider-indicators>
+            {%- for block in section.blocks -%}
+              <li{% if forloop.first %} class="slick-active"{% endif %} data-slider-indicator{% if forloop.first %} aria-selected="true"{% endif %}>
+                <a href="#Slideshow-{{ section.id }}" aria-label="Load slide {{ forloop.index }}" data-slide-number="{{ forloop.index0 }}" aria-controls="slickSlide-{{ block.id }}"{% if forloop.first %} aria-current="true"{% endif %}></a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+
+      {%- for block in section.blocks -%}
+        {%- if block.settings.slide_title != blank or block.settings.subheading != blank or block.settings.button_label != blank -%}
+          <div
+            class="slideshow__text-content slideshow__text-content--mobile{% if forloop.first %} slideshow__text-content--mobile-active{% endif %} text-center"
+            data-ona-mobile-content-index="{{ forloop.index0 }}"
+          >
+            <div class="page-width">
+              {%- if block.settings.slide_title != blank -%}
+                {%- if forloop.first and template.name == 'index' -%}
+                  <h1 class="slideshow__title slideshow__title--mobile">{{ block.settings.slide_title | escape }}</h1>
+                {%- else -%}
+                  <h2 class="slideshow__title slideshow__title--mobile">{{ block.settings.slide_title | escape }}</h2>
+                {%- endif -%}
+              {%- endif -%}
+              {%- if block.settings.subheading != blank -%}
+                <div class="slideshow__subtitle slideshow__subtitle--mobile">{{ block.settings.subheading }}</div>
+              {%- endif -%}
+              {%- if block.settings.button_label != blank -%}
+                <a href="{{ block.settings.button_link | default: '#' }}" class="btn slideshow__btn slideshow__btn--mobile">
+                  {{ block.settings.button_label | escape }}
+                </a>
+              {%- endif -%}
+            </div>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  /* Self-contained fixes: live's .slideshow CSS assumes slick manages layout.
+     We don't use slick, so we need explicit positioning + height on the container. */
+  /* Explicit heights (higher specificity than live's .slideshow--X) to win cascade. */
+  [data-section-type="ona-slideshow"] .slideshow {
+    position: relative;
+    overflow: hidden;
+    height: 375px;
+  }
+  [data-section-type="ona-slideshow"] .slideshow--small  { height: 175px; }
+  [data-section-type="ona-slideshow"] .slideshow--medium { height: 270px; }
+  [data-section-type="ona-slideshow"] .slideshow--large  { height: 375px; }
+  [data-section-type="ona-slideshow"] .slideshow--adapt  { height: 100vh; }
+  @media screen and (min-width: 750px) {
+    [data-section-type="ona-slideshow"] .slideshow--small  { height: 475px; }
+    [data-section-type="ona-slideshow"] .slideshow--medium { height: 650px; }
+    [data-section-type="ona-slideshow"] .slideshow--large  { height: 775px; }
+  }
+  [data-section-type="ona-slideshow"] .slideshow-wrapper { position: relative; }
+  /* Ensure slick's track/list fill the fixed-height .slideshow--size parent */
+  [data-section-type="ona-slideshow"] .slick-list,
+  [data-section-type="ona-slideshow"] .slick-track { height: 100%; }
+  [data-section-type="ona-slideshow"] .slick-slide { height: 100%; }
+  [data-section-type="ona-slideshow"] .slick-slide > div { height: 100%; }
+  /* In fade mode slick stacks slides absolutely inside .slick-list; let slick handle positioning */
+  [data-section-type="ona-slideshow"] .slideshow__image {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    width: 100%;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+  /* 箭头 + dots 的样式完全交由 main.css 的 live 版本处理，
+     这里不定义，避免 section stylesheet 胜过 main.css（后者在前加载）。 */
+  [data-section-type="ona-slideshow"] .slideshow__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  /* Only the desktop wrap fills the slide; mobile wrap keeps live's flow layout
+     (display:none by default, display:block below 749px — see ona-fixes.css L340). */
+  [data-section-type="ona-slideshow"] .slideshow__text-wrap--desktop {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    padding: 2rem;
+    z-index: 3;
+    color: #fff;
+    text-align: center;
+  }
+  [data-section-type="ona-slideshow"] .slideshow__text-wrap--desktop .slideshow__text-content {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  // Init slick on our slideshow. Waits for jQuery+slick to be ready (both loaded with defer).
+  (function () {
+    // Mobile dots are pre-rendered in liquid (<li data-slider-indicator><a ...></a></li>)
+    // and we DO NOT rebuild them here. Rebuilding on every init/afterChange caused two bugs:
+    //   (1) empty() wipes the pre-rendered <li>/<a> if the rebuild loop yields 0 items;
+    //   (2) hide_single_dots() then removes the emptied <ul> entirely, because its <li>
+    //       count is 0 ≤ 1 — mobile dots vanish.
+    // Instead we only toggle active state on the existing <li>/<a> markup.
+    function setMobileActiveDot($wrap, currentIndex) {
+      var $section = $wrap.closest('[data-section-type="ona-slideshow"]');
+      var $mobileUl = $section.find('[data-ona-slide-dots-mobile]');
+      if (!$mobileUl.length) return;
+      $mobileUl.children('li').each(function (i) {
+        var $li = jQuery(this);
+        var $a = $li.children('a');
+        var isActive = i === currentIndex;
+        $li.toggleClass('slick-active', isActive);
+        if (isActive) {
+          $li.attr('aria-selected', 'true');
+          $a.attr('aria-current', 'true');
+        } else {
+          $li.removeAttr('aria-selected');
+          $a.removeAttr('aria-current');
+        }
+      });
+    }
+    // Delegate clicks on mobile dots to slickGoTo. Bind once per section (idempotent
+    // via namespaced off()+on()) so shopify:section:load re-runs don't stack handlers.
+    function bindMobileDotClicks($wrap, $slider) {
+      var $section = $wrap.closest('[data-section-type="ona-slideshow"]');
+      var $mobileUi = $section.find('.slideshow__arrows--mobile');
+      var $mobileUl = $section.find('[data-ona-slide-dots-mobile]');
+      if ($mobileUi.length) {
+        $mobileUi
+          .off('click.ona-mobile-arrow')
+          .on('click.ona-mobile-arrow', '[data-ona-slide-prev]', function (ev) {
+            ev.preventDefault();
+            $slider.slick('slickPrev');
+          })
+          .on('click.ona-mobile-arrow', '[data-ona-slide-next]', function (ev) {
+            ev.preventDefault();
+            $slider.slick('slickNext');
+          });
+      }
+      if (!$mobileUl.length) return;
+      $mobileUl
+        .off('click.ona-mobile-dot')
+        .on('click.ona-mobile-dot', 'a', function (ev) {
+          ev.preventDefault();
+          var index = parseInt(jQuery(this).attr('data-slide-number'), 10);
+          if (!isNaN(index)) $slider.slick('slickGoTo', index);
+        });
+    }
+    function setMobileActiveContent($section, index) {
+      $section.find('.slideshow__text-content--mobile').each(function () {
+        var $c = jQuery(this);
+        $c.toggleClass('slideshow__text-content--mobile-active',
+          parseInt($c.attr('data-ona-mobile-content-index'), 10) === index);
+      });
+    }
+    function boot() {
+      if (typeof jQuery === 'undefined' || typeof jQuery.fn === 'undefined' || !jQuery.fn.slick) {
+        return setTimeout(boot, 100);
+      }
+      jQuery('[data-ona-slideshow]').each(function () {
+        var $el = jQuery(this);
+        if ($el.hasClass('slick-initialized')) return;
+        var autorotate = $el.data('autorotate') === true || $el.data('autorotate') === 'true';
+        var speed = parseInt($el.data('speed'), 10) || 5000;
+        var $wrap = $el.closest('.slideshow-wrapper');
+        var $section = $el.closest('[data-section-type="ona-slideshow"]');
+        bindMobileDotClicks($wrap, $el);
+        $el.on('init.onaSlideshow', function () {
+          setMobileActiveDot($wrap, 0);
+          setMobileActiveContent($section, 0);
+        });
+        $el.on('afterChange.onaSlideshow', function (_e, _slick, current) {
+          setMobileActiveDot($wrap, current);
+          setMobileActiveContent($section, current);
+        });
+        $el.slick({
+          autoplay: autorotate,
+          autoplaySpeed: speed,
+          dots: true,
+          arrows: true,
+          prevArrow: $wrap.find('[data-ona-slide-prev]'),
+          nextArrow: $wrap.find('[data-ona-slide-next]'),
+          appendDots: $wrap.find('[data-ona-slide-dots]'),
+          fade: true,
+          speed: 500,
+          pauseOnHover: true
+        });
+        // init event already fired setMobileActiveDot(0); no post-init rebuild needed.
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot);
+    } else {
+      boot();
+    }
+    document.addEventListener('shopify:section:load', boot);
+  })();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "ONA Slideshow",
+  "class": "index-section index-section--flush index-section--slideshow",
+  "max_blocks": 6,
+  "enabled_on": { "templates": ["*"] },
+  "settings": [
+    {
+      "type": "select",
+      "id": "slideshow_height",
+      "label": "Slideshow height",
+      "default": "large",
+      "options": [
+        { "value": "adapt", "label": "Adapt to first image" },
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "text_size",
+      "label": "Text size",
+      "default": "medium",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "default": "center center",
+      "options": [
+        { "value": "left top",     "label": "Left top" },
+        { "value": "center top",   "label": "Center top" },
+        { "value": "right top",    "label": "Right top" },
+        { "value": "left center",  "label": "Left middle" },
+        { "value": "center center","label": "Center middle" },
+        { "value": "right center", "label": "Right middle" },
+        { "value": "left bottom",  "label": "Left bottom" },
+        { "value": "center bottom","label": "Center bottom" },
+        { "value": "right bottom", "label": "Right bottom" }
+      ]
+    },
+    { "type": "checkbox", "id": "show_overlay",    "label": "Show dark overlay", "default": true },
+    { "type": "checkbox", "id": "autorotate",      "label": "Auto-rotate slides", "default": false },
+    { "type": "range", "id": "autorotate_speed",   "label": "Rotation speed (seconds)", "min": 2, "max": 15, "step": 1, "default": 5, "unit": "s" }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Slide",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        {
+          "type": "select", "id": "alignment", "label": "Image alignment", "default": "center center",
+          "options": [
+            { "value": "left top", "label": "Left top" },
+            { "value": "center top", "label": "Center top" },
+            { "value": "right top", "label": "Right top" },
+            { "value": "left center", "label": "Left center" },
+            { "value": "center center", "label": "Center center" },
+            { "value": "right center", "label": "Right center" },
+            { "value": "left bottom", "label": "Left bottom" },
+            { "value": "center bottom", "label": "Center bottom" },
+            { "value": "right bottom", "label": "Right bottom" }
+          ]
+        },
+        { "type": "text", "id": "slide_title", "label": "Title" },
+        { "type": "richtext", "id": "subheading", "label": "Subheading" },
+        { "type": "text", "id": "button_label", "label": "Button label" },
+        { "type": "url", "id": "button_link", "label": "Button link" }
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "ONA Slideshow", "blocks": [{ "type": "image" }] }
+  ]
+}
+{% endschema %}

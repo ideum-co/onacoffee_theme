@@ -1,0 +1,95 @@
+
+{%- comment -%}
+  ONA site-nav renderer — 1:1 DOM fidelity with live's snippets/site-nav.liquid.
+
+  @param linklist      - a Shopify linklist object
+  @param wrapper_class - CSS class on outer <ul> (typical: 'menu-list' or 'footer-menu')
+{%- endcomment -%}
+
+{%- if linklist.links.size > 0 -%}
+  <ul class="{{ wrapper_class | default: 'menu-list' }}">
+    {%- for link in linklist.links -%}
+      {%- assign has_children = false -%}
+      {%- if link.links.size > 0 -%}{%- assign has_children = true -%}{%- endif -%}
+
+      {%- assign has_grandchildren = false -%}
+      {%- for child in link.links -%}
+        {%- if child.links.size > 0 -%}
+          {%- assign has_grandchildren = true -%}
+          {%- break -%}
+        {%- endif -%}
+      {%- endfor -%}
+
+      <li
+        {% if has_children %}
+          class="site-nav--has-dropdown{% if has_grandchildren %} site-nav--has-centered-dropdown{% endif %}{% if link.active %} site-nav--active{% endif %}"
+          data-has-dropdowns
+        {% elsif link.active %}
+          class="site-nav--active"
+        {% endif %}
+      >
+        <a
+          href="{{ link.url }}"
+          class="site-nav__link site-nav__link--main{% if link.active %} site-nav__link--active{% endif %}"
+          {% if link.current %}aria-current="page"{% endif %}
+        >
+          <span class="site-nav__label">{{ link.title | escape }}</span>
+        </a>
+
+        {%- if has_children -%}
+          <div
+            class="site-nav__dropdown{% if has_grandchildren %} site-nav__dropdown--centered{% endif %}"
+            id="SiteNavLabel-{{ link.handle }}"
+          >
+            {%- if has_grandchildren -%}
+              <div class="site-nav__childlist">
+                <ul class="site-nav__childlist-grid">
+                  {%- for child in link.links -%}
+                    <li class="site-nav__childlist-item">
+                      <a
+                        href="{{ child.url }}"
+                        class="site-nav__link site-nav__child-link{% if child.links.size > 0 %} site-nav__child-link--parent{% endif %}"
+                        {% if child.current %}aria-current="page"{% endif %}
+                      >
+                        <span class="site-nav__label">{{ child.title | escape }}</span>
+                      </a>
+                      {%- if child.links.size > 0 -%}
+                        <ul>
+                          {%- for grand in child.links -%}
+                            <li>
+                              <a
+                                href="{{ grand.url }}"
+                                class="site-nav__link site-nav__child-link"
+                                {% if grand.current %}aria-current="page"{% endif %}
+                              >
+                                <span class="site-nav__label">{{ grand.title | escape }}</span>
+                              </a>
+                            </li>
+                          {%- endfor -%}
+                        </ul>
+                      {%- endif -%}
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- else -%}
+              <ul>
+                {%- for child in link.links -%}
+                  <li>
+                    <a
+                      href="{{ child.url }}"
+                      class="site-nav__link site-nav__child-link{% if forloop.last %} site-nav__link--last{% endif %}"
+                      {% if child.current %}aria-current="page"{% endif %}
+                    >
+                      <span class="site-nav__label">{{ child.title | escape }}</span>
+                    </a>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+  </ul>
+{%- endif -%}

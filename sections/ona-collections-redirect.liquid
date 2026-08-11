@@ -1,0 +1,19 @@
+{%- comment -%}
+  Redirect /collections → /collections/all.
+  Shopify URL Redirects don't override existing routes, and /collections has a
+  default list-collections template, so we replace it with this stub section.
+{%- endcomment -%}
+<meta http-equiv="refresh" content="0; url=/collections/all">
+<link rel="canonical" href="{{ shop.url }}/collections/all">
+<script>window.location.replace('/collections/all');</script>
+<h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">All collections</h1>
+<div style="text-align:center;padding:4rem 1rem;font-family:'Karla',sans-serif">
+  <p>Redirecting to <a href="/collections/all">all collections</a>…</p>
+</div>
+
+{% schema %}
+{
+  "name": "Collections redirect",
+  "settings": []
+}
+{% endschema %}

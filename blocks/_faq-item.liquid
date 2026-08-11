@@ -1,0 +1,14 @@
+<div class="accordion-list" {{ block.shopify_attributes }}>
+  <div class="accordion-title">{{ block.settings.title }} <i class="icon-close"></i></div>
+  <div class="accordion-content">{{ block.settings.content }}</div>
+</div>
+
+{% schema %}
+{
+  "name": "FAQ item",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Question" },
+    { "type": "richtext", "id": "content", "label": "Answer" }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,38 @@
+<section class="editor-box">
+  <div class="container">
+    <div class="content">
+      <div class="left-box wowo fadeInUp">
+        {{ section.settings.left_content }}
+      </div>
+      <div class="right-box wowo fadeInUp">
+        {% if section.settings.right_content != blank %}
+          {{ section.settings.right_content }}
+        {% elsif page.content.size > 0 %}
+          {{ page.content }}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Privacy layout",
+  "settings": [
+    {
+      "type": "richtext",
+      "id": "left_content",
+      "label": "Left column content"
+    },
+    {
+      "type": "richtext",
+      "id": "right_content",
+      "label": "Right column content",
+      "info": "Leave blank to fall back to page content"
+    }
+  ],
+  "presets": [
+    { "name": "Privacy layout", "category": "Text" }
+  ]
+}
+{% endschema %}

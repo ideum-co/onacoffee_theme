@@ -1,0 +1,442 @@
+<style>
+  /* ONA custom skin for Shopify's native Search & Discovery filter block.
+     Forces the block's built-in mobile drawer/dialog to be used at all
+     viewport widths (instead of the static vertical sidebar), then restyles
+     it to match production's "FILTER BY" pill/chip drawer design. Filtering
+     itself (open/close/AJAX) is handled entirely by Shopify's own
+     dialog-component + facets-form-component -- only the "All" pill, the
+     drawer title text, and the category hide/reorder need a tiny script,
+     since neither has a native equivalent. Scoped under .shop-content,
+     present on both the collection template (inside .shop-top) and the
+     search-results template.
+
+     Production's legacy theme never used this native block at all (it has
+     its own hand-rolled .filters-wrapper drawer), so it never renders the
+     block's own "Filters / N items / grid density" toolbar
+     (.facets-controls-wrapper) -- that toolbar is 100% redundant here too,
+     since the theme's own "SHOWING ALL N RESULTS" / "Sort by" markup
+     already covers the same info. Hide it outright. */
+
+  .shop-content .facets.facets--vertical { display: none !important; }
+  .shop-content .facets-controls-wrapper { display: none !important; }
+
+  .shop-content .facets-toggle,
+  .shop-content .facets-toggle__wrapper {
+    display: block !important;
+    /* The native block wraps the button in padding (--facets-inner-padding-*)
+       and margin, which pushed the FILTER pill inward -- misaligning it
+       horizontally with the quick-filter row below and vertically with the
+       Sort control. Strip it so the pill sits flush at the top-left. */
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .shop-content .facets-toggle__wrapper .facets-toggle__button,
+  .shop-content .facets-toggle__button {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    box-sizing: border-box;
+    font-family: "Palmer Lake Print";
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1;
+    text-transform: uppercase;
+    color: #fbf8f3;
+    background-color: #661a34;
+    padding: 0 24px 4px;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+  }
+  .facets-toggle__button:hover { opacity: .9; }
+  .facets-toggle__button svg { display: none; }
+
+  /* Match the "Sort by" select height to the FILTER pill so the two controls
+     read as an aligned, equally-sized pair on the same row. */
+  .shop-content .shop-top .filters-toolbar__input {
+    height: 42px !important;
+  }
+
+  /* Active-filter count badge on the "FILTER" pill. The native block renders
+     .filter-count-bubble (with an empty __background span + __text span) but
+     ships no CSS, so it shows as unstyled/invisible text -- restyle it into a
+     cream circular badge that reads against the maroon button. */
+  .shop-content .facets-toggle__button .filter-count-bubble {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    margin-left: 12px;
+    margin-bottom: 3px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: #fbf8f3;
+  }
+  .shop-content .facets-toggle__button .filter-count-bubble__background {
+    display: none;
+  }
+  .shop-content .facets-toggle__button .filter-count-bubble__text {
+    font-family: Karla, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    color: #661a34;
+  }
+
+  /* Keep the "FILTER" pill and the "Sort by" control on the same row and at a
+     balanced size on smaller screens. The native toggle button doesn't inherit
+     the legacy .shop-top .filter responsive scaling, so it stayed oversized on
+     mobile and pushed the sort control onto a second line. Scale it down (and
+     shrink the sort select a touch) so both fit one row. */
+  @media (max-width: 767.98px) {
+    .shop-content .facets-toggle__wrapper .facets-toggle__button,
+    .shop-content .facets-toggle__button {
+      height: 38px;
+      font-size: 21px;
+      padding: 0 18px 4px;
+    }
+    .shop-content .shop-top .filters-toolbar__input {
+      height: 38px !important;
+    }
+    .shop-content .facets-toggle__button .filter-count-bubble {
+      min-width: 18px;
+      height: 18px;
+      margin-left: 8px;
+      margin-bottom: 2px;
+    }
+    .shop-content .facets-toggle__button .filter-count-bubble__text {
+      font-size: 11px;
+    }
+  }
+
+  @media (max-width: 575.98px) {
+    .shop-content .facets-toggle__wrapper .facets-toggle__button,
+    .shop-content .facets-toggle__button {
+      height: 34px;
+      font-size: 19px;
+      padding: 0 14px 4px;
+    }
+    .shop-content .shop-top .filters-toolbar__input {
+      width: 96px !important;
+      height: 34px !important;
+      margin-left: 8px;
+    }
+    .shop-content .shop-top .sort-by .select-label {
+      font-size: 11px;
+    }
+  }
+
+  dialog.facets--drawer {
+    left: 0 !important;
+    right: auto !important;
+    background: #e5e6e2;
+    width: 420px;
+    max-width: 90vw;
+    padding: 0;
+    transform: translateX(-100%);
+    opacity: 0;
+    transition: none;
+  }
+
+  dialog.facets--drawer[open] {
+    animation: ona-drawer-enter 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 1;
+  }
+
+  @keyframes ona-drawer-enter {
+    from {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  dialog.facets--drawer::backdrop {
+    background-color: rgba(0, 0, 0, 0);
+    animation: ona-backdrop-fade 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes ona-backdrop-fade {
+    from {
+      background-color: rgba(0, 0, 0, 0);
+    }
+    to {
+      background-color: rgba(0, 0, 0, 0.45);
+    }
+  }
+
+  .facets-drawer__title.h3,
+  .facets-drawer__title {
+    font-family: "Palmer Lake Print" !important;
+    font-size: 40px !important;
+    font-weight: 500 !important;
+    color: #861f41 !important;
+    text-transform: uppercase !important;
+    line-height: 1.1 !important;
+  }
+
+  .facets__title-wrapper {
+    padding: 30px 60px 20px 40px;
+  }
+
+  /* Mobile close-button treatment, matching production's .icon-close style
+     at narrow widths: solid square tap target instead of a bare icon. */
+  @media (max-width: 575.98px) {
+    .facets-drawer__close {
+      background: #2b2c30;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .facets-drawer__close svg { color: #fff; fill: #fff; }
+    .facets__title-wrapper { padding: 24px 60px 16px 24px; }
+  }
+
+  .facets__filters-wrapper { display: flex; flex-direction: column; }
+  .facets__filters-wrapper > accordion-custom.facets__item.ona-hide {
+    display: none !important;
+  }
+
+  .facets__label {
+    font-family: "Karla Bold", Karla, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    color: #661a34;
+  }
+
+  /* Chip / pill styling for checkbox filter values. The theme's own base
+     CSS sets flex-direction: column on this list (its default vertical
+     single-column layout) -- with column direction, width becomes the
+     CROSS axis, so flex's default `align-items: stretch` stretches every
+     item to the container's full width, collapsing the pills into a
+     one-per-row stack regardless of flex-wrap. Force row direction +
+     flex-start alignment so wrapping/shrink-to-fit behaves as a real chip
+     grid. */
+  .facets__inputs-list {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    flex-wrap: wrap !important;
+    gap: 6px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .facets__inputs-list-item {
+    margin: 0;
+    width: auto !important;
+    max-width: none !important;
+    flex: 0 0 auto !important;
+  }
+  .checkbox {
+    position: relative;
+    display: inline-flex !important;
+    width: auto !important;
+  }
+  .checkbox__input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .checkbox__label {
+    display: inline-flex;
+    align-items: center;
+    font-family: "GT Walsheim", Karla, sans-serif;
+    font-size: 12px;
+    color: #2b2c30;
+    background: transparent;
+    border: 1px solid #2b2c30;
+    border-radius: 0;
+    padding: 4px 9px 2px;
+    cursor: pointer;
+    white-space: nowrap;
+    width: auto !important;
+  }
+  .checkbox__label svg { display: none; }
+  /* Production swaps font-family on selection: GT Walsheim while unselected,
+     Karla once a value is chosen -- not just a color/background change. */
+  .checkbox__input:checked + .checkbox__label {
+    font-family: Karla, sans-serif;
+    background: #2b2c30;
+    color: #fff;
+    border-color: #2b2c30;
+    padding: 3px 13px;
+  }
+
+  /* "All" pseudo-pill injected by the script below */
+  .ona-all-pill {
+    display: inline-flex;
+    align-items: center;
+    font-family: "GT Walsheim", Karla, sans-serif;
+    font-size: 12px;
+    color: #2b2c30;
+    background: transparent;
+    border: 1px solid #2b2c30;
+    border-radius: 0;
+    padding: 4px 9px 2px;
+    cursor: pointer;
+  }
+  .ona-all-pill.is-active {
+    font-family: Karla, sans-serif;
+    background: #2b2c30;
+    color: #fff;
+    border-color: #2b2c30;
+    padding: 3px 13px;
+  }
+
+  .facets__drawer-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 40px;
+    border-top: 1px solid rgba(43, 44, 48, .15);
+    background: #e5e6e2;
+  }
+  .facets__see-results {
+    font-family: "Palmer Lake Print";
+    font-size: 22px;
+    line-height: 1;
+    background: #661a34;
+    color: #fbf8f3;
+    border: none;
+    padding: 8px 22px 12px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  /* Production's legacy .filters-wrapper has NO individual removable filter
+     chips anywhere on the page -- the only "active" indicator is the
+     .active class on the selected chip inside the drawer itself (handled
+     above via :checked), plus one blanket "CLEAR" link in the footer. The
+     native block's facet-remove-component is a per-value remove chip that
+     production never had at all; hide it so dev doesn't show functionality
+     production never shipped. */
+  facet-remove-component {
+    display: none !important;
+  }
+  .facets__clear-all {
+    display: inline-flex !important;
+    font-family: Karla, sans-serif !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    background: none !important;
+    border: none !important;
+    color: #2b2c30 !important;
+    text-decoration: underline !important;
+    cursor: pointer;
+    padding: 0 !important;
+  }
+</style>
+<script>
+  (function () {
+    var PRIMARY_ORDER = ['Coffee Type', 'Brew Method', 'Taste Notes', 'Origin'];
+
+    function relabelTitle() {
+      document.querySelectorAll('.shop-content .facets-drawer__title').forEach(function (el) {
+        if (el.textContent.trim() === 'Filter') el.textContent = 'Filter by';
+      });
+    }
+
+    function reorderGroups() {
+      document.querySelectorAll('.shop-content .facets__filters-wrapper').forEach(function (wrapper) {
+        var items = [].slice.call(wrapper.children).filter(function (el) {
+          return el.tagName === 'ACCORDION-CUSTOM';
+        });
+        var byLabel = {};
+        items.forEach(function (el) {
+          var label = el.querySelector('.facets__label');
+          if (label) byLabel[label.textContent.trim()] = el;
+        });
+        var havePrimary = PRIMARY_ORDER.some(function (l) { return byLabel[l]; });
+        if (!havePrimary) return;
+
+        items.forEach(function (el) { el.classList.remove('ona-hide'); el.style.order = ''; });
+        items.forEach(function (el) {
+          var label = el.querySelector('.facets__label');
+          var text = label ? label.textContent.trim() : '';
+          var isPriceFilter = !!el.querySelector('[data-testid="price-filter"]');
+          if (PRIMARY_ORDER.indexOf(text) === -1 && !isPriceFilter) {
+            el.classList.add('ona-hide');
+          } else if (isPriceFilter) {
+            el.style.order = String(PRIMARY_ORDER.length + 1);
+          }
+        });
+        PRIMARY_ORDER.forEach(function (label, i) {
+          if (byLabel[label]) byLabel[label].style.order = String(i + 1);
+        });
+      });
+    }
+
+    function injectAllPills() {
+      document.querySelectorAll('.shop-content .facets__inputs-list').forEach(function (list) {
+        if (list.querySelector('.ona-all-pill')) return;
+        var li = document.createElement('li');
+        li.className = 'facets__inputs-list-item';
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ona-all-pill';
+        btn.textContent = 'All';
+        li.appendChild(btn);
+        list.insertBefore(li, list.firstChild);
+
+        function boxes() {
+          return [].slice.call(list.querySelectorAll('.checkbox__input'));
+        }
+        function sync() {
+          var anyChecked = boxes().some(function (cb) { return cb.checked; });
+          btn.classList.toggle('is-active', !anyChecked);
+        }
+        btn.addEventListener('click', function () {
+          boxes().forEach(function (cb) {
+            if (cb.checked) {
+              cb.checked = false;
+              cb.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          });
+        });
+        list.addEventListener('change', sync);
+        sync();
+      });
+    }
+
+    function run() {
+      relabelTitle();
+      reorderGroups();
+      injectAllPills();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', run);
+    } else {
+      run();
+    }
+
+    var scheduled = false;
+    function scheduleRun() {
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(function () { scheduled = false; run(); });
+    }
+    var observer = new MutationObserver(scheduleRun);
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.shop-content').forEach(function (root) {
+        observer.observe(root, { childList: true, subtree: true });
+      });
+    });
+  })();
+</script>

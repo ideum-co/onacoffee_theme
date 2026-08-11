@@ -1,0 +1,131 @@
+{%- assign s = section.settings -%}
+<section class="contact-info">
+  <div class="container">
+    {%- if s.heading != blank -%}
+      <h2 class="contact-info__heading">{{ s.heading }}</h2>
+    {%- endif -%}
+    {%- if s.subheading != blank -%}
+      <p class="contact-info__subheading">{{ s.subheading }}</p>
+    {%- endif -%}
+
+    <div class="contact-info__grid">
+      {%- if s.email != blank -%}
+        <div class="contact-info__item">
+          <h3>Email</h3>
+          <p><a href="mailto:{{ s.email }}">{{ s.email }}</a></p>
+        </div>
+      {%- endif -%}
+
+      {%- if s.phone != blank -%}
+        <div class="contact-info__item">
+          <h3>Phone</h3>
+          <p><a href="tel:{{ s.phone | replace: ' ', '' }}">{{ s.phone }}</a></p>
+        </div>
+      {%- endif -%}
+
+      {%- if s.address != blank -%}
+        <div class="contact-info__item">
+          <h3>Address</h3>
+          <div class="rte">{{ s.address }}</div>
+        </div>
+      {%- endif -%}
+
+      {%- if s.hours != blank -%}
+        <div class="contact-info__item">
+          <h3>Opening hours</h3>
+          <div class="rte">{{ s.hours }}</div>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .contact-info {
+    padding: 60px 0 80px;
+    background: transparent;
+  }
+  .contact-info .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 30px;
+  }
+  .contact-info__heading {
+    font: 500 34px/1.2 'Karla', sans-serif;
+    color: #2b2c30;
+    text-align: center;
+    margin: 0 0 12px;
+  }
+  .contact-info__subheading {
+    font: 400 17px/1.6 'Karla', sans-serif;
+    color: #333232;
+    text-align: center;
+    margin: 0 auto 40px;
+    max-width: 640px;
+  }
+  .contact-info__grid {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+  }
+  .contact-info__item {
+    flex: 1;
+    text-align: left;
+  }
+  .contact-info__item h3 {
+    font: 700 13px/1 'Karla Bold', 'Karla', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #661a34;
+    margin: 0 0 10px;
+  }
+  .contact-info__item p,
+  .contact-info__item .rte {
+    font: 400 16px/1.6 'Karla', sans-serif;
+    color: #2b2c30;
+    margin: 0;
+  }
+  .contact-info__item a {
+    color: #2b2c30;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease;
+  }
+  .contact-info__item a:hover {
+    border-color: #661a34;
+    color: #661a34;
+  }
+  @media (max-width: 991px) {
+    .contact-info__grid {
+      flex-wrap: wrap;
+      justify-content: flex-start;
+    }
+    .contact-info__item {
+      flex: auto;
+      width: calc(50% - 16px);
+    }
+  }
+  @media (max-width: 749px) {
+    .contact-info { padding: 40px 0 60px; }
+    .contact-info__heading { font-size: 26px; }
+    .contact-info__grid { gap: 24px; }
+    .contact-info__item { width: calc(50% - 12px); }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "ONA contact info",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Get in touch" },
+    { "type": "text", "id": "subheading", "label": "Subheading", "default": "Have a question? We'd love to hear from you. Reach out via the channels below." },
+    { "type": "text", "id": "email", "label": "Email", "default": "hello@onacoffee.com.au" },
+    { "type": "text", "id": "phone", "label": "Phone", "default": "+61 2 1234 5678" },
+    { "type": "richtext", "id": "address", "label": "Address", "default": "<p>123 Sample Street<br>Canberra ACT 2600<br>Australia</p>" },
+    { "type": "richtext", "id": "hours", "label": "Opening hours", "default": "<p>Mon – Fri: 7:30am – 3pm<br>Weekends: 8am – 3pm</p>" }
+  ],
+  "presets": [
+    { "name": "ONA contact info" }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,78 @@
+/*
+ * ONA brand overrides for Horizon.
+ * Loaded after Horizon's inline :root so this file wins the cascade
+ * for font families that are not in Shopify's font library.
+ *
+ * Font files live alongside this CSS in /assets, so relative url() resolves.
+ */
+
+@font-face {
+  font-family: 'Karla';
+  src: url('Karla-Regular.woff2') format('woff2'),
+       url('Karla-Regular.woff') format('woff'),
+       url('Karla-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Karla';
+  src: url('Karla-Bold.woff2') format('woff2'),
+       url('Karla-Bold.woff') format('woff'),
+       url('Karla-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Silk Serif';
+  src: url('SilkSerif-Black.woff2') format('woff2'),
+       url('SilkSerif-Black.woff') format('woff'),
+       url('SilkSerif-Black.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Palmer Lake Print';
+  src: url('PalmerLakePrint-Regular.woff2') format('woff2'),
+       url('PalmerLakePrint-Regular.woff') format('woff'),
+       url('PalmerLakePrint-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'icomoon';
+  src: url('icomoon.woff') format('woff'),
+       url('icomoon.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  --font-body--family: 'Karla', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-body--style: normal;
+  --font-body--weight: 400;
+
+  --font-subheading--family: 'Karla', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-subheading--style: normal;
+  --font-subheading--weight: 700;
+
+  --font-heading--family: 'Silk Serif', Georgia, 'Times New Roman', serif;
+  --font-heading--style: normal;
+  --font-heading--weight: 900;
+
+  --font-accent--family: 'Palmer Lake Print', 'Brush Script MT', cursive;
+  --font-accent--style: normal;
+  --font-accent--weight: 400;
+
+  --font-paragraph--family: var(--font-body--family);
+  --font-paragraph--style: var(--font-body--style);
+  --font-paragraph--weight: var(--font-body--weight);
+}

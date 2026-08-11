@@ -1,0 +1,337 @@
+{%- liquid
+  assign section_title = section.settings.title
+  assign section_content = section.settings.content
+  if section_content == blank and product
+    assign section_content = product.metafields.custom.bottom_content | metafield_tag
+  endif
+  assign read_more_label = section.settings.read_more_label | default: 'Read More'
+  assign read_less_label = section.settings.read_less_label | default: 'Read Less'
+  assign visible_blocks = section.settings.visible_blocks | default: 3
+-%}
+
+<section
+  class="read-more-content-section"
+  data-read-more-section
+  data-read-more-section-id="{{ section.id }}"
+>
+  <style>
+    [data-read-more-section-id="{{ section.id }}"] {
+      --read-more-text: #1f1a17;
+      --read-more-muted: rgba(31, 26, 23, 0.72);
+      --read-more-border: rgba(31, 26, 23, 0.16);
+      --read-more-surface: #f6f1e8;
+      --read-more-button-bg: transparent;
+      --read-more-button-text: #1f1a17;
+      --read-more-button-hover-bg: #1f1a17;
+      --read-more-button-hover-text: #f6f1e8;
+      --read-more-max-width: 1440px;
+      --read-more-duration: 320ms;
+    }
+
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content {
+      max-width: var(--read-more-max-width);
+      margin: 0 auto;
+      padding: 48px 0px;
+    }
+
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__inner {
+      border-radius: 24px;
+      padding: 32px 28px;
+    }
+
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__title {
+      margin: 0 0 18px;
+      color: var(--read-more-text);
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.05;
+    }
+
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__body {
+      position: relative;
+    }
+
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__body-inner {
+      position: relative;
+      overflow: hidden;
+      max-height: none;
+      transition: max-height var(--read-more-duration) ease;
+      color: var(--read-more-muted);
+    }
+
+    /* R73 (2026-04-30): is-collapsed::after 渐变蒙版按用户要求移除 */
+
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__rte > *:first-child {
+      margin-top: 0;
+    }
+
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__rte > *:last-child {
+      margin-bottom: 0;
+    }
+
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__rte p,
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__rte li {
+      font-size: 16px;
+      line-height: 1.75;
+    }
+
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__rte p,
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__rte ul,
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__rte ol,
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__rte h1,
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__rte h2,
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__rte h3,
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__rte h4,
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__rte h5,
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__rte h6,
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__rte blockquote {
+      margin: 0 0 18px;
+    }
+
+    /* R73 (2026-04-30): toggle 改为 #5b1129 红底白字方块（与 dev .readMore 视觉对齐）；
+       toggle-icon span 同步从 markup 移除，旋转动画规则删除。 */
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__toggle {
+      cursor: pointer;
+      margin-bottom: 12px;
+      display: inline-block;
+      background: #5b1129;
+      color: #fff;
+      padding: 5px 15px;
+      border-radius: 0;
+      border: none;
+      font-family: Karla, sans-serif;
+      font-size: 17px;
+      line-height: 1.6471;
+      font-weight: 400;
+      font-style: normal;
+      transition: background-color 180ms ease;
+    }
+
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__toggle:hover,
+    [data-read-more-section-id="{{ section.id }}"] .read-more-content__toggle:focus-visible {
+      background: #2b2c30;
+      color: #fff;
+      outline: none;
+    }
+
+    @media screen and (max-width: 749px) {
+      [data-read-more-section-id="{{ section.id }}"] .read-more-content {
+        padding: 32px 16px;
+      }
+
+      [data-read-more-section-id="{{ section.id }}"] .read-more-content__inner {
+        border-radius: 20px;
+        padding: 24px 18px;
+      }
+
+      [data-read-more-section-id="{{ section.id }}"] .read-more-content__toggle {
+        width: 100%;
+      }
+    }
+  </style>
+
+  <div class="read-more-content">
+    <div class="container">
+      {%- if section_title != blank -%}
+        <h2 class="read-more-content__title">{{ section_title | escape }}</h2>
+      {%- endif -%}
+
+      {%- if section_content != blank -%}
+        <div class="read-more-content__body">
+          <div
+            class="read-more-content__body-inner"
+            data-read-more-content
+            data-visible-blocks="{{ visible_blocks }}"
+          >
+            <div class="read-more-content__rte rte" data-read-more-rte>
+              {{ section_content }}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="read-more-content__toggle"
+            data-read-more-toggle
+            aria-expanded="false"
+            hidden
+          >
+            <span data-read-more-label>{{ read_more_label }}</span>
+          </button>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var sectionRoot = document.querySelector('[data-read-more-section-id="{{ section.id }}"]');
+
+      if (!sectionRoot) {
+        return;
+      }
+
+      var content = sectionRoot.querySelector('[data-read-more-content]');
+      var contentInner = sectionRoot.querySelector('[data-read-more-rte]');
+      var toggle = sectionRoot.querySelector('[data-read-more-toggle]');
+      var label = sectionRoot.querySelector('[data-read-more-label]');
+
+      if (!content || !contentInner || !toggle || !label) {
+        return;
+      }
+
+      var readMoreLabel = {{ read_more_label | json }};
+      var readLessLabel = {{ read_less_label | json }};
+      var visibleBlocks = parseInt(content.getAttribute('data-visible-blocks'), 10) || 3;
+      var expanded = false;
+
+      function getMeasuredHeight(element) {
+        return Math.ceil(element.scrollHeight);
+      }
+
+      function getCollapsedHeight() {
+        // R72 (2026-04-30): metafield_tag filter 输出会包一层 <div class="metafield-rich_text_field">
+        // → contentInner.children.length === 1 → 老逻辑会把整段当成单一 block，collapsedHeight=fullHeight
+        // → shouldToggle = false → toggle 永远 hidden。同 R69 read-more-content.liquid 修法：
+        // 单层 wrapper 时取 wrapper 的 children 当 blocks。
+        var rawChildren = contentInner.children;
+        if (rawChildren.length === 1 && rawChildren[0].children && rawChildren[0].children.length > 1) {
+          rawChildren = rawChildren[0].children;
+        }
+        var blocks = Array.prototype.filter.call(rawChildren, function(child) {
+          return child.offsetParent !== null;
+        });
+
+        if (!blocks.length) {
+          return 0;
+        }
+
+        var cutoffIndex = Math.min(visibleBlocks, blocks.length) - 1;
+        var targetBlock = blocks[cutoffIndex];
+        var firstBlock = blocks[0];
+
+        if (!targetBlock || !firstBlock) {
+          return getMeasuredHeight(contentInner);
+        }
+
+        var targetBottom = targetBlock.offsetTop + targetBlock.offsetHeight;
+        return Math.ceil(targetBottom - firstBlock.offsetTop);
+      }
+
+      function applyState(shouldExpand) {
+        var fullHeight = getMeasuredHeight(contentInner);
+        var collapsedHeight = getCollapsedHeight();
+        var shouldToggle = fullHeight > collapsedHeight + 12;
+
+        if (!shouldToggle) {
+          content.style.maxHeight = 'none';
+          content.classList.remove('is-collapsed');
+          toggle.hidden = true;
+          toggle.setAttribute('aria-expanded', 'true');
+          return;
+        }
+
+        toggle.hidden = false;
+        expanded = shouldExpand;
+
+        if (expanded) {
+          content.style.maxHeight = fullHeight + 'px';
+          content.classList.remove('is-collapsed');
+          toggle.setAttribute('aria-expanded', 'true');
+          label.textContent = readLessLabel;
+        } else {
+          content.style.maxHeight = collapsedHeight + 'px';
+          content.classList.add('is-collapsed');
+          toggle.setAttribute('aria-expanded', 'false');
+          label.textContent = readMoreLabel;
+        }
+      }
+
+      toggle.addEventListener('click', function() {
+        applyState(!expanded);
+      });
+
+      var resizeTimer;
+
+      function refresh() {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(function() {
+          applyState(expanded);
+        }, 50);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          applyState(false);
+        });
+      } else {
+        applyState(false);
+      }
+
+      window.addEventListener('resize', refresh);
+
+      if (window.Shopify && Shopify.designMode) {
+        document.addEventListener('shopify:section:load', function(event) {
+          if (
+            event.target &&
+            event.target.querySelector &&
+            event.target.querySelector('[data-read-more-section-id="{{ section.id }}"]')
+          ) {
+            applyState(false);
+          }
+        });
+      }
+    })();
+  </script>
+</section>
+
+{% schema %}
+{
+  "name": "ONA read more",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "About this product"
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": "Content",
+      "default": "<p>Add your product story, tasting notes, or care instructions here.</p><p>This section shows a short preview first, then expands to reveal the full content when clicked.</p><p>It supports Shopify rich text content so you can include multiple paragraphs, lists, and formatting.</p>"
+    },
+    {
+      "type": "text",
+      "id": "read_more_label",
+      "label": "Read more label",
+      "default": "Read More"
+    },
+    {
+      "type": "text",
+      "id": "read_less_label",
+      "label": "Read less label",
+      "default": "Read Less"
+    },
+    {
+      "type": "select",
+      "id": "visible_blocks",
+      "label": "Visible paragraphs or blocks",
+      "default": "3",
+      "options": [
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Read more content"
+    }
+  ]
+}
+{% endschema %}

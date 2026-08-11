@@ -1,0 +1,786 @@
+ <section class="store-finder store-finder-add" data-id="store-finder-content">
+    <div class="container">
+        <div class="top">
+            <div class="left">
+                <h2>Store finder</h2>
+                <ul class="state">
+                    <li class="all-state"><a href="#" data-state="all">All</a></li>
+                    <li class="act-state"><a href="#" data-state="ACT">ACT</a></li>
+                    <li class="nsw-state"><a href="#" data-state="NSW">NSW</a></li>
+                    <li class="qld-state"><a href="#" data-state="QLD">QLD</a></li>
+                    <li class="sa-state"><a href="#" data-state="SA">SA</a></li>
+                    <li class="wa-state"><a href="#" data-state="WA">WA</a></li>
+                    <li class="nt-state"><a href="#" data-state="NT">NT</a></li>
+                    <li class="tas-state"><a href="#" data-state="TAS">TAS</a></li>
+                    <li class="vic-state"><a href="#" data-state="VIC">VIC</a></li>
+                </ul>
+            </div>
+            <div class="right">
+                <div class="form">
+                    <div id="the-basics" class="form-group country-input  typeahead__container result">
+                        <input id="pac-input" class="controls" type="text" placeholder="Enter your suburb" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="content">
+          	<div class="no-store" style="display:none;">
+              <p>"Oops, there are no stores near the location you've searched. <br><button class="get-current-location">Click here</button> to search for a store near your current location.</p>
+          	</div>
+            <div class="store-list left" style="overflow: hidden;">
+                <div class="address-box mCustomScrollbar">
+                    <div class="list">
+                    </div>
+                </div>
+                <div class="address-all">
+                    <div class="list">
+                        <ul class="addr">
+                          {% if section.blocks.size > 0 %}
+                            {% for block in section.blocks %}
+                            <li data-state="{{ block.settings.state }}" data-area="{{ block.settings.suburb }}" class="row">
+                                <div data-la="{{ block.settings.latitude }}" data-lo="{{ block.settings.longitude }}" data-state="{{ block.settings.state }}" data-area="{{ block.settings.suburb }}" class="addr-list">
+                                    {{ block.settings.title }}
+                                    <div class="map-content">
+                                        <div class="lists">
+                                            <div class="text">
+												<h3>{{ block.settings.title }}</h3>
+                                                <i class="icon-close"></i>
+                                                <div class="bottom">
+                                                    <div class="left">
+                                                        <p>{{ block.settings.storeaddress }}</p>
+                                                        {% if block.settings.storeaddressurl %} 
+                                                      		<p><a target="_blank" href="{{ block.settings.storeaddressurl }}" class="a-btn">Website</a></p> 
+                                                      		{% else %}
+                                                      		<p></p>
+                                                      	{% endif %} 
+                                                    </div>
+                                                    <div class="right">
+                                                      {{ block.settings.time }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                          {% endif %} 
+						</ul>
+                    </div>
+                </div>
+            </div>
+            <div class="map" id="map"></div>
+          {%- comment -%} R71 / P0.1: jquery-2.0.3.js → jquery-3.7.1.min.js (synchronous, inline jQuery in L75 needs it loaded before execution; theme.liquid:65 global jquery-3.7.1.min.js is defer so unavailable here) {%- endcomment -%}
+          <script type="text/javascript" src="{{ 'jquery-3.7.1.min.js' | asset_url }}"></script>
+          <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAuyn7RdlRUKeo53OFGodNcSX36C2pmJ7k&libraries=places"></script>
+          <script>
+            var res = [];
+            jQuery('.address-all .list .addr .row').each(function () {
+              res.push(jQuery(this).attr('data-area'));
+            });
+            var new_arr=[];
+            for(var i=0;i<res.length;i++) {
+              var items=res[i];
+              if($.inArray(items,new_arr)==-1) {
+                new_arr.push(items);
+              }
+            }
+            var newHtml = '';
+            for(var j=0;j<new_arr.length;j++){
+              newHtml += '<li>'+ new_arr[j] +'</li>';
+            }
+            jQuery('#the-basics .area-list').html(newHtml);
+
+            jQuery('.store-finder .state li:nth-child(1)').addClass('active');
+            var Ahtml = '';
+            jQuery('.store-finder .address-all .list .addr .row').each(function () {
+              Ahtml += jQuery(this).html();
+            });
+            jQuery('.store-finder .address-box .list').prepend(Ahtml);
+            var map;
+            function initialize() {
+                var styleArray = [
+                          {
+                            "elementType": "geometry",
+                            "stylers": [
+                              {
+                                "color": "#dedede"
+                              }
+                            ]
+                          },
+                          {
+                            "elementType": "labels.icon",
+                            "stylers": [
+                              {
+                                "visibility": "off"
+                              }
+                            ]
+                          },
+                          {
+                            "elementType": "labels.text.fill",
+                            "stylers": [
+                              {
+                                "color": "#616161"
+                              }
+                            ]
+                          },
+                          {
+                            "elementType": "labels.text.stroke",
+                            "stylers": [
+                              {
+                                "color": "#f5f5f5"
+                              }
+                            ]
+                          },
+                          {
+                            "featureType": "administrative.land_parcel",
+                            "elementType": "labels.text.fill",
+                            "stylers": [
+                              {
+                                "color": "#bdbdbd"
+                              }
+                            ]
+                          },
+                          {
+                            "featureType": "poi",
+                            "elementType": "geometry",
+                            "stylers": [
+                              {
+                                "color": "#eeeeee"
+                              }
+                            ]
+                          },
+                          {
+                            "featureType": "poi",
+                            "elementType": "labels.text.fill",
+                            "stylers": [
+                              {
+                                "color": "#757575"
+                              }
+                            ]
+                          },
+                          {
+                            "featureType": "poi.park",
+                            "elementType": "geometry",
+                            "stylers": [
+                              {
+                                "color": "#c9c9c9"
+                              }
+                            ]
+                          },
+                          {
+                            "featureType": "poi.park",
+                            "elementType": "labels.text.fill",
+                            "stylers": [
+                              {
+                                "color": "#9e9e9e"
+                              }
+                            ]
+                          },
+                          {
+                            "featureType": "road",
+                            "elementType": "geometry",
+                            "stylers": [
+                              {
+                                "color": "#ffffff"
+                              }
+                            ]
+                          },
+                          {
+                            "featureType": "road.arterial",
+                            "elementType": "labels.text.fill",
+                            "stylers": [
+                              {
+                                "color": "#757575"
+                              }
+                            ]
+                          },
+                          {
+                            "featureType": "road.highway",
+                            "elementType": "geometry",
+                            "stylers": [
+                              {
+                                "color": "#9c9c9c"
+                              }
+                            ]
+                          },
+                          {
+                            "featureType": "road.highway",
+                            "elementType": "labels.text.fill",
+                            "stylers": [
+                              {
+                                "color": "#616161"
+                              }
+                            ]
+                          },
+                          {
+                            "featureType": "road.local",
+                            "elementType": "labels.text.fill",
+                            "stylers": [
+                              {
+                                "color": "#9e9e9e"
+                              }
+                            ]
+                          },
+                          {
+                            "featureType": "transit.line",
+                            "elementType": "geometry",
+                            "stylers": [
+                              {
+                                "color": "#c7c7c7"
+                              }
+                            ]
+                          },
+                          {
+                            "featureType": "transit.station",
+                            "elementType": "geometry",
+                            "stylers": [
+                              {
+                                "color": "#dedede"
+                              }
+                            ]
+                          },
+                          {
+                            "featureType": "water",
+                            "elementType": "geometry",
+                            "stylers": [
+                              {
+                                "color": "#a3a3a3"
+                              }
+                            ]
+                          },
+                          {
+                            "featureType": "water",
+                            "elementType": "labels.text.fill",
+                            "stylers": [
+                              {
+                                "color": "#9e9e9e"
+                              }
+                            ]
+                          }
+                        ];
+              var loadX= -25.2744; //jQuery('.address-box .list .addr-list').attr('data-la');
+              var loadY= 133.7751; //jQuery('.address-box .list .addr-list').attr('data-lo');
+              var australiaCenter = new google.maps.LatLng(-25.2744, 133.7751);
+              var mapOptions = {
+                zoom: 4,
+                disableDefaultUI: true,
+                zoomControl: true,
+                center: australiaCenter,
+                styles: styleArray
+              };
+              var mapElement = document.getElementById('map');
+
+              map = new google.maps.Map(mapElement, mapOptions);
+
+              const card = document.getElementById("pac-card");
+              const input = document.getElementById("pac-input");
+              const biasInputElement = document.getElementById("use-location-bias");
+              const strictBoundsInputElement = document.getElementById("use-strict-bounds");
+              const options = {
+                fields: ["formatted_address", "geometry", "name"],
+                strictBounds: false,
+                componentRestrictions: { country: "au" },
+              };
+
+              map.controls[google.maps.ControlPosition.TOP_LEFT].push(card);
+
+              const autocomplete = new google.maps.places.Autocomplete(input, options);
+
+              // Bind the map's bounds (viewport) property to the autocomplete object,
+              // so that the autocomplete requests use the current map bounds for the
+              // bounds option in the request.
+              autocomplete.bindTo("bounds", map);
+
+              const infowindow = new google.maps.InfoWindow();
+              const infowindowContent = document.getElementById("infowindow-content");
+
+              infowindow.setContent(infowindowContent);
+
+              const marker = new google.maps.Marker({
+                map,
+                anchorPoint: new google.maps.Point(0, -29),
+              });
+
+              autocomplete.addListener("place_changed", () => {
+                                      jQuery('.addedmark').remove();
+              jQuery('.store-finder.store-finder-add .state li').eq(0).addClass('active').siblings().removeClass('active');
+              var Ahtml = '';
+              jQuery('.store-finder .address-all .list .addr .row').each(function () {
+                Ahtml += jQuery(this).html();
+              });
+              
+              jQuery('.store-finder.store-finder-add .address-box .list .addr-list').remove();
+              jQuery('.store-finder.store-finder-add .address-box .list').prepend(Ahtml);
+              
+              var nums = jQuery('.store-finder-add .address-box .list .addr-list').length;
+              for (var i=0; i<nums; i++){
+                var map_x = jQuery('.store-finder-add .address-box .list .addr-list').eq(i).attr('data-la');
+                var map_y = jQuery('.store-finder-add .address-box .list .addr-list').eq(i).attr('data-lo');
+                var overlay = new MyMarker(map,i,{latlng:new google.maps.LatLng(map_x, map_y),clickFun:zoomOut});
+              }
+
+              infowindow.close();
+              marker.setVisible(false);
+
+              const place = autocomplete.getPlace();
+              
+//                   if (!place.geometry || !place.geometry.location) {
+                    // User entered the name of a Place that was not suggested and
+                    // pressed the Enter key, or the Place Details request failed.
+//                     window.alert("No details available for input: '" + place.name + "'");
+//                     return;
+//                   }
+
+//               If the place has a geometry, then present it on a map.
+              if (place.geometry.viewport) {
+                map.fitBounds(place.geometry.viewport);
+//                 map.setZoom(12);
+              } else {
+                map.setCenter(place.geometry.location);
+//                 map.setZoom(12);
+              }
+
+              var count = 0;
+              var nums = jQuery('.store-finder-add .address-box .list .addr-list').length;
+              for (var i=0; i<nums; i++){
+                var map_x = jQuery('.store-finder-add .address-box .list .addr-list').eq(i).attr('data-la');
+                var map_y = jQuery('.store-finder-add .address-box .list .addr-list').eq(i).attr('data-lo');
+                jQuery('.store-finder-add .address-box .list .addr-list').eq(i).attr('id','map_item_'+i).attr('data-index',i);
+                const myLatLng = { lat: parseFloat(map_x), lng: parseFloat(map_y) };
+                var allmarker = new google.maps.Marker({
+                  position: myLatLng,
+                });
+
+                var markerIsOrNotInBounds = map.getBounds().contains(allmarker.getPosition());
+                //                     console.log(markerIsOrNotInBounds);
+                if(markerIsOrNotInBounds){
+                  count++;
+                }
+              }
+              console.log(count);
+              if(count<=0){
+                jQuery('.store-finder.store-finder-add').find('.store-list').hide();
+                jQuery('.store-finder.store-finder-add').find('.no-store').fadeIn();
+              }else{
+                jQuery('.store-finder.store-finder-add').find('.no-store').hide();
+                jQuery('.store-finder.store-finder-add').find('.store-list').fadeIn();
+              }
+
+            });
+
+            infoWindow = new google.maps.InfoWindow();
+
+            jQuery('.get-current-location').on('click', function (e) {
+              if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+
+                  (position) => {
+                    const pos = {
+                      lat: position.coords.latitude,
+                      lng: position.coords.longitude,
+                    };
+
+                    //             console.log(position.coords.latitude);
+                    //  	 		console.log(position.coords.longitude);
+
+                    var curlat = position.coords.latitude,
+                        curlong = position.coords.longitude,
+                        maparr = [];
+                    jQuery('.store-finder .address-all .list .addr .row').each(function () {
+                      var maplat = jQuery(this).find('.addr-list').attr('data-la'),
+                          maplong = jQuery(this).find('.addr-list').attr('data-lo'),
+                          val = Math.abs((curlat - maplat))+Math.abs((curlong - maplong))
+
+                      maparr.push(val);
+                    });
+                    console.log(Math.min.apply(null, maparr));
+                    console.log(jQuery.inArray( Math.min.apply(null, maparr), maparr ));
+                    var index = jQuery.inArray( Math.min.apply(null, maparr), maparr );
+                    jQuery('.store-finder').find('.no-store').hide();
+                    jQuery('.store-finder').find('.store-list').fadeIn();
+                    
+                    jQuery('.store-finder-add .address-box .list .addr-list').eq(index).trigger('click');
+
+                    //           infoWindow.setPosition(pos);
+                    //           infoWindow.setContent("Location found.");
+                    //           infoWindow.open(map);
+                    //           map.setCenter(pos);
+                  },
+                  () => {
+                  //           handleLocationError(true, infoWindow, map.getCenter());
+                  }
+                );
+
+
+              } else {
+                // Browser doesn't support Geolocation
+                //       handleLocationError(false, infoWindow, map.getCenter());
+              }
+            });
+
+
+
+
+
+            // $.get('https://ipapi.co/json/38.84.74.13', function(data) { 
+            //     console.log(data);
+            //   console.log(data.latitude);
+            //   console.log(data.longitude);
+            // })
+
+
+            // jQuery('.get-current-location').on('click', function (e) {
+            //   $.getJSON("https://api.ipify.org/?format=json", function(e) {
+            //     console.log(e.ip);
+
+            //   });
+            // });
+
+
+
+
+            var nums = jQuery('.store-finder-add .address-box .list .addr-list').length;
+            for (var i=0; i<nums; i++){
+              var map_x = jQuery('.store-finder-add .address-box .list .addr-list').eq(i).attr('data-la');
+              var map_y = jQuery('.store-finder-add .address-box .list .addr-list').eq(i).attr('data-lo');
+              jQuery('.store-finder-add .address-box .list .addr-list').eq(i).attr('id','map_item_'+i).attr('data-index',i);
+              var overlay = new MyMarker(map,i,{latlng:new google.maps.LatLng(map_x, map_y),clickFun:zoomOut});
+            }
+            var LatLngList = new Array ();
+            for(var k=0; k<nums; k++){
+              var map_x = jQuery('.store-finder-add .address-box .list .addr-list').eq(k).attr('data-la');
+              var map_y = jQuery('.store-finder-add .address-box .list .addr-list').eq(k).attr('data-lo');
+              LatLngList.push(new google.maps.LatLng (map_x,map_y));
+            }
+            var bounds = new google.maps.LatLngBounds ();
+            for (var i = 0, LtLgLen = LatLngList.length; i < LtLgLen; i++) {
+              bounds.extend (LatLngList[i]);
+            }
+
+
+            google.maps.event.addListener(map, 'zoom_changed', function() {
+              zoomChangeBoundsListener = 
+                google.maps.event.addListener(map, 'bounds_changed', function(event) {
+                if (this.getZoom() > 18 && this.initialZoom == true) {
+                  // Change max/min zoom here
+                  this.setZoom(18);
+                  this.initialZoom = false;
+                }
+                google.maps.event.removeListener(zoomChangeBoundsListener);
+              });
+            });
+            map.initialZoom = true;
+
+              if($('.all-state').hasClass('active') || $('.nsw-state').hasClass('active')){
+                 var bounds = new google.maps.LatLngBounds();
+                  bounds.extend(place.geometry.location);
+              }
+             // var bounds = new google.maps.LatLngBounds();
+             // bounds.extend(place.geometry.location);
+            //map.fitBounds (bounds);
+            console.log("SET HERE");
+
+             
+              map.fitBounds(bounds);
+
+
+
+            }
+
+            function zoomOut(){}
+            function MyMarker(map, number,options) {
+              this.latlng = options.latlng;
+              this.labelText = options.labelText || number+1;
+              this.labelClass = options.labelClass || 'innerbox';
+              this.clickFun = options.clickFun ;
+              this.map_ = map;
+              this.div_ = null;
+              this.setMap(map);
+              this.number= number;
+            }
+            MyMarker.prototype = new google.maps.OverlayView();
+            MyMarker.prototype.onAdd = function() {
+              var div = document.createElement('div');
+              div.className="addedmark addedmark_"+this.number;
+              div.style.border = "none";
+              div.style.borderWidth = "0px";
+              div.style.position = "absolute";
+              div.style.cursor = "pointer";
+             // div.id = "newDiv"
+              div.setAttribute("data-index", this.number);
+              div.onclick = this.clickFun ||function(){};
+              div.onclick = function(e){
+                e.stopPropagation();
+                var index = jQuery(this).index() - 1;
+                var myindex = jQuery(this).attr('data-index');
+              
+                jQuery(this).addClass('opacity on').siblings().removeClass('opacity on');
+                var loc_id = '#map_item_'+myindex;
+                var html = jQuery('.store-finder-add .address-box .list .addr-list').eq(index - 1).find('.map-content').html();
+                //var html = jQuery(loc_id).find('.map-content').html(); 
+                jQuery('.addedmark').find('.lists').remove();
+                jQuery(this).children('.innerbox').append(html);
+
+                //var la = jQuery('.store-finder-add .address-box .list .addr-list').eq(index).attr('data-la');
+                //var lo = jQuery('.store-finder-add .address-box .list .addr-list').eq(index).attr('data-lo');
+                var la = jQuery(loc_id).attr('data-la');
+                var lo = jQuery(loc_id).attr('data-lo');
+                map.panTo(new google.maps.LatLng(la, lo));
+               
+                if(map.getZoom()<9){
+                  map.setZoom(9);
+                }
+              };
+              var label = document.createElement('div');
+              label.className = this.labelClass;
+              label.style.position = 'absolute';
+
+              var close = document.createElement('div');
+              close.className = 'close-btn';
+              close.innerHTML = 'x';
+              close.onclick = this.clickFun ||function(){};
+              close.onclick = function(e){
+                e.stopPropagation();
+                jQuery(this).parents('.addedmark').removeClass('on');
+              };
+
+              div.appendChild(label);
+              label.appendChild(close);
+
+              this.div_ = div;
+              var panes = this.getPanes();
+              panes.overlayMouseTarget.appendChild(div);
+            }
+            MyMarker.prototype.draw = function() {
+              var overlayProjection = this.getProjection();
+              var position = overlayProjection.fromLatLngToDivPixel(this.latlng);
+              var div = this.div_;
+              div.style.left =position.x - 10 + 'px';
+              div.style.top  =position.y - 20 + 'px';
+              div.style.width = '19px';
+              div.style.height ='26px';
+            }
+            MyMarker.prototype.onRemove = function() {
+              this.div_.parentNode.removeChild(this.div_);
+              this.div_ = null;
+            }
+            MyMarker.prototype.hide = function() {
+              if (this.div_) {
+                this.div_.style.visibility = "hidden";
+              }
+            }
+            MyMarker.prototype.show = function() {
+              if (this.div_) {
+                this.div_.style.visibility = "visible";
+              }
+            }
+            MyMarker.prototype.toggle = function() {
+              if (this.div_) {
+                if (this.div_.style.visibility == "hidden") {
+                  this.show();
+                } else {
+                  this.hide();
+                }
+              }
+            }
+
+
+            jQuery("#the-basics .typeahead").keydown(function(e) {
+              if (e.keyCode == 13) {
+                jQuery('#the-basics a').trigger('click');
+                return false;
+              }
+            });
+            jQuery('#the-basics a').on('click', function (e) {
+              e.preventDefault();
+              var val = jQuery(this).siblings('input').val();
+              if(val !== ''){
+                var a = 0;
+                jQuery('.address-all .list .addr .row').each(function () {
+                  var cc = jQuery(this).attr('data-area');
+                  if(val == cc){
+                    jQuery('.store-finder .address-box .list .addr-list').remove();
+                    jQuery('.address-all .list .addr .row').each(function () {
+                      var area = jQuery(this).attr('data-area');
+                      var html = ''
+                      if (val == area){
+                        html += jQuery(this).html();
+                        jQuery('.store-finder .address-box .list').append(html);
+
+                        var Aactive = jQuery('.address-box .list .addr-list').attr('data-state');
+                        jQuery('.store-finder .state li').each(function () {
+                          var Cactive = jQuery(this).children('a').attr('data-state');
+                          if(Aactive === Cactive){
+                            jQuery(this).siblings('').removeClass('active');
+                            jQuery(this).addClass('active');
+                          }
+                        })
+                      }
+                    });
+                    initialize();
+                    a++;
+                  }
+                });
+                if(a==0){
+                  jQuery('.store-finder .address-box .list').empty();
+                  jQuery('.address-box .list').append('<div class="no-results">No results</div>');
+                  initialize();
+                }
+              }else {
+              }
+            });
+            jQuery('.store-finder .state li a').on('click', function (e) {
+              e.preventDefault();
+
+              jQuery('#the-basics input').val('');
+              if(jQuery(this).parents('li').hasClass('active')){
+
+              }else if(jQuery(this).attr('data-state') == 'all'){
+                jQuery(this).parents('li').addClass('active').siblings().removeClass('active');
+                var Ahtml = '';
+                jQuery('.store-finder .address-all .list .addr .row').each(function () {
+                  Ahtml += jQuery(this).html();
+                });
+                jQuery('.store-finder .address-box .list .addr-list').remove();
+                jQuery('.store-finder .address-box .list').prepend(Ahtml);
+                initialize();
+              }else{
+
+
+
+                jQuery(this).parents('li').addClass('active').siblings().removeClass('active');
+                var state = jQuery(this).attr('data-state');
+                var Shtml = ''
+                var st = 0;
+                jQuery('.store-finder .address-all .list .addr .row').each(function () {
+                  states = jQuery(this).attr('data-state');
+                  if(state == states){
+                    Shtml += jQuery(this).html();
+                    jQuery('.store-finder .address-box .list').empty();
+                    jQuery('.store-finder .address-box .list').append(Shtml);
+                    st++;
+                  }
+                });
+                if(st==0){
+                  jQuery('.store-finder .address-box .list').empty();
+                  jQuery('.address-box .list').append('<div class="no-results">No results</div>');
+                  jQuery('.addedmark').remove();
+                }else{
+                  initialize();
+                }
+
+
+
+              }
+
+              //                     if(map.getZoom()>18){
+              //                     	map.setZoom(18);
+              //                     }
+
+            });
+            jQuery('body').on('click', '.address-box .list .addr-list',function() {
+             
+              jQuery('#the-basics input').val('');
+              var index = jQuery(this).index();
+              jQuery(this).addClass('open').siblings().removeClass('open');
+              if(jQuery(this).hasClass('open')){
+                jQuery('.addedmark').removeClass('on');
+                jQuery('.addedmark').parent().find('.addedmark').eq(index).addClass('on');
+                jQuery('.addedmark').parent().find('.addedmark').eq(index).trigger('click');
+                var la = jQuery(this).attr('data-la');
+                var lo = jQuery(this).attr('data-lo');
+                map.panTo(new google.maps.LatLng(la, lo));
+                if(map.getZoom()>18){
+                  map.setZoom(18);
+                }
+              }else{
+                jQuery('.addedmark').parent().find('.addedmark').eq(index).removeClass('on');
+              }
+            });
+            initialize();
+          </script>
+        </div>
+    </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Additional Store finder"
+  },
+  "blocks": [
+    {
+      "type": "store",
+      "name": {
+        "en": "Store"
+      },
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title"
+        },
+        {
+          "type": "text",
+          "id": "storeaddress",
+          "label": {
+            "en": "Store address"
+          }
+        },
+        {
+          "type": "url",
+          "id": "storeaddressurl",
+          "label": {
+            "en": "Store address url"
+          }
+        },
+        {
+          "type": "richtext",
+          "id": "time",
+          "label": {
+            "en": "Open time"
+          }
+        },
+        {
+          "type": "radio",
+          "id": "state",
+          "label": {
+            "en": "State"
+          },
+		  "options":[
+		    {"value":"ACT", "label":"ACT"},
+		    {"value":"NSW", "label":"NSW"},
+		    {"value":"QLD", "label":"QLD"},
+		    {"value":"SA", "label":"SA"},
+		    {"value":"WA", "label":"WA"},
+		    {"value":"NT", "label":"NT"},
+		    {"value":"TAS", "label":"TAS"},
+		    {"value":"VIC", "label":"VIC"}
+		  ]
+        },
+        {
+          "type": "text",
+          "id": "suburb",
+          "label": {
+            "en": "Suburb"
+          }
+        },
+        {
+          "type": "text",
+          "id": "longitude",
+          "label": {
+            "en": "Longitude"
+          }
+        },
+        {
+          "type": "text",
+          "id": "latitude",
+          "label": {
+            "en": "Latitude"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

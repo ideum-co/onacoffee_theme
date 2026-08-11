@@ -1,0 +1,173 @@
+
+{%- comment -%}
+  ONA toolbar — 1:1 port of live's toolbar logic from layout/theme.liquid.
+  Reads shop.metafields.globals.* with per-page / per-product accentuate
+  overrides. Emits the same DOM live emits:
+    <div class="toolbar" style="background: {bg};">
+      <div class="container">
+        <p style="color: {color};">{text}</p>
+      </div>
+    </div>
+{%- endcomment -%}
+
+{%- liquid
+  assign enable = shop.metafields.globals.enable_toolbar
+
+  assign bg = ''
+  assign color = ''
+  assign text = ''
+  assign link = ''
+  assign disabled_for_page = false
+
+  case template.name
+    when 'index'
+      assign bg = shop.metafields.globals.background_toolbar
+      assign color = shop.metafields.globals.font_color_toolbar
+      assign text = shop.metafields.globals.content_toolbar
+      assign link = shop.metafields.globals.link_toolbar
+
+    when 'page'
+      if page.metafields.accentuate.disable_toolbar == 'true'
+        assign disabled_for_page = true
+      endif
+      if page.metafields.accentuate.background_toolbar != blank
+        assign bg = page.metafields.accentuate.background_toolbar
+      else
+        assign bg = shop.metafields.globals.background_toolbar
+      endif
+      if page.metafields.accentuate.font_color_toolbar != blank
+        assign color = page.metafields.accentuate.font_color_toolbar
+      else
+        assign color = shop.metafields.globals.font_color_toolbar
+      endif
+      if page.metafields.accentuate.content_toolbar != blank
+        assign text = page.metafields.accentuate.content_toolbar
+        if page.metafields.accentuate.link_toolbar != blank
+          assign link = page.metafields.accentuate.link_toolbar
+        endif
+      else
+        assign text = shop.metafields.globals.content_toolbar
+        assign link = shop.metafields.globals.link_toolbar
+      endif
+
+    when 'product'
+      if product.metafields.accentuate.disable_toolbar == 'true'
+        assign disabled_for_page = true
+      endif
+      if product.metafields.accentuate.background_toolbar != blank
+        assign bg = product.metafields.accentuate.background_toolbar
+      else
+        assign bg = shop.metafields.globals.background_toolbar
+      endif
+      if product.metafields.accentuate.font_color_toolbar != blank
+        assign color = product.metafields.accentuate.font_color_toolbar
+      else
+        assign color = shop.metafields.globals.font_color_toolbar
+      endif
+      if product.metafields.accentuate.content_toolbar != blank
+        assign text = product.metafields.accentuate.content_toolbar
+        if product.metafields.accentuate.link_toolbar != blank
+          assign link = product.metafields.accentuate.link_toolbar
+        endif
+      else
+        assign text = shop.metafields.globals.content_toolbar
+        assign link = shop.metafields.globals.link_toolbar
+      endif
+
+    when 'article'
+      if article.metafields.accentuate.disable_toolbar == 'true'
+        assign disabled_for_page = true
+      endif
+      if article.metafields.accentuate.background_toolbar != blank
+        assign bg = article.metafields.accentuate.background_toolbar
+      else
+        assign bg = shop.metafields.globals.background_toolbar
+      endif
+      if article.metafields.accentuate.font_color_toolbar != blank
+        assign color = article.metafields.accentuate.font_color_toolbar
+      else
+        assign color = shop.metafields.globals.font_color_toolbar
+      endif
+      if article.metafields.accentuate.content_toolbar != blank
+        assign text = article.metafields.accentuate.content_toolbar
+        if article.metafields.accentuate.link_toolbar != blank
+          assign link = article.metafields.accentuate.link_toolbar
+        endif
+      else
+        assign text = shop.metafields.globals.content_toolbar
+        assign link = shop.metafields.globals.link_toolbar
+      endif
+
+    else
+      assign bg = shop.metafields.globals.background_toolbar
+      assign color = shop.metafields.globals.font_color_toolbar
+      assign text = shop.metafields.globals.content_toolbar
+      assign link = shop.metafields.globals.link_toolbar
+  endcase
+-%}
+
+{%- if enable == 'true' and disabled_for_page == false and text != blank and template.name == 'index' -%}
+  {%- comment -%} 内联样式：仅声明 toolbar 内部排版 + close-btn 视觉。
+       toolbar 容器的 position/top/z-index/display 由 main.css L20735 提供。 {%- endcomment -%}
+  <style>
+    .toolbar { padding: 8px 30px 8px 30px; }
+    .toolbar p {
+      font-family: 'Karla Bold', 'Karla', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 1.2;
+      text-align: center;
+      margin: 0;
+    }
+    .toolbar p a       { color: inherit; text-decoration: none; }
+    .toolbar p a:hover { color: inherit; opacity: 0.7; }
+    .toolbar .close-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 24px;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+    }
+    .toolbar .close-btn::before,
+    .toolbar .close-btn::after {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 2px;
+      background-color: #5b1129;
+      position: absolute;
+      left: 0;
+      top: 11px;
+      transition: background-color 0.2s ease-in-out;
+    }
+    .toolbar .close-btn::before { transform: rotate(45deg); }
+    .toolbar .close-btn::after  { transform: rotate(-45deg); }
+    .toolbar .close-btn:hover::before,
+    .toolbar .close-btn:hover::after { background-color: #000; }
+  </style>
+  <div class="toolbar" style="background: {{ bg }};">
+    <div class="container">
+      <p style="color:{{ color }};">
+        {%- if link != blank -%}<a href="{{ link }}">{%- endif -%}
+        {{ text }}
+        {%- if link != blank -%}</a>{%- endif -%}
+      </p>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var update = function () {
+        var t = document.querySelector('.toolbar');
+        if (!t) return;
+        document.documentElement.style.setProperty('--toolbar-h', t.offsetHeight + 'px');
+      };
+      update();
+      window.addEventListener('resize', update);
+      window.addEventListener('load', update);
+    })();
+  </script>
+{%- endif -%}

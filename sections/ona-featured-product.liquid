@@ -1,0 +1,326 @@
+{%- comment -%}
+  ONA featured product — self-authored Tier 2 section.
+  Two-column layout (image left, details right).
+  Custom subscription widget reads product.selling_plan_groups directly
+  (bypasses Appstle UI; same underlying data).
+{%- endcomment -%}
+
+{%- assign p = all_products[section.settings.featured_product] -%}
+{%- if p == empty -%}
+  {%- if request.design_mode -%}<div class="ona-fp ona-fp--empty">Choose a product in the section settings.</div>{%- endif -%}
+{%- else -%}
+  {%- assign v = p.selected_or_first_available_variant -%}
+  {%- assign has_sp = false -%}
+  {%- if p.selling_plan_groups.size > 0 -%}{%- assign has_sp = true -%}{%- endif -%}
+
+<section class="ona-fp" data-section-id="{{ section.id }}" data-section-type="ona-featured-product">
+  <div class="ona-fp__grid">
+    <div class="ona-fp__media">
+      {%- if p.featured_media -%}
+        <img
+          src="{{ p.featured_media | image_url: width: 720 }}"
+          srcset="{{ p.featured_media | image_url: width: 540 }} 540w, {{ p.featured_media | image_url: width: 720 }} 720w, {{ p.featured_media | image_url: width: 1080 }} 1080w"
+          sizes="(min-width: 750px) 40vw, 90vw"
+          alt="{{ p.featured_media.alt | default: p.title | escape }}"
+          loading="lazy"
+        >
+      {%- endif -%}
+    </div>
+
+    <div class="ona-fp__info">
+      {%- if section.settings.badge_text != blank -%}
+        <div class="ona-fp__badge">{{ section.settings.badge_text }}</div>
+      {%- endif -%}
+
+      <h2 class="ona-fp__title">{{ p.title | escape }}</h2>
+
+      <div class="ona-fp__price" data-ona-fp-price>
+        <span data-price>{{ v.price | money }}</span>
+        {%- if v.compare_at_price > v.price -%}
+          <span class="ona-fp__price-was" data-compare>{{ v.compare_at_price | money }}</span>
+        {%- endif -%}
+      </div>
+
+      {%- if p.description != blank -%}
+        <div class="ona-fp__desc rte">{{ p.description }}</div>
+      {%- endif -%}
+
+      {%- comment -%} Form uses Appstle-compatible id/class/attr so the app's
+        script can auto-inject its subscription widget (no self-authoring). {%- endcomment -%}
+      {%- assign fp_form_id = 'product_form_' | append: p.id -%}
+      {%- assign fp_form_class = 'product-form product-form-' | append: section.id | append: ' ona-fp__form' -%}
+      {%- form 'product', p, id: fp_form_id, class: fp_form_class, data-product-form: '', data-ona-fp-form: '' -%}
+
+        {%- for opt in p.options_with_values -%}
+          <div class="ona-fp__option">
+            <label for="opt-{{ section.id }}-{{ forloop.index }}">{{ opt.name }}</label>
+            <select id="opt-{{ section.id }}-{{ forloop.index }}" data-ona-fp-option="{{ forloop.index0 }}">
+              {%- for val in opt.values -%}
+                <option value="{{ val | escape }}"{% if val == opt.selected_value %} selected{% endif %}>{{ val | escape }}</option>
+              {%- endfor -%}
+            </select>
+          </div>
+        {%- endfor -%}
+
+        <select name="id" data-ona-fp-id hidden>
+          {%- for var in p.variants -%}
+            <option value="{{ var.id }}"
+              data-available="{{ var.available }}"
+              data-price="{{ var.price | money }}"
+              data-compare="{{ var.compare_at_price | money }}"
+              {%- for opt_val in var.options -%} data-option{{ forloop.index }}="{{ opt_val | escape }}"{%- endfor -%}
+              {% if var.id == v.id %}selected{% endif %}>{{ var.title }}</option>
+          {%- endfor -%}
+        </select>
+
+        {%- comment -%} Appstle selector — tells the app which product handle to inject subscription options for. {%- endcomment -%}
+        <span class="appstle_stand_alone_selector" data-product-handle="{{ p.handle }}" style="display:none;"></span>
+
+        <button type="submit" class="ona-fp__submit" {%- unless v.available %} disabled{%- endunless %} data-ona-fp-atc>
+          {%- if v.available -%}Add to cart{%- else -%}Sold out{%- endif -%}
+        </button>
+        {%- if v.available -%}
+          <div class="ona-fp__payment-button shopify-payment-button">
+            {{ form | payment_button }}
+          </div>
+        {%- endif -%}
+      {%- endform -%}
+    </div>
+  </div>
+</section>
+
+{% endif %}
+
+{% stylesheet %}
+  .ona-fp {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 48px 30px;
+  }
+  .ona-fp--empty {
+    padding: 60px 30px;
+    text-align: center;
+    color: #888;
+  }
+  .ona-fp__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+  @media (max-width: 749px) {
+    .ona-fp__grid { grid-template-columns: 1fr; gap: 24px; }
+  }
+  .ona-fp__media img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .ona-fp__badge {
+    display: inline-block;
+    color: #e34d34;
+    font: 700 12px/1 'Karla Bold', 'Karla', sans-serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .ona-fp__title {
+    font: 500 42px/1.2 'Karla', sans-serif;
+    color: #2b2c30;
+    margin: 0 0 12px;
+  }
+  .ona-fp__price {
+    font: 700 21px/1.4 'Karla Bold', 'Karla', sans-serif;
+    color: #333232;
+    margin-bottom: 18px;
+  }
+  .ona-fp__price-was {
+    color: #999;
+    text-decoration: line-through;
+    margin-left: 10px;
+    font-weight: 400;
+    font-size: 16px;
+  }
+  .ona-fp__desc {
+    font: 400 15px/1.6 'Karla', sans-serif;
+    color: #333232;
+    margin-bottom: 20px;
+  }
+  .ona-fp__option {
+    margin-bottom: 14px;
+  }
+  .ona-fp__option label {
+    display: block;
+    font: 400 13px/1 'Karla', sans-serif;
+    color: #2b2c30;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .ona-fp__option select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    /* R48: removed `font: 400 15px/1 Karla` — was overriding main.css R23 block's font: 400 17px/1.6471 Karla via late-loading section stylesheet (#41 compiled_assets order). Font now sourced exclusively from main.css L23663. */
+    color: #2b2c30;
+    cursor: pointer;
+  }
+  .ona-fp__sp {
+    border: 0;
+    padding: 0;
+    margin: 12px 0 20px;
+  }
+  .ona-fp__sp legend {
+    font: 400 13px/1 'Karla', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    padding: 0;
+  }
+  .ona-fp__sp-opt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid #ccc;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+  .ona-fp__sp-opt:has(input:checked) {
+    border-color: #661a34;
+    background: #fbf8f3;
+  }
+  .ona-fp__sp-opt input {
+    margin: 0;
+    accent-color: #661a34;
+  }
+  .ona-fp__sp-label {
+    flex: 1;
+    font: 400 14px/1 'Karla', sans-serif;
+    color: #2b2c30;
+  }
+  .ona-fp__sp-price {
+    font: 400 14px/1 'Karla', sans-serif;
+    color: #661a34;
+  }
+  .ona-fp__submit {
+    display: block;
+    width: 100%;
+    padding: 20px 14px;
+    margin-bottom: 16px;
+    background: #661a34;
+    color: #fff;
+    border: 0;
+    font: 400 15px/1 'Karla', sans-serif;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .ona-fp__submit:hover:not([disabled]) { background: #2b2c30; }
+  .ona-fp__submit[disabled] { background: #ccc; cursor: not-allowed; }
+{% endstylesheet %}
+
+<script>window.__onaAutoOpenCart = window.__onaAutoOpenCart || {{ settings.auto_open_cart_drawer | json }};</script>
+
+{% javascript %}
+  (function () {
+    function openCartDrawer() {
+      var drawer = document.querySelector('cart-drawer-component');
+      if (drawer && typeof drawer.open === 'function') return drawer.open();
+      var trigger = document.querySelector('[data-testid="cart-drawer-trigger"]');
+      trigger && trigger.click();
+    }
+
+    document.querySelectorAll('[data-section-type="ona-featured-product"]').forEach(function (root) {
+      var optionSelects = root.querySelectorAll('[data-ona-fp-option]');
+      var variantSelect = root.querySelector('[data-ona-fp-id]');
+      var priceEl = root.querySelector('[data-price]');
+      var compareEl = root.querySelector('[data-compare]');
+      var submit = root.querySelector('[data-ona-fp-atc]');
+      var form = root.querySelector('[data-ona-fp-form]');
+
+      function updateVariant() {
+        var chosen = Array.from(optionSelects).map(function (s) { return s.value; });
+        var match = null;
+        Array.from(variantSelect.options).forEach(function (opt) {
+          var ok = chosen.every(function (v, i) { return opt.getAttribute('data-option' + (i+1)) === v; });
+          if (ok) match = opt;
+        });
+        if (!match) return;
+        variantSelect.value = match.value;
+        var available = match.getAttribute('data-available') === 'true';
+        submit.disabled = !available;
+        submit.textContent = available ? 'Add to cart' : 'Sold out';
+        if (priceEl) priceEl.textContent = match.getAttribute('data-price');
+        if (compareEl) {
+          var cmp = match.getAttribute('data-compare');
+          if (cmp && cmp !== '$0.00' && cmp !== match.getAttribute('data-price')) {
+            compareEl.textContent = cmp; compareEl.style.display = '';
+          } else { compareEl.style.display = 'none'; }
+        }
+        // Fire event so Appstle recalculates displayed subscription prices for new variant
+        form.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+
+      optionSelects.forEach(function (s) { s.addEventListener('change', updateVariant); });
+
+      // AJAX add to cart (same flow as featured-collection)
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        submit.classList.add('is-loading');
+        var label = submit.textContent;
+        submit.textContent = 'Adding…';
+
+        var fd = new FormData(form);
+        // Also include sections so cart drawer refreshes
+        fd.append('sections', 'ona_header');
+
+        fetch('/cart/add.js', {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          body: fd,
+          credentials: 'same-origin'
+        })
+        .then(function (r) { return r.ok ? r.json() : r.json().then(function (err) { throw err; }); })
+        .then(function (resp) {
+          submit.textContent = 'Added ✓';
+          document.dispatchEvent(new CustomEvent('cart:update', {
+            bubbles: true,
+            detail: {
+              resource: resp,
+              sourceId: variantSelect.value,
+              data: { source: 'ona-featured-product', sections: resp.sections || {}, itemCount: resp.item_count }
+            }
+          }));
+          // R50: see ona-featured-collection.liquid for context — Liquid is
+          // illegal inside {% javascript %} blocks; flag is set via inline <script> above.
+          if (window.__onaAutoOpenCart) setTimeout(openCartDrawer, 120);
+          setTimeout(function () { submit.textContent = label; submit.classList.remove('is-loading'); }, 1500);
+        })
+        .catch(function (err) {
+          submit.textContent = (err && err.description) ? err.description : 'Error';
+          submit.classList.remove('is-loading');
+          setTimeout(function () { submit.textContent = label; }, 2000);
+        });
+      });
+    });
+  })();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "ONA Featured product",
+  "class": "index-section index-section--featured-product",
+  "enabled_on": { "templates": ["*"] },
+  "settings": [
+    { "type": "product", "id": "featured_product", "label": "Product" },
+    { "type": "text", "id": "badge_text", "label": "Discount badge text (optional)", "default": "20% OFF AT CHECKOUT" }
+  ],
+  "presets": [
+    { "name": "ONA Featured product" }
+  ]
+}
+{% endschema %}

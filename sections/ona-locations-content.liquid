@@ -1,0 +1,161 @@
+<section class="locations-content">
+  <div class="container">
+    <div class="content">
+      <div class="left-box wowo fadeInUp">
+          {% if section.blocks.size > 0 %}
+            {% for block in section.blocks %}
+              {% assign beatles = array | split: "|" %}
+              {% for member in beatles %}
+                {% assign count = 0 %} 
+                {% if member != block.settings.location %}  
+                  {% assign count = count | plus:1 %} 
+                {% endif %} 
+              {% endfor %}
+              {% if count != 0 %}
+              	{% assign foo = forloop.index0 %}
+              	{% if foo != 0 %}
+              		{% assign array = array | append: '|' %}
+              	{% endif %}
+              	{% assign array = array | append: block.settings.location %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+
+          {% for article in blogs.flagship-stores.articles %}
+          {% assign foo = forloop.index0 %}
+          <div class="locations-list{% if foo == 0 %} active{% endif %}">
+            <h2 class="{% if foo == 0 %}active{% endif %}">{{ article.title }}<i class="icon-close"></i></h2>
+            <div class="list-item" {% if foo == 0 %}style="display:block;"{% endif %}>
+
+              <div class="list">
+                <div class="store-photo-mobile-slider">
+                  {% for img_item in  article.metafields.accentuate.store_photo %}
+                  {% assign foo = forloop.index0 %}
+                    <div class="slide-box">
+                      <img src="{{ article.metafields.accentuate.store_photo[foo] }}" alt="" loading="lazy" decoding="async">
+                      <div class="img-bg" style="background-image: url('{{ article.metafields.accentuate.store_photo[foo] }}')"></div>
+                  </div>
+                  {% endfor %}
+                </div>   
+                <h3>{{ article.title }}</h3>
+                <p>{{ article.metafields.accentuate.address }}</p>
+                <div class="time-list">
+                  {{ article.metafields.accentuate.open_time }}
+                </div>
+                <p><a target="_blank" href="http://{{ article.metafields.accentuate.store_web }}">{{ article.metafields.accentuate.store_web }}</a></p>
+              </div>
+
+            </div>
+          </div>  
+          {% endfor %} 
+      </div>
+      
+      <div class="right-box wowo fadeInUp">
+        <div class="locations-content-image">
+          {% for article in blogs.flagship-stores.articles %}
+          {% assign foo = forloop.index0 %}
+          <div class="slider-list" {% if foo == 0 %}style="display:block;"{% endif %}>
+           	<div class="store-photo-slider {% if foo == 0 %} current-item {% endif %}" id="article-{{article.id}}"> 
+              {% for img_item in  article.metafields.accentuate.store_photo %}
+              {% assign foo = forloop.index0 %}
+                <div class="slide-box">
+                  <img src="{{ article.metafields.accentuate.store_photo[foo] }}" alt="" loading="lazy" decoding="async">
+                  <div class="img-bg" style="background-image: url('{{ article.metafields.accentuate.store_photo[foo] }}')"></div>
+                </div>
+              {% endfor %}  
+              {%if foo <= 3 and article.id == 556812009663 %}
+               <div class="slide-box">
+                <img src="{{ article.metafields.accentuate.store_photo[1] }}" alt="" loading="lazy" decoding="async">
+                <div class="img-bg" style="background-image: url('{{ article.metafields.accentuate.store_photo[1] }}')"></div>
+              </div>
+              {% endif %}
+          	</div>
+          </div>
+          {% endfor %} 
+        </div>
+        <div class="locations-content-text">
+          {% for article in blogs.flagship-stores.articles %}
+          {% assign foo = forloop.index0 %}
+          <div class="tab-content" {% if foo == 0 %}style="display:block;"{% endif %}>
+            <div class="slider-list">
+              <div class="addr">
+                <h3>{{ article.title }}</h3>
+                <p>{{ article.metafields.accentuate.address }}</p> 
+              </div>
+              <div class="time">
+                <div class="time-list">
+                  {{ article.metafields.accentuate.open_time }}
+                </div>
+                <p><a target="_blank" href="http://{{ article.metafields.accentuate.store_web }}">{{ article.metafields.accentuate.store_web }}</a></p>
+              </div>
+            </div>
+          </div>
+          {% endfor %} 
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+{% schema %}
+{
+  "name": {
+    "en": "Locations content"
+  },
+  "blocks": [
+    {
+      "type": "block",
+      "name": {
+        "en": "Block"
+      },
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": {
+            "en": "Image"
+          }
+        },
+        {
+          "type": "text",
+          "id": "location",
+          "label": {
+            "en": "Location"
+          }
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "id": "address",
+          "label": {
+            "en": "Address"
+          }
+        },
+        {
+          "type": "richtext",
+          "id": "time",
+          "label": {
+            "en": "Open time"
+          }
+        },
+        {
+          "type": "text",
+          "id": "email",
+          "label": {
+            "en": "Email"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

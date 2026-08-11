@@ -1,0 +1,185 @@
+/*
+  Custom Filters CSS
+  ------------------
+  Estilos personalizados para la seccion de filtros (filters.liquid).
+  Coloca este archivo en la carpeta `assets/` del theme.
+
+  Objetivos:
+  1. Dar un espacio a la izquierda al boton "FILTER" (como en la imagen 1).
+  2. Centrar el conteo de resultados y alinear "Sort by" a la derecha.
+  3. Reemplazar los estilos inline estaticos por clases reutilizables.
+
+  NOTA: la causa raiz del espacio reservado (el panel vertical vacio que ocupaba
+  la columna 2 del grid) se resolvio en filters.liquid envolviendo ese div en
+  {% if should_show_pane %}, por lo que ya no se renderiza cuando esta oculto.
+*/
+
+/* Variables de espaciado del boton de filtro */
+:root {
+  --custom-filter-left-space: var(--padding-lg, 24px);
+}
+
+/* 1. Espacio a la izquierda del boton FILTER (imagen 1) */
+.facets-toggle {
+  /* Anula el offset negativo original (--icon-offset: -3px) que dejaba el
+     boton pegado al borde y agrega un espacio a la izquierda. */
+  padding-inline-start: var(--custom-filter-left-space);
+}
+
+.facets-toggle__wrapper {
+  /* Elimina el margen negativo que empujaba el boton hacia la izquierda */
+  margin-left: 0;
+}
+
+/* Reparte el contenido: boton izquierda, conteo centrado, sort a la derecha */
+.facets-toggle .facets-mobile-wrapper {
+  margin-left: auto;
+}
+
+/* Version horizontal en desktop: mismo espacio a la izquierda */
+@media screen and (min-width: 750px) {
+  .facets--horizontal .facets__form-wrapper {
+    padding-inline-start: var(--custom-filter-left-space);
+  }
+
+  /* Conteo de resultados centrado */
+  .facets--horizontal .products-count-wrapper {
+    margin-inline: auto;
+    justify-content: center;
+  }
+}
+
+/* 2. Regla extraida del estilo inline estatico (antes en filters.liquid:386) */
+.facets__title-wrapper--shadow {
+  --color-shadow: rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
+}
+
+
+/* ============================================
+   ANIMACIÓN DE ENTRADA PARA FILTERS-DRAWER
+   ============================================ */
+
+/* 1. Estado inicial del drawer (cerrado) */
+.facets--drawer {
+  /* Animación suave para todos los cambios */
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Estado inicial: oculto y desplazado a la derecha */
+  transform: translateX(100%);
+  opacity: 0;
+  box-shadow: none;
+}
+
+/* 2. Estado abierto del drawer */
+.facets--drawer[open] {
+  /* Animación de entrada: viene desde la derecha */
+  transform: translateX(0);
+  opacity: 1;
+  box-shadow: var(--shadow-drawer, -8px 0 32px rgba(0, 0, 0, 0.15));
+  
+  /* Soporte para entrada con @starting-style */
+  @starting-style {
+    transform: translateX(100%);
+    opacity: 0;
+    box-shadow: none;
+  }
+}
+
+/* 3. Animación para el backdrop/overlay (si existe) */
+/* Agrega esto si tienes un overlay en tu tema */
+dialog-component.facets-block-wrapper::backdrop {
+  background-color: rgba(0, 0, 0, 0);
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+dialog-component.facets-block-wrapper[open]::backdrop {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+/* 4. Animación de los elementos internos (efecto escalonado) */
+.facets--drawer[open] .facets__title-wrapper {
+  animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.facets--drawer[open] .facets-drawer__filters {
+  animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards;
+  opacity: 0; /* Estado inicial para la animación */
+}
+
+.facets--drawer[open] .facets__drawer-actions {
+  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
+  opacity: 0; /* Estado inicial para la animación */
+}
+
+/* 5. Keyframes para las animaciones internas */
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 6. Opcional: Entrada con rebote (más dinámico) */
+/*
+  Descomenta esta versión si prefieres un efecto de "rebote"
+  en lugar de la animación suave estándar.
+*/
+/*
+.facets--drawer[open] {
+  animation: slideInRight 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+*/
+
+/* 7. Asegurar que el contenido interno no se desborde durante la animación */
+.facets--drawer {
+  overflow: hidden;
+}
+
+.facets--drawer[open] {
+  overflow: hidden;
+}
+
+/* 8. Suavizar la transición de cierre */
+.facets--drawer:not([open]) {
+  transform: translateX(100%);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}

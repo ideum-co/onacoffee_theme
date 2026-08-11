@@ -1,0 +1,163 @@
+<style>
+header {
+  background: #fff !important;
+}
+</style>
+
+<div class="product-template__container"
+  id="ProductSection-{{ section.id }}"
+  data-section-id="{{ section.id }}"
+  data-section-type="product"
+  data-enable-history-state="true"
+  data-ajax-enabled="{{ settings.enable_ajax }}">
+
+  {% assign current_variant = product.selected_or_first_available_variant %}
+  {% assign product_image_zoom_size = '1024x1024' %}
+  {% assign product_image_scale = '2' %}
+  {% assign enable_image_zoom = section.settings.enable_image_zoom %}
+
+  <section class="product-detail-slider t3">
+    <div class="left wowo fadeInUp">
+      <div class="slider-for">
+        {% for media in product.media %}
+          <div class="slider-list">
+            <img src="{{ media.preview_image | img_url: '1100x1100', scale: '1' }}" alt="">
+          </div>
+        {% endfor %}
+      </div>
+      <div class="slider-nav">
+        {% for media in product.media %}
+          <div class="slider-list">
+            <div class="img-bg" style="background-image:url({{ media.preview_image | img_url: '350x350', scale: '1' }});"></div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="right wowo fadeInUp">
+      <div class="right-box">
+        <h1>{{ product.title | escape }}</h1>
+
+        <div class="product__price">
+          {% include 'product-price', variant: current_variant, show_vendor: section.settings.show_vendor %}
+        </div>
+
+        <div class="product-content">{{ product.description }}</div>
+
+        {% capture form_classes %}
+          product-form product-form-{{ section.id }}
+          {%- if section.settings.enable_payment_button and product.has_only_default_variant %} product-form--payment-button-no-variants {%- endif -%}
+          {%- if current_variant.available == false %} product-form--variant-sold-out {%- endif -%}
+        {% endcapture %}
+
+        {% if product.metafields.custom.sold_out.value != true %}
+          {% form 'product', product, class:form_classes, novalidate: 'novalidate', data-product-form: '' %}
+            {{ form | payment_terms }}
+
+           {% unless product.has_only_default_variant %}
+  <div class="product-form__controls-group">
+    {% for option in product.options_with_values %}
+      <div class="product-form__item">
+        <label for="Option-{{ option.name }}">{{ option.name }}</label>
+        <select
+          id="Option-{{ option.name }}"
+          name="options[{{ option.name }}]"
+          data-index="option{{ forloop.index }}"
+          class="single-option-selector single-option-selector-{{ section.id }} product-form__input"
+        >
+          {% for value in option.values %}
+            <option value="{{ value | escape }}"{% if option.selected_value == value %} selected{% endif %}>
+              {{ value }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    {% endfor %}
+  </div>
+{% endunless %}
+            <input type="hidden" name="id" value="{{ current_variant.id }}">
+            <script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const form = document.querySelector('form[data-product-form]');
+    const variantSelector = form.querySelectorAll('select');
+    const variants = {{ product.variants | json }};
+    const variantIdInput = form.querySelector('input[name="id"]');
+
+    function findMatchingVariant() {
+      let selectedOptions = [];
+      variantSelector.forEach(select => {
+        selectedOptions.push(select.value);
+      });
+
+      const matchedVariant = variants.find(v => {
+        return v.options.every((opt, index) => opt === selectedOptions[index]);
+      });
+
+      if (matchedVariant) {
+        variantIdInput.value = matchedVariant.id;
+      }
+    }
+
+    variantSelector.forEach(select => {
+      select.addEventListener('change', findMatchingVariant);
+    });
+  });
+</script>
+
+            <div class="product-form__controls-group">
+              <label for="Quantity-{{ section.id }}">{{ 'products.product.quantity' | t }}</label>
+              <input
+                type="number"
+                id="Quantity-{{ section.id }}"
+                name="quantity"
+                value="1"
+                min="1"
+                class="product-form__input">
+            </div>
+
+            <span class="appstle_stand_alone_selector" data-product-handle="{{ product.handle }}" style="display:none;"></span>
+            <div class="product-form__controls-group product-form__controls-group--submit">
+              <div class="product-form__item product-form__item--submit">
+                <button type="submit" name="add" class="git-btn cart-btn product-form__cart-submit">
+                  <span data-add-to-cart-text>
+                    {% if current_variant.available %}
+                      {{ 'products.product.add_to_cart' | t }}
+                    {% else %}
+                      {{ 'products.product.sold_out' | t }}
+                    {% endif %}
+                  </span>
+                  <span class="icon-cart"></span>
+                </button>
+              </div>
+            </div>
+          {% endform %}
+        {% endif %}
+
+        <div class="product-single__store-availability-container"
+          data-store-availability-container
+          data-product-title="{{ product.title | escape }}"
+          data-has-only-default-variant="{{ product.has_only_default_variant }}"
+          data-base-url="{{ shop.url }}{{ routes.root_url }}">
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+{% unless product == empty %}
+  <script type="application/json" id="ProductJson-{{ section.id }}">
+    {{ product | json }}
+  </script>
+  <script type="application/json" id="ModelJson-{{ section.id }}">
+    {{ product.media | where: 'media_type', 'model' | json }}
+  </script>
+{% endunless %}
+
+<style>
+  .product-form__item.qty-wrap {
+    display: block !important;
+  }
+</style>
+{% schema %}
+{ "name": "ONA product-template-3", "settings": [] }
+{% endschema %}

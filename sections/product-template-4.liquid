@@ -1,0 +1,1110 @@
+<div class="product-template__container"
+  id="ProductSection-{{ section.id }}"
+  data-section-id="{{ section.id }}"
+  data-section-type="product"
+  data-enable-history-state="true"
+  data-ajax-enabled="{{ settings.enable_ajax }}"
+>{% render 'preorder-now-collection-item', product: product %}
+  {% comment %}
+    Get first variant, or deep linked one
+  {% endcomment %}
+  {%- assign current_variant = product.selected_or_first_available_variant -%}
+  {%- assign product_image_zoom_size = '1024x1024' -%}
+  {%- assign product_image_scale = '2' -%}
+  {%- assign enable_image_zoom = section.settings.enable_image_zoom -%}
+  {%- assign compare_at_price = current_variant.compare_at_price -%}
+  {%- assign price = current_variant.price -%}
+
+  {% case section.settings.media_size %}
+    {% when 'small' %}
+      {%- assign product_media_width = 'medium-up--one-third' -%}
+      {%- assign product_description_width = 'medium-up--two-thirds' -%}
+      {%- assign height = 345 -%}
+    {% when 'medium' %}
+      {%- assign product_media_width = 'medium-up--one-half' -%}
+      {%- assign product_description_width = 'medium-up--one-half' -%}
+      {%- assign height = 530 -%}
+    {% when 'large' %}
+      {%- assign product_media_width = 'medium-up--two-thirds' -%}
+      {%- assign product_description_width = 'medium-up--one-third' -%}
+      {%- assign height = 720 -%}
+    {% when 'full' %}
+      {%- assign product_media_width = '' -%}
+      {%- assign product_description_width = '' -%}
+      {%- assign height = 1090 -%}
+      {%- assign enable_image_zoom = false -%}
+  {% endcase %}
+
+
+<div>
+  
+
+  {% assign allproduct = 0 %}
+  {% assign preorderproduct = 0 %}
+    {% for item in cart.items %}
+      {% if item %}
+  		{% assign allproduct = allproduct | plus:1 %}
+        {% for property in item.properties %}
+          {% if property %}
+  			{% assign preorderproduct = preorderproduct | plus:1 %}
+          {% else %}
+  
+          {% endif %}
+        {% endfor %}
+      {% else %}
+  
+      {% endif %}
+    {% endfor %}
+  
+  {% assign normalproduct = allproduct | minus:preorderproduct %}
+
+  
+  
+  {% if allproduct > 0 %}
+    {% if normalproduct > 0 %}
+  
+
+  
+  
+	{% else %}
+  
+
+    {% endif %}
+  
+  {% endif %}
+  
+  
+</div>
+
+<section class="product-top" style="background-color:{{ product.metafields.accentuate.colour }};">
+  <div class="container">
+    <div class="content">
+      <div class="left wowo fadeInUp">
+        <img class="bg" src="{{ product.metafields.accentuate.image_banner_bg }}">
+        {% for media in product.media %}
+          <img src="{{ media.preview_image | img_url: product_image_zoom_size, scale: product_image_scale }}">
+        {% endfor %}
+      </div>
+      <div class="right wowo fadeInUp">
+       	{% if product.collections %}
+      	{% assign productCollections = product.collections %}
+		{% endif %}
+        {% for productCollection in  productCollections %}
+          {% if productCollection.title != 'All' %}
+            {% if productCollection.title == 'Past coffees' %}
+              {% assign past = productCollection.title %}
+            {% endif %}
+            <div class="go-to-back">
+              <a href="{{productCollection.url}}"><i class="icon-arrow-smaller"></i>{{productCollection.title}}</a>
+            </div>
+          {% endif %}
+      	{% endfor %}
+        <h1>{{ product.title | escape }}</h1>
+        <div class="product__price">
+          {% include 'product-price', variant: current_variant, show_vendor: section.settings.show_vendor %}
+        </div>
+        <div class="product-content">{{ product.description }}</div>
+        {%- if cart.taxes_included or shop.shipping_policy.body != blank -%}
+        <div class="product-content product__policies rte" data-product-policies {% if past %}style="display:none;"{% endif %}>
+          {%- if cart.taxes_included -%}
+          {{ 'products.product.include_taxes' | t }}
+          {%- endif -%}
+          {%- if shop.shipping_policy.body != blank -%}
+          {{ 'products.product.shipping_policy_html' | t: link: shop.shipping_policy.url }}
+          {%- endif -%}
+        </div>
+        {%- endif -%}
+        {% capture "form_classes" -%}
+          product-form product-form-{{ section.id }}
+          {%- if section.settings.enable_payment_button and product.has_only_default_variant %} product-form--payment-button-no-variants {%- endif -%}
+          {%- if current_variant.available == false %} product-form--variant-sold-out {%- endif -%}
+        {%- endcapture %}
+        {% if product.metafields.custom.sold_out.value != true %}
+          {% form 'product', product, class:form_classes, novalidate: 'novalidate', data-product-form: '' %}
+            {{ form | payment_terms }}
+   			<div class="qty-options-row" {% if past %}style="display:none;"{% endif %}>
+              {% unless product.has_only_default_variant %}
+                <div class="product-form__controls-group">
+                  {% for option in product.options_with_values %}
+                    <div class="selector-wrapper js product-form__item">
+                      <label for="SingleOptionSelector-{{ forloop.index0 }}">
+                        {{ option.name }}
+                      </label>
+                      <select class="single-option-selector single-option-selector-{{ section.id }} product-form__input"
+                        id="SingleOptionSelector-{{ forloop.index0 }}"
+                        data-index="option{{ forloop.index }}"
+                      >
+                        {% for value in option.values %}
+                          <option value="{{ value | escape }}"{% if option.selected_value == value %} selected="selected"{% endif %}>{{ value }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endunless %}
+              {% if section.settings.show_quantity_selector %}
+                <div class="product-form__controls-group">
+                  <div class="product-form__item">
+                    <label for="Quantity-{{ section.id }}">{{ 'products.product.quantity' | t }}</label>
+                    <a href="javascript:void(0);" class="minus">-</a>
+                    <input type="number" id="Quantity-{{ section.id }}"
+                      name="quantity" value="1" min="1" pattern="[0-9]*"
+                      class="product-form__input product-form__input--quantity" data-quantity-input
+                    >
+                    <a href="javascript:void(0);" class="plus">+</a>
+                  </div>
+                </div>
+              {% endif %}
+              <select name="id" id="ProductSelect-{{ section.id }}" class="product-form__variants no-js">
+                {% for variant in product.variants %}
+                  <option value="{{ variant.id }}"
+                    {%- if variant == current_variant %} selected="selected" {%- endif -%}
+                  >
+                    {{ variant.title }}  {%- if variant.available == false %} - {{ 'products.product.sold_out' | t }}{% endif %}
+                  </option>
+                {% endfor %}
+              </select>
+          </div>
+
+            <div class="product-form__error-message-wrapper product-form__error-message-wrapper--hidden{% if section.settings.enable_payment_button %} product-form__error-message-wrapper--has-payment-button{% endif %}"
+              data-error-message-wrapper
+              role="alert"
+            >
+              <span class="visually-hidden">{{ 'general.accessibility.error' | t }} </span>
+              {% include 'icon-error' %}
+              <span class="product-form__error-message" data-error-message>{{ 'products.product.quantity_minimum_message' | t }}</span>
+            </div>
+            <span class="appstle_stand_alone_selector" data-product-handle="{{ product.handle }}" style="display:none;"></span>
+            <div class="product-form__controls-group product-form__controls-group--submit" {% if past %}style="display:none;"{% endif %}>
+              <div class="product-form__item product-form__item--submit
+                {%- if section.settings.enable_payment_button %} product-form__item--payment-button {%- endif -%}
+                {%- if product.has_only_default_variant %} product-form__item--no-variants {%- endif -%}"
+              >
+                
+                <button type="submit" name="add"
+                  {% unless current_variant.available %} aria-disabled="true"{% endunless %}
+                  aria-label="{% unless current_variant.available %}{{ 'products.product.sold_out' | t }}{% else %}{{ 'products.product.add_to_cart' | t }}{% endunless %}"
+                  class="git-btn cart-btn product-form__cart-submit{% if section.settings.enable_payment_button and product.selling_plan_groups == empty %} btn--secondary-accent{% endif %}"
+                  {% if settings.enable_ajax %}aria-haspopup="dialog"{% endif %}
+                  data-add-to-cart>
+                  <span data-add-to-cart-text>
+                    {% unless current_variant.available %}
+                      {{ 'products.product.sold_out' | t }}
+                    {% else %}
+                      {{ 'products.product.add_to_cart' | t }}
+                    {% endunless %}
+                    <span class="icon-cart"></span>
+                  </span>
+                  <span class="hide" data-loader>
+                    {% include 'icon-spinner' %}
+                  </span>
+                </button>
+                
+                {% if section.settings.enable_payment_button %}
+                  {{ form | payment_button }}
+                {% endif %}
+              </div>
+              <div class="text-after-buttons"><p>{{ product.metafields.accentuate.text_after_add_to_cart }}</p></div>
+            </div>
+          {% endform %}
+        {% endif %}
+
+
+        <div class="product_single_custom_tag">
+            {% assign custom_tag_status = product.metafields.custom_product.tag_status %}
+            {% assign custom_tag_name = product.metafields.custom_product.tag_name.value %}
+            {% assign custom_tag_color = product.metafields.custom_product.tag_color %}
+            {% assign custom_tag_icon = product.metafields.custom_product.tag_icon %}
+            {% assign custom_tag_low_stock_qty = product.metafields.custom_product.lowstock_inventory %}
+            {% assign custom_tag_from_date = product.metafields.custom_product.from_date %}
+            {% assign custom_tag_from_time = product.metafields.custom_product.from_time %}
+            {% assign custom_tag_to_date = product.metafields.custom_product.to_date %}
+            {% assign custom_tag_to_time = product.metafields.custom_product.to_time %}
+            {% assign currentDatetime = "now" | date: "%Y-%m-%d %H:%M:%S" %}
+            {% assign first_match_found = false %}
+            {% assign first_match_to_date = '' %}
+            {% assign custom_tag_type = product.metafields.custom_product.tag_type %}
+            {% if custom_tag_status != blank %}
+              {% assign total_instances = custom_tag_status.size %}
+            {% else %}
+              {% assign total_instances = 0 %}
+            {% endif %}
+           
+            {% assign low_stock_found = false %}
+            {% assign product_sold_out = false %}
+            {% assign product_sale_tag = false %}
+            
+            {% if custom_tag_type contains 'Sale' %}
+                {% assign product_sale_tag = false %}
+            {% endif %}
+
+             {% assign lowstock_index = '' %}
+            {% assign lowstock_status = '' %}
+            {% assign is_lowstock_and_active = false %}
+            {% for tagtype in custom_tag_type %}
+              {% if tagtype == 'Low Stock' %}
+                {% assign lowstock_index = forloop.index0 %}
+              {% endif %}
+            {% endfor %}
+            {% if lowstock_index != '' %}
+              {% for tagstatus in custom_tag_status %}
+                {% if forloop.index0 == lowstock_index %}
+                  {% assign lowstock_status = tagstatus %}
+                {% endif %}
+                {% if lowstock_status == 'Active' %}
+                  {% assign is_lowstock_and_active = true %}
+                {% endif %}
+              {% endfor %}
+
+              {% for taglowstock in custom_tag_low_stock_qty %}
+                {% if forloop.index0 == lowstock_index %}
+                  {% assign lowstock_inventqty = taglowstock | plus: 0 %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+           
+            {% if custom_tag_type contains 'Low Stock' and product.first_available_variant.inventory_quantity <= lowstock_inventqty and is_lowstock_and_active == true %}
+                {% assign low_stock_found = true %}  
+            {% endif %}
+
+          
+            {% for i in (0..total_instances) %}
+             
+              {% if custom_tag_status[i] != 'Disable' %}
+                   {% assign custommetafield_index = i | plus: 1 %}
+                   {% if custom_tag_low_stock_qty[i] != '' %}
+                     {% assign lowstock_inventory_limit = custom_tag_low_stock_qty[i] | plus: 0 %}
+                   {% endif %}
+                  
+                   {% assign customtagfromDatetime = custom_tag_from_date[i] | append: " " | append: custom_tag_from_time[i] | date: "%Y-%m-%d %H:%M:%S" %}
+                   {% assign customtagtoDatetime = custom_tag_to_date[i] | append: " " | append: custom_tag_to_time[i] | date: "%Y-%m-%d %H:%M:%S" %}
+                   {% unless product_sold_out %}
+                     {% if customtagfromDatetime <= currentDatetime and customtagtoDatetime >= currentDatetime and custom_tag_type[i] != 'blank' and product.available == true and custom_tag_type[i] != 'Sold Out' and custom_tag_type[i] != 'Low Stock' and custom_tag_type[i] != 'Sale'  %}
+                        
+                         <span class="custom_product_tags">{% if custom_tag_icon[i] %} <img src="{{ custom_tag_icon[i] }}" alt=""> {% endif %}<h5>{{ custom_tag_name[i] }} </h5></span> 
+                       
+                     {% endif %}
+                   {% endunless %}
+                   {% if custom_tag_type[i] != 'blank' and custom_tag_type[i] == 'Low Stock' and lowstock_inventory_limit != '' and product.available == true and product.first_available_variant.inventory_quantity <= lowstock_inventory_limit and low_stock_found == true %}
+                     <span class="custom_product_tags"> {% if custom_tag_icon[i] %} <img src="{{ custom_tag_icon[i] }}" alt=""> {% endif %} <h5>{{ custom_tag_name[i] }} </h5></span> 
+                   {% endif %}
+             {% endif %}
+            {% endfor %}
+          </div>
+
+        
+        
+        {%- comment -%}
+          Live region for announcing updated price and availability to screen readers
+        {%- endcomment -%}
+        <p class="visually-hidden" data-product-status
+          aria-live="polite"
+          role="status"
+        ></p>
+
+        {%- comment -%}
+          Live region for announcing that the product form has been submitted and the
+          product is in the process being added to the cart
+        {%- endcomment -%}
+        <p class="visually-hidden" data-loader-status
+          aria-live="assertive"
+          role="alert"
+          aria-hidden="true"
+        >{{ 'products.product.loader_label' | t }}</p>
+
+        <div
+          class="product-single__store-availability-container"
+          data-store-availability-container
+          data-product-title="{{ product.title | escape }}"
+          data-has-only-default-variant="{{ product.has_only_default_variant }}"
+          data-base-url="{{ shop.url }}{{ routes.root_url }}"
+        >
+        </div>
+      
+       	{% if product.collections %}
+      	{% assign productCollections = product.collections %}
+		{% endif %}
+        {% for productCollection in  productCollections %}
+          {% if productCollection.title != 'All' %}
+          <div class="highlights">
+            <h2>{{ productCollection.metafields.accentuate.highlights_title }}</h2>
+            <div class="three-col-icon-text">
+              {% for highlights_content in  productCollection.metafields.accentuate.highlights_content %}
+              {% assign foo = forloop.index0 %}
+                <div class="item">
+                  <div class="img-box">
+                      <img src="{{ productCollection.metafields.accentuate.highlights_icon[foo] }}">
+                  </div>
+                  <p>{{ productCollection.metafields.accentuate.highlights_content[foo] }}</p>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+      	{% endfor %}
+        
+          {% if section.settings.show_share_buttons %}
+            {% include 'social-sharing', share_title: product.title, share_permalink: product.url, share_image: product.featured_media %}
+          {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+  
+
+{% unless product == empty %}
+  <script type="application/json" id="ProductJson-{{ section.id }}">
+    {{ product | json }}
+  </script>
+  <script type="application/json" id="ModelJson-{{ section.id }}">
+    {{ product.media | where: 'media_type', 'model' | json }}
+  </script>
+{% endunless %}
+{% if product.metafields.accentuate.content_coffee_profile or product.metafields.accentuate.tastes_like or product.metafields.accentuate.profile or product.metafields.accentuate.roast or product.metafields.accentuate.components or product.metafields.accentuate.image_coffee_profile_1 or product.metafields.accentuate.image_coffee_profile_2 %} 
+<section class="profile">
+  <div class="container">
+    <div class="content">
+      <div class="left-box wowo fadeInUp">
+        <div class="box">
+          <h2>COFFEE PROFILE</h2>
+          {{ product.metafields.accentuate.content_coffee_profile }}
+          <table>
+            {% if product.metafields.accentuate.tastes_like %}
+            <tr>
+              <td>TASTES LIKE</td>
+              <td>{{ product.metafields.accentuate.tastes_like }}</td>
+            </tr>
+            {% endif %}
+            {% if product.metafields.accentuate.roast %}
+            <tr>
+              <td>ROAST</td>
+              <td>{{ product.metafields.accentuate.roast }}</td>
+            </tr>
+            {% endif %}
+            {% if product.metafields.accentuate.components %}
+            <tr>
+              <td>COMPONENTS</td>
+              <td>{{ product.metafields.accentuate.components }}</td>
+            </tr>
+            {% endif %}
+          </table>
+          <button class="blogs-link a-link">VIEW BREW GUIDE</button>
+        </div>
+      </div>
+      <div class="right-box wowo fadeInUp">
+        <img class="bg-icon" src="{{ product.metafields.accentuate.image_coffee_profile_0 }}">
+        <div class="img-1" style="background-image: url({{ product.metafields.accentuate.image_coffee_profile_1 }})"></div>
+        <div class="img-2" style="background-image: url({{ product.metafields.accentuate.image_coffee_profile_2 }})"></div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if product.metafields.accentuate.content_reserve_box or product.metafields.accentuate.image_reserve_box %} 
+  <section class="reserve-box">
+    <div class="container">
+      <div class="content">
+        <div class="text-box">
+          <h2>RESERVE BOX</h2>
+          {{ product.metafields.accentuate.content_reserve_box }}			
+        </div>
+        <div class="img-box">
+          <img src="{{ product.metafields.accentuate.image_reserve_box }}">
+        </div>
+      </div>
+    </div>
+  </section>
+{% endif %}
+  
+{% if product.metafields.accentuate.title_c1 or product.metafields.accentuate.image_c1 or product.metafields.accentuate.origin_c1 or product.metafields.accentuate.producer_c1 or product.metafields.accentuate.varietal_c1 or product.metafields.accentuate.process_c1 or product.metafields.accentuate.alttude_c1 or product.metafields.accentuate.tastes_like_c1 or product.metafields.accentuate.title_c2 or product.metafields.accentuate.image_c2 or product.metafields.accentuate.origin_c2 or product.metafields.accentuate.producer_c2 or product.metafields.accentuate.varietal_c2 or product.metafields.accentuate.process_c2 or product.metafields.accentuate.alttude_c2 or product.metafields.accentuate.tastes_like_c2 or product.metafields.accentuate.title_c3 or product.metafields.accentuate.image_c3 or product.metafields.accentuate.origin_c3 or product.metafields.accentuate.producer_c3 or product.metafields.accentuate.varietal_c3 or product.metafields.accentuate.process_c3 or product.metafields.accentuate.alttude_c3 or product.metafields.accentuate.tastes_like_c3 %} 
+<section class="coffee-row">
+    <div class="container">
+      {% if product.metafields.accentuate.title_c1 or product.metafields.accentuate.image_c1 or product.metafields.accentuate.origin_c1 or product.metafields.accentuate.producer_c1 or product.metafields.accentuate.varietal_c1 or product.metafields.accentuate.process_c1 or product.metafields.accentuate.alttude_c1 or product.metafields.accentuate.tastes_like_c1 %} 
+        <div class="content">
+			<div class="title-row">
+				<h2>{{ product.metafields.accentuate.title_c1 }}</h2>
+			</div>
+			<div class="img-box">
+				<img src="{{ product.metafields.accentuate.image_c1 }}">
+			</div>
+			<div class="table-box">
+				<table>
+                  {% if product.metafields.accentuate.origin_c1 %} 
+                  <tr>
+                    <td>ORIGIN</td>
+                    <td>{{ product.metafields.accentuate.origin_c1 }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if product.metafields.accentuate.producer_c1 %} 
+                  <tr>
+                    <td>PRODUCER</td>
+                    <td>{{ product.metafields.accentuate.producer_c1 }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if product.metafields.accentuate.varietal_c1 %} 
+                  <tr>
+                    <td>VARIETAL</td>
+                    <td>{{ product.metafields.accentuate.varietal_c1 }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if product.metafields.accentuate.process_c1 %} 
+                  <tr>
+                    <td>PROCESS</td>
+                    <td>{{ product.metafields.accentuate.process_c1 }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if product.metafields.accentuate.altitude_c1 %} 
+                  <tr>
+                    <td>ALTITUDE</td>
+                    <td>{{ product.metafields.accentuate.altitude_c1 }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if product.metafields.accentuate.tastes_like_c1 %} 
+                  <tr>
+                    <td>TASTES LIKE</td>
+                    <td>{{ product.metafields.accentuate.tastes_like_c1 }}</td>
+                  </tr>
+                  {% endif %}
+				</table>
+			</div>
+        </div>
+      {% endif %}
+      {% if product.metafields.accentuate.title_c2 or product.metafields.accentuate.image_c2 or product.metafields.accentuate.origin_c2 or product.metafields.accentuate.producer_c2 or product.metafields.accentuate.varietal_c2 or product.metafields.accentuate.process_c2 or product.metafields.accentuate.alttude_c2 or product.metafields.accentuate.tastes_like_c2 %} 
+        <div class="content">
+			<div class="title-row">
+				<h2>{{ product.metafields.accentuate.title_c2 }}</h2>
+			</div>
+			<div class="img-box">
+				<img src="{{ product.metafields.accentuate.image_c2 }}">
+			</div>
+			<div class="table-box">
+				<table>
+                  {% if product.metafields.accentuate.origin_c2 %} 
+                  <tr>
+                    <td>ORIGIN</td>
+                    <td>{{ product.metafields.accentuate.origin_c2 }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if product.metafields.accentuate.producer_c2 %} 
+                  <tr>
+                    <td>PRODUCER</td>
+                    <td>{{ product.metafields.accentuate.producer_c2 }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if product.metafields.accentuate.varietal_c2 %} 
+                  <tr>
+                    <td>VARIETAL</td>
+                    <td>{{ product.metafields.accentuate.varietal_c2 }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if product.metafields.accentuate.process_c2 %} 
+                  <tr>
+                    <td>PROCESS</td>
+                    <td>{{ product.metafields.accentuate.process_c2 }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if product.metafields.accentuate.altitude_c2 %} 
+                  <tr>
+                    <td>ALTITUDE</td>
+                    <td>{{ product.metafields.accentuate.altitude_c2 }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if product.metafields.accentuate.tastes_like_c2 %} 
+                  <tr>
+                    <td>TASTES LIKE</td>
+                    <td>{{ product.metafields.accentuate.tastes_like_c2 }}</td>
+                  </tr>
+                  {% endif %}
+				</table>
+			</div>
+        </div>
+      {% endif %}
+      {% if product.metafields.accentuate.title_c3 or product.metafields.accentuate.image_c3 or product.metafields.accentuate.origin_c3 or product.metafields.accentuate.producer_c3 or product.metafields.accentuate.varietal_c3 or product.metafields.accentuate.process_c3 or product.metafields.accentuate.alttude_c3 or product.metafields.accentuate.tastes_like_c3 %} 
+        <div class="content">
+			<div class="title-row">
+				<h2>{{ product.metafields.accentuate.title_c3 }}</h2>
+			</div>
+			<div class="img-box">
+				<img src="{{ product.metafields.accentuate.image_c3 }}">
+			</div>
+			<div class="table-box">
+				<table>
+                  {% if product.metafields.accentuate.origin_c3 %} 
+                  <tr>
+                    <td>ORIGIN</td>
+                    <td>{{ product.metafields.accentuate.origin_c3 }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if product.metafields.accentuate.producer_c3 %} 
+                  <tr>
+                    <td>PRODUCER</td>
+                    <td>{{ product.metafields.accentuate.producer_c3 }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if product.metafields.accentuate.varietal_c3 %} 
+                  <tr>
+                    <td>VARIETAL</td>
+                    <td>{{ product.metafields.accentuate.varietal_c3 }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if product.metafields.accentuate.process_c3 %} 
+                  <tr>
+                    <td>PROCESS</td>
+                    <td>{{ product.metafields.accentuate.process_c3 }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if product.metafields.accentuate.altitude_c3 %} 
+                  <tr>
+                    <td>ALTITUDE</td>
+                    <td>{{ product.metafields.accentuate.altitude_c3 }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if product.metafields.accentuate.tastes_like_c3 %} 
+                  <tr>
+                    <td>TASTES LIKE</td>
+                    <td>{{ product.metafields.accentuate.tastes_like_c3 }}</td>
+                  </tr>
+                  {% endif %}
+				</table>
+			</div>
+        </div>
+      {% endif %}
+    </div>
+</section>
+{% endif %}
+  
+  
+{% if product.metafields.accentuate.content_sourcing or product.metafields.accentuate.producer or product.metafields.accentuate.region or product.metafields.accentuate.varietal or product.metafields.accentuate.process or product.metafields.accentuate.altitude %}
+<section class="sourcing">
+  <div class="container">
+    <h2>SOURCING</h2>
+    <div class="content">
+      <div class="left-box wowo fadeInUp">
+        {{ product.metafields.accentuate.content_sourcing }}
+      </div>
+      <div class="right-box wowo fadeInUp">
+        <table>
+          <tr>
+            <td>PRODUCER</td>
+            <td>{{ product.metafields.accentuate.producer }}</td>
+          </tr>
+          <tr>
+            <td>REGION</td>
+            <td>{{ product.metafields.accentuate.region }}</td>
+          </tr>
+          <tr>
+            <td>VARIETAL</td>
+            <td>{{ product.metafields.accentuate.varietal }}</td>
+          </tr>
+          <tr>
+            <td>PROCESS</td>
+            <td>{{ product.metafields.accentuate.process }}</td>
+          </tr>
+          <tr>
+            <td>ALTITUDE</td>
+            <td>{{ product.metafields.accentuate.altitude }}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+  
+{% if product.metafields.accentuate.image %}
+<section class="slider-wrap wowo fadeInUp">
+	<div class="product-slider">
+    {% for image in  product.metafields.accentuate.image %}
+      {% assign foo = forloop.index0 %}
+      {% if foo == 1 %}
+      <div class="slider-list drag">
+          <img src="{{ product.metafields.accentuate.image[foo] }}" alt="slider image">
+      </div>
+      {% else %}
+      <div class="slider-list">
+          <img src="{{ product.metafields.accentuate.image[foo] }}" alt="slider image">
+      </div>
+      {% endif %}
+    {% endfor %}
+   	</div>   
+</section>
+{% endif %}
+  
+{% if product.metafields.accentuate.image_origin or product.metafields.accentuate.content_origin %}
+<section class="image-text">
+  <div class="container">
+    <div class="content">
+      <div class="image wowo fadeInUp">
+        <img src="{{ product.metafields.accentuate.image_origin }}" alt="map">
+      </div>
+      <div class="text wowo fadeInUp">
+        <div class="text-box">
+          <h2>Origin</h2>
+          {{ product.metafields.accentuate.content_origin }}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% paginate blogs.brewguides.articles by 500 %}
+
+      <section class="guide wowo fadeInUp">
+        <div class="left-box">
+          <svg class="animated-svg" width="477" height="428" viewBox="0 0 477 428" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path class="start-2" fill-rule="evenodd" clip-rule="evenodd" d="M303.54 8.44133C485.703 41.8113 483.242 203.892 473.395 261.098C463.551 318.303 414.315 430.33 212.456 427.948C10.5982 425.565 5.67617 289.702 0.750898 232.497C-4.17113 175.291 15.5235 125.235 47.5231 89.485C84.0757 48.6496 121.376 -24.9255 303.54 8.44133Z" fill="#D0994D"/>
+            <path class="medium-2" fill-rule="evenodd" clip-rule="evenodd" d="M239.065 3.53355C285.658 -1.1077 334.497 -4.61639 375.513 16.325C419.377 38.7207 453.474 76.7839 468.847 120.853C484.2 164.861 476.129 212.399 459.077 255.87C442.476 298.193 411.519 332.74 374.328 361.824C334.42 393.033 291.319 429.628 239.065 427.923C187.221 426.231 151.156 383.068 110.57 353.218C72.0904 324.918 25.7992 301.6 9.16669 258.838C-7.68989 215.5 0.00314204 166.049 21.6311 124.559C41.6537 86.1485 82.9151 63.5353 122.442 41.5341C158.636 21.3882 197.053 7.71846 239.065 3.53355Z" fill="#D0994D"/>
+            <path class="end-2" fill-rule="evenodd" clip-rule="evenodd" d="M251.776 0.40478C300.091 2.79487 347.006 17.9263 384.564 46.5778C420.777 74.2035 440.599 114.568 455.759 156.014C471.169 198.142 484.663 242.574 471.955 285.49C458.94 329.44 425.942 365.9 385.947 391.771C346.665 417.18 299.454 429.011 251.776 427.91C204.964 426.828 162.399 408.425 122.315 385.682C78.6427 360.901 30.9752 335.931 11.5559 291.608C-8.50429 245.821 0.172861 193.524 17.6628 146.817C34.8359 100.955 65.3472 59.8573 108.425 32.9172C150.37 6.68473 201.456 -2.08455 251.776 0.40478Z" fill="#D0994D"/>
+          </svg>
+        </div>
+        <div class="right-box">
+          <div class="box">
+            <h2>BREW GUIDE</h2>
+            <div class="coffee-tab">
+              <ul>
+                {% if product.metafields.accentuate.title_c1 %}
+                <li class="active"><button>{{ product.metafields.accentuate.title_c1 }}</button></li>
+                {% endif %}
+                {% if product.metafields.accentuate.title_c2 %}
+                <li><button>{{ product.metafields.accentuate.title_c2 }}</button></li>
+                {% if product.metafields.accentuate.title_c3 %}
+                {% endif %}
+                <li><button>{{ product.metafields.accentuate.title_c3 }}</button></li>
+                {% endif %}
+              </ul>
+            </div>
+            <div class="coffee-tab-content">
+              {% for article in blogs.brewguides.articles %}
+              {% if article.handle == product.metafields.accentuate.select_artlice_new %}
+              <div class="coffee-table" style="display: block;"> 
+                <table>
+                  {% for title_item in  article.metafields.accentuate.title_item %}
+                  {% assign foo = forloop.index0 %}
+                  <tr>
+                    <td>{{ article.metafields.accentuate.title_item[foo] }}</td>
+                    <td>{{ article.metafields.accentuate.content_item[foo] }}</td>
+                  </tr>
+                  {% endfor %}
+                </table>
+              </div> 
+              {% endif %}
+              {% if article.handle == product.metafields.accentuate.select_artlice_new_2 %}
+              <div class="coffee-table"> 
+                <table>
+                  {% for title_item in  article.metafields.accentuate.title_item %}
+                  {% assign foo = forloop.index0 %}
+                  <tr>
+                    <td>{{ article.metafields.accentuate.title_item[foo] }}</td>
+                    <td>{{ article.metafields.accentuate.content_item[foo] }}</td>
+                  </tr>
+                  {% endfor %}
+                </table>
+              </div> 
+              {% endif %}  
+              {% if article.handle == product.metafields.accentuate.select_artlice_new_3 %}
+              <div class="coffee-table"> 
+                <table>
+                  {% for title_item in  article.metafields.accentuate.title_item %}
+                  {% assign foo = forloop.index0 %}
+                  <tr>
+                    <td>{{ article.metafields.accentuate.title_item[foo] }}</td>
+                    <td>{{ article.metafields.accentuate.content_item[foo] }}</td>
+                  </tr>
+                  {% endfor %}
+                </table>
+              </div> 
+              {% endif %}   
+              {% endfor %} 
+            </div>
+          </div>
+        </div>
+      </section>
+{% endpaginate %}
+</div>
+<style>
+  .product-form__item.qty-wrap{
+    display:block!important;
+  }
+</style>
+{% schema %}
+{
+  "name": "ONA product-template-4",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_quantity_selector",
+      "label": {
+        "cs": "Zobrazit výběr množství",
+        "da": "Vis antalsvælger",
+        "de": "Mengenauswahl anzeigen",
+        "en": "Show quantity selector",
+        "es": "Mostrar selector de cantidad",
+        "fi": "Näytä määrän valitsin",
+        "fr": "Afficher le sélecteur de quantité",
+        "it": "Mostra selettore quantità",
+        "ja": "数量セレクターを表示する",
+        "ko": "수량 선택기 표시",
+        "nb": "Vis mengdevelger",
+        "nl": "Hoeveelheidskiezer weergeven",
+        "pl": "Pokaż selektor ilości",
+        "pt-BR": "Exibir seletor de quantidade",
+        "pt-PT": "Mostrar um seletor de quantidade",
+        "sv": "Visa kvantitetsväljare",
+        "th": "แสดงตัวเลือกจำนวน",
+        "tr": "Adet seçiciyi göster",
+        "vi": "Hiển thị hộp chọn số lượng",
+        "zh-CN": "显示数量选择器",
+        "zh-TW": "顯示數量選擇器"
+      },
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": {
+        "cs": "Zobrazit dodavatele",
+        "da": "Vis leverandør",
+        "de": "Lieferanten anzeigen",
+        "en": "Show vendor",
+        "es": "Mostrar proveedor",
+        "fi": "Näytä myyjä",
+        "fr": "Afficher les vendeurs",
+        "it": "Mostra fornitore",
+        "ja": "販売元を表示する",
+        "ko": "공급업체 표시",
+        "nb": "Vis leverandør",
+        "nl": "Leverancier weergeven",
+        "pl": "Pokaż dostawcę",
+        "pt-BR": "Exibir fabricante",
+        "pt-PT": "Mostrar fornecedor",
+        "sv": "Visa säljare",
+        "th": "แสดงผู้ขาย",
+        "tr": "Satıcıyı göster",
+        "vi": "Hiển thị nhà cung cấp",
+        "zh-CN": "显示厂商",
+        "zh-TW": "顯示廠商"
+      },
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_payment_button",
+      "label": {
+        "cs": "Zobrazit dynamické tlačítko pokladny",
+        "da": "Vis dynamisk betalingsknap",
+        "de": "Dynamischen Checkout Button anzeigen",
+        "en": "Show dynamic checkout button",
+        "es": "Mostrar botón de pago dinámico",
+        "fi": "Näytä dynaaminen kassapainike",
+        "fr": "Afficher le bouton de paiement dynamique",
+        "it": "Mostra pulsante di check-out dinamico",
+        "ja": "動的チェックアウトボタンを表示する",
+        "ko": "동적 결제 버튼 표시",
+        "nb": "Vis dynamisk knapp for å gå til kassen",
+        "nl": "Dynamische checkoutknop weergeven",
+        "pl": "Pokaż dynamiczny przycisk realizacji zakupu",
+        "pt-BR": "Exibir botão de checkout dinâmico",
+        "pt-PT": "Mostrar o botão dinâmico de finalização da compra",
+        "sv": "Visa dynamiska utcheckningsknappar",
+        "th": "แสดงปุ่มชำระเงินแบบไดนามิก",
+        "tr": "Dinamik ödeme düğmesini göster",
+        "vi": "Hiển thị nút thanh toán nhanh",
+        "zh-CN": "显示动态结账按钮",
+        "zh-TW": "顯示動態結帳按鈕"
+      },
+      "info": {
+        "cs": "Každý zákazník uvidí platební metodu, kterou ze všech metod dostupných v obchodě (například PayPal nebo Apple Pay) nejvíce preferuje. [Další informace](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "da": "Den enkelte kunde vil se sin foretrukne betalingsmetode blandt dem, der er tilgængelige i din butik, f.eks. PayPal eller Apple Pay. [Få mere at vide](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "de": "Jeder Kunde sieht seine bevorzugte Zahlungsmethode aus den in deinem Shop verfügbaren Zahlungsmethoden wie PayPal oder Apple Pay. [Mehr Informationen](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "en": "Each customer will see their preferred payment method from those available on your store, such as PayPal or Apple Pay. [Learn more](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "es": "Cada cliente verá su forma de pago preferida entre las disponibles en tu tienda, como PayPal o Apple Pay. [Más información](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "fi": "Kukin asiakas näkee ensisijaisen valintansa kauppasi tarjoamista maksutavoista, esim. PayPal tai Apple Pay. [Lisätietoja](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "fr": "Chaque client verra son moyen de paiement préféré parmi ceux qui sont proposés sur votre boutique, tels que PayPal ou Apple Pay. [En savoir plus](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "it": "Ogni cliente vedrà il suo metodo di pagamento preferito tra quelli disponibili nel tuo negozio, come PayPal o Apple Pay. [Maggiori informazioni](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "ja": "PayPalやApple Payなど、ストアで利用可能な希望の決済方法がお客様に表示されます。[詳しくはこちら](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "ko": "각 고객은 PayPal 또는 Apple Pay와 같이 스토어에서 사용 가능한 지불 방법을 확인할 수 있습니다. [자세히 알아보기](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "nb": "Hver enkelt kunde vil se sin foretrukne betalingsmåte blant de som er tilgjengelig i butikken din, som PayPal eller Apple Pay. [Finn ut mer](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "nl": "Elke klant ziet zijn of haar beschikbare voorkeursmethode om af te rekenen, zoals PayPal of Apple Pay. [Meer informatie](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "pl": "Każdy klient zobaczy swoją preferowaną metodę płatności wśród metod dostępnych w Twoim sklepie, np. PayPal lub Apple Pay. [Dowiedz się więcej](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "pt-BR": "Cada cliente verá a forma de pagamento preferencial dele dentre as disponíveis na loja, como PayPal ou Apple Pay. [Saiba mais](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "pt-PT": "Cada cliente irá ver o seu método de pagamento preferido entre os disponíveis na loja, como o PayPal ou Apple Pay. [Saiba mais](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "sv": "Varje kund kommer att se den föredragna betalningsmetoden från de som finns tillgängliga i din butik, till exempel PayPal eller Apple Pay. [Läs mer](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "th": "ลูกค้าแต่ละรายจะเห็นวิธีการชำระเงินที่ต้องการจากวิธีที่ใช้ได้ในร้านค้าของคุณ เช่น PayPal หรือ Apple Pay [ดูข้อมูลเพิ่มเติม](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "tr": "Her müşteri, mağazanız sunulanlar arasından tercih ettikleri ödeme yöntemini görür (ör. PayPal veya Apple Pay). [Daha fazla bilgi edinin](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "vi": "Mỗi khách hàng sẽ thấy phương thức thanh toán ưu tiên trong những phương thức thanh toán được hỗ trợ tại cửa hàng như PayPal hoặc Apple Pay. [Tìm hiểu thêm](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "zh-CN": "每位客户都可在您商店提供的付款方式中看到他们的首选付款方式，例如 PayPal 或 Apple Pay。[了解详细信息](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "zh-TW": "每位顧客都可以在您商店內開放使用的付款方式中看見他們偏好使用的方式，如 PayPal、Apple Pay 等。[深入瞭解](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)"
+      },
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_share_buttons",
+      "label": {
+        "cs": "Zobrazit tlačítka pro sdílení na sociálních sítích",
+        "da": "Vis knapper til deling på sociale medier",
+        "de": "Buttons für Social Media anzeigen",
+        "en": "Show social sharing buttons",
+        "es": "Mostrar botones para compartir en redes sociales",
+        "fi": "Näytä sosiaalisen median jakamispainikkeet",
+        "fr": "Affichez les boutons de partage sur les médias sociaux",
+        "it": "Mostra i pulsanti per la condivisione sui social",
+        "ja": "ソーシャルメディアでの共有ボタンを表示する",
+        "ko": "소셜 공유 버튼 표시",
+        "nb": "Vis knapper for deling på sosiale medier",
+        "nl": "Knoppen voor sociaal delen weergeven",
+        "pl": "Pokaż przyciski udostępniania w mediach społecznościowych",
+        "pt-BR": "Exibir botões de compartilhamento em redes sociais",
+        "pt-PT": "Mostrar botões de partilha nas redes sociais",
+        "sv": "Visa knappar för delning i sociala medier",
+        "th": "แสดงปุ่มสำหรับแชร์ลงโซเชียล",
+        "tr": "Sosyal medya paylaşım düğmelerini göster",
+        "vi": "Hiển thị nút chia sẻ qua mạng xã hội",
+        "zh-CN": "显示社交分享按钮",
+        "zh-TW": "顯示社群分享按鈕"
+      },
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": {
+        "cs": "Multimédia",
+        "da": "Medie",
+        "de": "Medien",
+        "en": "Media",
+        "es": "Elementos multimedia",
+        "fi": "Media",
+        "fr": "Support multimédia",
+        "it": "Contenuti multimediali",
+        "ja": "メディア",
+        "ko": "미디어",
+        "nb": "Medier",
+        "nl": "Media",
+        "pl": "Multimedia",
+        "pt-BR": "Mídia",
+        "pt-PT": "Multimédia",
+        "sv": "Media",
+        "th": "สื่อ",
+        "tr": "Medya",
+        "vi": "Nội dung đa phương tiện",
+        "zh-CN": "媒体",
+        "zh-TW": "媒體"
+      },
+      "info": {
+        "cs": "Další informace o [typech multimédií](https://help.shopify.com/manual/products/product-media)",
+        "da": "Få mere at vide om [media types](https://help.shopify.com/manual/products/product-media)",
+        "de": "Mehr Informationen über [Medientypen ](https://help.shopify.com/manual/products/product-media)",
+        "en": "Learn more about [media types](https://help.shopify.com/manual/products/product-media)",
+        "es": "Más información sobre [tipos de archivos multimedia](https://help.shopify.com/manual/products/product-media)",
+        "fi": "Lue lisää [mediatyypeistä](https://help.shopify.com/manual/products/product-media)",
+        "fr": "En savoir plus sur les [types de supports multimédia](https://help.shopify.com/manual/products/product-media)",
+        "it": "Scopri di più sulle [tipologie di file multimediali](https://help.shopify.com/manual/products/product-media)",
+        "ja": "[メディアのタイプ](https://help.shopify.com/manual/products/product-media) について詳しくはこちら",
+        "ko": "[미디어 유형](https://help.shopify.com/manual/products/product-media)에 대해 자세히 알아보기",
+        "nb": "Lær mer om [medietyper](https://help.shopify.com/manual/products/product-media)",
+        "nl": "Meer informatie over [mediatypen](https://help.shopify.com/manual/products/product-media)",
+        "pl": "Dowiedz się więcej o [typach multimediów](https://help.shopify.com/manual/products/product-media)",
+        "pt-BR": "Saiba mais sobre [tipos de mídia](https://help.shopify.com/manual/products/product-media)",
+        "pt-PT": "Saiba mais sobre [media types](https://help.shopify.com/manual/products/product-media)",
+        "sv": "Läs mer om [mediatyper](https://help.shopify.com/manual/products/product-media)",
+        "th": "ดูข้อมูลเพิ่มเติมเกี่ยวกับ [ประเภทของสื่อ](https://help.shopify.com/manual/products/product-media)",
+        "tr": "[Medya türleri](https://help.shopify.com/manual/products/product-media) hakkında daha fazla bilgi edinin",
+        "vi": "Tìm hiểu thêm về [loại phương tiện](https://help.shopify.com/manual/products/product-media)",
+        "zh-CN": "详细了解[媒体类型](https://help.shopify.com/manual/products/product-media)",
+        "zh-TW": "深入瞭解 [媒體類型](https://help.shopify.com/manual/products/product-media)"
+      }
+    },
+    {
+      "type": "select",
+      "id": "media_size",
+      "label": {
+        "cs": "Velikost",
+        "da": "Størrelse",
+        "de": "Größe",
+        "en": "Size",
+        "es": "Tamaño",
+        "fi": "Koko",
+        "fr": "Taille",
+        "it": "Dimensione",
+        "ja": "サイズ",
+        "ko": "사이즈",
+        "nb": "Størrelse",
+        "nl": "Grootte",
+        "pl": "Rozmiar",
+        "pt-BR": "Tamanho",
+        "pt-PT": "Tamanho",
+        "sv": "Storlek",
+        "th": "ขนาด",
+        "tr": "Boyut",
+        "vi": "Cỡ",
+        "zh-CN": "尺寸",
+        "zh-TW": "尺寸"
+      },
+      "options": [
+        {
+          "value": "small",
+          "label": {
+            "cs": "Malá",
+            "da": "Lille",
+            "de": "Klein",
+            "en": "Small",
+            "es": "Pequeño",
+            "fi": "Pieni",
+            "fr": "Petit",
+            "it": "Piccolo",
+            "ja": "スモール",
+            "ko": "스몰",
+            "nb": "Liten",
+            "nl": "Klein",
+            "pl": "Mały",
+            "pt-BR": "Pequeno",
+            "pt-PT": "Pequeno",
+            "sv": "Liten",
+            "th": "เล็ก",
+            "tr": "Küçük",
+            "vi": "Nhỏ",
+            "zh-CN": "小",
+            "zh-TW": "小型"
+          }
+        },
+        {
+          "value": "medium",
+          "label": {
+            "cs": "Střední",
+            "da": "Medium",
+            "de": "Mittel",
+            "en": "Medium",
+            "es": "Mediano",
+            "fi": "Keskisuuri",
+            "fr": "Moyenne",
+            "it": "Medio",
+            "ja": "中",
+            "ko": "보통",
+            "nb": "Middels",
+            "nl": "Gemiddeld",
+            "pl": "Średni",
+            "pt-BR": "Médio",
+            "pt-PT": "Médio",
+            "sv": "Medium",
+            "th": "ปานกลาง",
+            "tr": "Orta",
+            "vi": "Trung bình",
+            "zh-CN": "中等",
+            "zh-TW": "中等"
+          }
+        },
+        {
+          "value": "large",
+          "label": {
+            "cs": "Velká",
+            "da": "Stor",
+            "de": "Groß",
+            "en": "Large",
+            "es": "Grande",
+            "fi": "Suuri",
+            "fr": "Grande",
+            "it": "Grande",
+            "ja": "大",
+            "ko": "라지",
+            "nb": "Stor",
+            "nl": "Groot",
+            "pl": "Duży",
+            "pt-BR": "Grande",
+            "pt-PT": "Grande",
+            "sv": "Stor",
+            "th": "ใหญ่",
+            "tr": "Büyük",
+            "vi": "Lớn",
+            "zh-CN": "大",
+            "zh-TW": "大型"
+          }
+        },
+        {
+          "value": "full",
+          "label": {
+            "cs": "Plná šířka",
+            "da": "Fuld bredde",
+            "de": "Volle Breite",
+            "en": "Full-width",
+            "es": "Ancho completo",
+            "fi": "Täysi leveys",
+            "fr": "Pleine largeur",
+            "it": "Intera larghezza",
+            "ja": "全幅",
+            "ko": "전체 폭",
+            "nb": "Full bredde",
+            "nl": "Volledige breedte",
+            "pl": "Pełna szerokość",
+            "pt-BR": "Largura completa",
+            "pt-PT": "Largura completa",
+            "sv": "Full bredd",
+            "th": "เต็มความกว้าง",
+            "tr": "Tam genişlikli",
+            "vi": "Độ rộng đầy đủ",
+            "zh-CN": "全宽",
+            "zh-TW": "完整寬度"
+          }
+        }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_image_zoom",
+      "label": {
+        "cs": "Povolit zvětšení obrázku",
+        "da": "Aktivér billedzoom",
+        "de": "Foto-Zoom zulassen",
+        "en": "Enable image zoom",
+        "es": "Habilitar zoom de imagen",
+        "fi": "Ota kuvan zoomaus käyttöön",
+        "fr": "Activer le zoom d'image",
+        "it": "Abilita lo zoom dell'immagine",
+        "ja": "画像ズームを有効にする",
+        "ko": "이미지 확대 사용",
+        "nb": "Aktiver bildezoom",
+        "nl": "Inzoomen op afbeelding inschakelen",
+        "pl": "Włącz powiększenie obrazu",
+        "pt-BR": "Habilitar o zoom da imagem",
+        "pt-PT": "Ativar o zoom da imagem",
+        "sv": "Aktivera bildzoom",
+        "th": "เปิดใช้การซูมภาพ",
+        "tr": "Görsel yakınlaştırmayı etkinleştir",
+        "vi": "Bật thu phóng hình ảnh",
+        "zh-CN": "启用图片缩放",
+        "zh-TW": "啟用圖片縮放"
+      },
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_video_looping",
+      "label": {
+        "cs": "Povolit smyčky videa",
+        "da": "Aktivér looping af videoer",
+        "de": "Videoschleife aktivieren",
+        "en": "Enable video looping",
+        "es": "Habilitar la reproducción de video en bucle",
+        "fi": "Ota käyttöön videosilmukka",
+        "fr": "Activer le bouclage de la vidéo",
+        "it": "Abilita la riproduzione in loop dei video",
+        "ja": "ビデオのループを有効にする",
+        "ko": "동영상 루프",
+        "nb": "Aktiver løkkeavspilling av video",
+        "nl": "Video-looping inschakelen",
+        "pl": "Włącz zapętlanie wideo",
+        "pt-BR": "Habilitar loop de vídeo",
+        "pt-PT": "Ativar ciclo de vídeo",
+        "sv": "Aktivera video-loopning",
+        "th": "เปิดใช้การวนซ้ำวิดีโอ",
+        "tr": "Video döngüsünü etkinleştir",
+        "vi": "Bật vòng lặp video",
+        "zh-CN": "启用视频循环",
+        "zh-TW": "啟用影片循環功能"
+      },
+      "default": false
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,21 @@
+{%- comment -%} R56: replace generic Horizon main-404 with live theme markup
+  (live/templates/404.liquid). Hardcoded structure: page-width > empty-page-content
+  with h1, continue-shopping btn, and 404-sasa.png image. Old block-based content
+  ignored; templates/404.json may carry stale settings — they're harmless. {%- endcomment -%}
+<div class="page-width">
+  <div class="empty-page-content text-center">
+    <h1>Page not found</h1>
+    <p>
+      <a href="{{ routes.root_url }}" class="btn btn--has-icon-after">Continue shopping{% render 'icon-arrow-right' %}</a>
+    </p>
+    <img class="not-found-png" src="{{ '404-sasa.png' | asset_url }}" alt="404 sasa" loading="eager" decoding="async" width="460" height="460">
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:names.404",
+  "class": "section-wrapper",
+  "settings": []
+}
+{% endschema %}

@@ -1,0 +1,53 @@
+{%- liquid
+  assign p = product
+  assign has_content = false
+  if p.metafields.accentuate.content_coffee_profile or p.metafields.accentuate.tastes_like or p.metafields.accentuate.roast or p.metafields.accentuate.components or p.metafields.accentuate.image_coffee_profile_1 or p.metafields.accentuate.image_coffee_profile_2
+    assign has_content = true
+  endif
+-%}
+{%- if has_content -%}
+<section class="profile">
+  <div class="container">
+    <div class="content">
+      <div class="left-box wowo fadeInUp">
+        <div class="box">
+          <h2>{{ section.settings.heading | default: 'COFFEE PROFILE' }}</h2>
+          {{ p.metafields.accentuate.content_coffee_profile }}
+          <table>
+            {% if p.metafields.accentuate.tastes_like %}
+              <tr><td>TASTES LIKE</td><td>{{ p.metafields.accentuate.tastes_like }}</td></tr>
+            {% endif %}
+            {% if p.metafields.accentuate.roast %}
+              <tr><td>ROAST</td><td>{{ p.metafields.accentuate.roast }}</td></tr>
+            {% endif %}
+            {% if p.metafields.accentuate.components %}
+              <tr><td>COMPONENTS</td><td>{{ p.metafields.accentuate.components }}</td></tr>
+            {% endif %}
+          </table>
+        </div>
+      </div>
+      <div class="right-box wowo fadeInUp">
+        {% if p.metafields.accentuate.image_coffee_profile_0 %}
+          <img class="bg-icon" src="{{ p.metafields.accentuate.image_coffee_profile_0 }}">
+        {% endif %}
+        {% if p.metafields.accentuate.image_coffee_profile_1 %}
+          <div class="img-1" style="background-image: url({{ p.metafields.accentuate.image_coffee_profile_1 }})"></div>
+        {% endif %}
+        {% if p.metafields.accentuate.image_coffee_profile_2 %}
+          <div class="img-2" style="background-image: url({{ p.metafields.accentuate.image_coffee_profile_2 }})"></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Product · Coffee profile",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "COFFEE PROFILE" }
+  ],
+  "enabled_on": { "templates": ["product"] }
+}
+{% endschema %}

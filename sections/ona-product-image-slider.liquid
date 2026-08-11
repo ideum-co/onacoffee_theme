@@ -1,0 +1,20 @@
+{%- assign images = product.metafields.accentuate.image -%}
+{%- if images != blank -%}
+<section class="slider-wrap wowo fadeInUp">
+  <div class="product-slider">
+    {% for image in images %}
+      <div class="slider-list{% if forloop.index0 == 1 %} drag{% endif %}">
+        <img src="{{ image }}" alt="slider image" loading="lazy" decoding="async">
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Product · Image slider",
+  "settings": [],
+  "enabled_on": { "templates": ["product"] }
+}
+{% endschema %}

@@ -1,0 +1,16 @@
+{
+  "sections": {
+    "page_title": {
+      "type": "ona-page-title",
+      "settings": {}
+    },
+    "sustainability_layout": {
+      "type": "ona-sustainability-layout",
+      "settings": {}
+    }
+  },
+  "order": [
+    "page_title",
+    "sustainability_layout"
+  ]
+}

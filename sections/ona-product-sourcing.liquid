@@ -1,0 +1,38 @@
+{%- liquid
+  assign p = product
+  assign has_content = false
+  if p.metafields.accentuate.content_sourcing or p.metafields.accentuate.producer or p.metafields.accentuate.region or p.metafields.accentuate.varietal or p.metafields.accentuate.process or p.metafields.accentuate.altitude
+    assign has_content = true
+  endif
+-%}
+{%- if has_content -%}
+<section class="sourcing">
+  <div class="container">
+    <h1>{{ section.settings.heading | default: 'Story' }}</h1>
+    <div class="content">
+      <div class="left-box wowo fadeInUp">
+        {{ p.metafields.accentuate.content_sourcing }}
+      </div>
+      <div class="right-box wowo fadeInUp">
+        <table>
+          {% if p.metafields.accentuate.producer %}<tr><td>PRODUCER</td><td>{{ p.metafields.accentuate.producer }}</td></tr>{% endif %}
+          {% if p.metafields.accentuate.region %}<tr><td>REGION</td><td>{{ p.metafields.accentuate.region }}</td></tr>{% endif %}
+          {% if p.metafields.accentuate.varietal %}<tr><td>VARIETAL</td><td>{{ p.metafields.accentuate.varietal }}</td></tr>{% endif %}
+          {% if p.metafields.accentuate.process %}<tr><td>PROCESS</td><td>{{ p.metafields.accentuate.process }}</td></tr>{% endif %}
+          {% if p.metafields.accentuate.altitude %}<tr><td>ALTITUDE</td><td>{{ p.metafields.accentuate.altitude }}</td></tr>{% endif %}
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Product · Story/Sourcing",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Story" }
+  ],
+  "enabled_on": { "templates": ["product"] }
+}
+{% endschema %}

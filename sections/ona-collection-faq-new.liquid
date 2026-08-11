@@ -1,0 +1,87 @@
+{%- assign faq_metaobjects = collection.metafields.custom.faqs.value -%}
+ {% if faq_metaobjects.size > 0 %}
+    <div class="container" style="max-width:1300px;margin-top:20px;">
+        
+        <section class="add-faqs-section " id="{{ section.settings.id }}">
+            <div class="container">
+                <div class="title1">
+                    <h2 style="text-align:center;">{{ section.settings.title2 | default: 'FAQs' }}</h2>
+                </div>
+                <div class="add-faqs">
+
+                {% for faq in faq_metaobjects %}
+                <div class="block is-active">
+                    <div class="faqs-title {% if forloop.index == 1 %}is-active{% endif %}">
+                        <p>{{ faq.question }}</p>
+                    </div>
+                    <div class="faqs-text {% if forloop.index == 1 %}is-active{% endif %}">
+                        {{ faq.answer | metafield_tag }}
+                    </div>
+                </div>
+                {% endfor %}
+                </div>
+                <div class="end-text">
+                    {{ section.settings.tips }}
+                </div>
+            </div>
+        </section>
+    </div>
+{% endif %}
+
+{% schema %}
+{
+  "name": {
+    "en": "FAQ list"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title2",
+      "label": {
+        "en": "Title"
+      },
+      "default": "FAQs"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_metaobject_faqs",
+      "label": "Show Metaobject FAQs",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "block",
+      "name": {
+        "en": "Block"
+      },
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": {
+            "en": "Content"
+          }
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": {
+        "en": "FAQ list"
+      },
+      "category": {
+        "en": "Text"
+      }
+    }
+  ]
+}
+{% endschema %}

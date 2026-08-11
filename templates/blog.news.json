@@ -1,0 +1,9 @@
+{
+  "sections": {
+    "main": {
+      "type": "ona-blog-news-template",
+      "settings": {}
+    }
+  },
+  "order": ["main"]
+}

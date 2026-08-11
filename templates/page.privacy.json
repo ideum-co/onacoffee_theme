@@ -1,0 +1,18 @@
+{
+  "sections": {
+    "page_title": {
+      "type": "ona-page-title",
+      "settings": {}
+    },
+    "privacy_layout": {
+      "type": "ona-privacy-layout",
+      "settings": {
+        "left_content": "<p>See below our privacy, security, delivery and refund & returns policies.<br/></p>"
+      }
+    }
+  },
+  "order": [
+    "page_title",
+    "privacy_layout"
+  ]
+}

@@ -1,0 +1,225 @@
+<style>
+  .blog-detail-top .go-to-back{
+    position: static;
+    width:auto;
+  }
+  .row-new{
+    width:100%;
+    display:flex;
+    justify-content: flex-end;
+  }
+  .blog-detail-top .right{
+    padding-top:0;
+    display: flex;
+    flex-wrap: wrap;
+    padding-right: 0;
+    width:100%;
+  }
+  .blog-detail-top .right .title{
+    width: 46%;
+    padding-right: 30px;
+  }
+  .blog-detail-top .right .product-info{
+    width: 54%;
+  }
+  .blog-detail-top{
+    margin-bottom: 82px;
+  }
+  
+  @media (max-width: 767.98px) {
+  .blog-detail-top .right .title{
+    width: 100%;
+    padding-right: 0;
+    margin-bottom:0;
+  }
+  .blog-detail-top .right .product-info{
+    width: 100%;
+  }
+    .blog-detail-top .right .title {
+      display: block;
+    }
+  }
+</style>
+<section class="blog-detail-top">
+  <div class="container">
+    <div class="content">
+      <div class="go-to-back">
+        <a href="/blogs/brewguides"><i class="icon-arrow-smaller"></i>Back to brewguides</a>
+      </div>
+      <div class="row-new">
+      <div class="right wowo fadeInUp">
+        <div class="title">
+          <h1>{{ article.title }}</h1>
+          <p style="display: none">
+            {% for tag in article.tags %}
+            {% assign foo = forloop.index0 %}
+            {% if foo != 0 %}, {% endif %}{{tag}}
+            {% endfor %}
+          </p>
+        </div>
+        <div class="product-info">
+          <table>
+            <tr>
+              <td>TASTES LIKE</td>
+              <td>{{ article.metafields.accentuate.tastes_like }}</td>
+            </tr>
+            <tr>
+              <td>ROAST</td>
+              <td>{{ article.metafields.accentuate.roast }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      </div>
+      <div class="go-to-next-modules">
+        <a href="javascript:void(0);" class="a-link">View Brew Guide</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+{% if article.metafields.accentuate.content_brew_guide or article.metafields.accentuate.title_item or article.metafields.accentuate.content_item %}
+<section class="guide wowo fadeInUp">
+  <div class="left-box">
+    <img src="{{ article.image | img_url: '' }}" >
+    <svg class="animated-svg" width="477" height="428" viewBox="0 0 477 428" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path class="start-2" fill-rule="evenodd" clip-rule="evenodd" d="M303.54 8.44133C485.703 41.8113 483.242 203.892 473.395 261.098C463.551 318.303 414.315 430.33 212.456 427.948C10.5982 425.565 5.67617 289.702 0.750898 232.497C-4.17113 175.291 15.5235 125.235 47.5231 89.485C84.0757 48.6496 121.376 -24.9255 303.54 8.44133Z" fill="#D0994D"/>
+      <path class="medium-2" fill-rule="evenodd" clip-rule="evenodd" d="M239.065 3.53355C285.658 -1.1077 334.497 -4.61639 375.513 16.325C419.377 38.7207 453.474 76.7839 468.847 120.853C484.2 164.861 476.129 212.399 459.077 255.87C442.476 298.193 411.519 332.74 374.328 361.824C334.42 393.033 291.319 429.628 239.065 427.923C187.221 426.231 151.156 383.068 110.57 353.218C72.0904 324.918 25.7992 301.6 9.16669 258.838C-7.68989 215.5 0.00314204 166.049 21.6311 124.559C41.6537 86.1485 82.9151 63.5353 122.442 41.5341C158.636 21.3882 197.053 7.71846 239.065 3.53355Z" fill="#D0994D"/>
+      <path class="end-2" fill-rule="evenodd" clip-rule="evenodd" d="M251.776 0.40478C300.091 2.79487 347.006 17.9263 384.564 46.5778C420.777 74.2035 440.599 114.568 455.759 156.014C471.169 198.142 484.663 242.574 471.955 285.49C458.94 329.44 425.942 365.9 385.947 391.771C346.665 417.18 299.454 429.011 251.776 427.91C204.964 426.828 162.399 408.425 122.315 385.682C78.6427 360.901 30.9752 335.931 11.5559 291.608C-8.50429 245.821 0.172861 193.524 17.6628 146.817C34.8359 100.955 65.3472 59.8573 108.425 32.9172C150.37 6.68473 201.456 -2.08455 251.776 0.40478Z" fill="#D0994D"/>
+    </svg>
+  </div>
+  <div class="right-box">
+    <div class="box">
+      <h2>BREW GUIDE</h2>
+      {{ article.metafields.accentuate.content_brew_guide }}
+      <table>
+        {% for title_item in  article.metafields.accentuate.title_item %}
+        {% assign foo = forloop.index0 %}
+        <tr>
+          <td>{{ article.metafields.accentuate.title_item[foo] }}</td>
+          <td>{{ article.metafields.accentuate.content_item[foo] }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% for product in collections.all.products %}
+  {% if product.handle == article.metafields.accentuate.select_product %}
+<section class="three-columns">
+  <div class="medium-container">
+    <div class="content">
+      <div class="left">
+        <h2>Running low on this coffee?</h2>
+        <p><a href="{{ product.url }}" class="a-link">BUY ANOTHER BAG</a></p>
+      </div>
+      <div class="center">
+        <img src="{{ product.featured_media | img_url: '' }}" alt="">
+      </div>
+      <div class="right">
+        <p class="price">{% include 'product-price-listing', product: product, show_vendor: show_vendor %}</p>
+        <p>{{ product.title }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+  {% endif %}
+{% endfor%}
+
+
+
+
+{% schema %}
+{
+  "name": "ONA brewguide article",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "blog_show_author",
+      "label": {
+        "cs": "Zobrazit autora",
+        "da": "Vis forfatter",
+        "de": "Autor anzeigen",
+        "en": "Show author",
+        "es": "Mostrar autor",
+        "fi": "Näytä tekijä",
+        "fr": "Afficher l'auteur",
+        "it": "Mostra autore",
+        "ja": "執筆者を表示する",
+        "ko": "작성자 표시",
+        "nb": "Vis forfatter",
+        "nl": "Auteur weergeven",
+        "pl": "Pokaż autora",
+        "pt-BR": "Exibir autor",
+        "pt-PT": "Mostrar autor",
+        "sv": "Visa författare",
+        "th": "แสดงผู้เขียน",
+        "tr": "Yazarı göster",
+        "vi": "Hiển thị tác giả",
+        "zh-CN": "显示作者",
+        "zh-TW": "顯示作者"
+      },
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "blog_show_date",
+      "label": {
+        "cs": "Zobrazit datum",
+        "da": "Vis dato",
+        "de": "Datum anzeigen",
+        "en": "Show date",
+        "es": "Mostrar fecha",
+        "fi": "Näytä päivämäärä",
+        "fr": "Afficher la date",
+        "it": "Mostra data",
+        "ja": "日付を表示する",
+        "ko": "날짜 표시",
+        "nb": "Vis dato",
+        "nl": "Datum weergeven",
+        "pl": "Pokaż datę",
+        "pt-BR": "Exibir data",
+        "pt-PT": "Mostrar data",
+        "sv": "Visa datum",
+        "th": "แสดงวันที่",
+        "tr": "Tarihi göster",
+        "vi": "Hiển thị ngày",
+        "zh-CN": "显示日期",
+        "zh-TW": "顯示日期"
+      },
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_share_buttons",
+      "label": {
+        "cs": "Zobrazit tlačítka pro sdílení na sociálních sítích",
+        "da": "Vis knapper til deling på sociale medier",
+        "de": "Buttons für Social Media anzeigen",
+        "en": "Show social sharing buttons",
+        "es": "Mostrar botones para compartir en redes sociales",
+        "fi": "Näytä sosiaalisen median jakamispainikkeet",
+        "fr": "Afficher les boutons de partage sur les médias sociaux",
+        "it": "Mostra i pulsanti per la condivisione sui social",
+        "ja": "ソーシャルメディアでの共有ボタンを表示する",
+        "ko": "소셜 공유 버튼 표시",
+        "nb": "Vis knapper for deling på sosiale medier",
+        "nl": "Knoppen voor sociaal delen weergeven",
+        "pl": "Pokaż przyciski udostępniania w mediach społecznościowych",
+        "pt-BR": "Exibir botões de compartilhamento em redes sociais",
+        "pt-PT": "Mostrar botões de partilha nas redes sociais",
+        "sv": "Visa knappar för delning i sociala medier",
+        "th": "แสดงปุ่มสำหรับแชร์ลงโซเชียล",
+        "tr": "Sosyal medya paylaşım düğmelerini göster",
+        "vi": "Hiển thị nút chia sẻ qua mạng xã hội",
+        "zh-CN": "显示社交分享按钮",
+        "zh-TW": "顯示社群分享按鈕"
+      },
+      "default": true
+    }
+  ]
+}
+{% endschema %}

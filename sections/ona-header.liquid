@@ -1,0 +1,619 @@
+
+{%- comment -%} Horizon's predictive search + slideshow styles are normally rendered
+  from the native header section; we must render them here or they're lost. {%- endcomment -%}
+{%- render 'predictive-search-styles' -%}
+{%- render 'slideshow-styles' -%}
+
+{%- assign s = section.settings -%}
+{%- assign main_linklist = linklists[s.main_linklist] -%}
+{%- assign main_linklist2 = linklists[s.main_linklist2] -%}
+
+{%- comment -%} R53: align with live/sections/header.liquid:3-16. Use full `template` string
+  (with alternate suffix) instead of `template.name` (base) so that alternate product
+  templates (e.g. product.box, product.staple-tee) fall through to darkred-color, matching
+  live behavior. Also fixes prior bug: `template.name == 'about' / 'training'` never
+  matched (template.name for templates/page.about.liquid is 'page', not 'about').
+{%- endcomment -%}
+{%- assign state_class = 'darkred-color' -%}
+{%- if product -%}
+  {%- comment -%}
+    R86 → R88 (consistency audit): header tone mirrors .product-top tone class
+    output by either R85 (`ona-product-information.liquid`, used by template
+    `product`) OR R84 (`product-template.liquid`, used by templates
+    `product.custom2`, `product.custom-template`, `product.raspberrycandydripsbags`).
+    Without this list, those alternate templates with a dark `accentuate.colour`
+    would render `.product-top.is-dark-bg` (white text inside) but the header
+    fell through to default `darkred-color` ⇒ `darkred-color + is-dark-bg`
+    coexist, conflicting with the established mapping
+    (is-dark-bg ↔ has-white-label, is-light-bg ↔ darkred-color).
+    Honours editor override `accentuate.text_colour` ('light' | 'dark').
+    Other templates (product.box, product.product-2, product-3, Reserve, etc.)
+    use sections without tone class — fall through to legacy `darkred-color`
+    initial value (no formal conflict).
+  {%- endcomment -%}
+  {%- assign _hdr_has_tone = false -%}
+  {%- if template == 'product' or template == 'product.custom2' or template == 'product.custom-template' or template == 'product.raspberrycandydripsbags' -%}
+    {%- assign _hdr_has_tone = true -%}
+  {%- endif -%}
+  {%- if _hdr_has_tone -%}
+    {%- assign _hdr_bg = product.metafields.accentuate.colour | default: '#a47449' -%}
+    {%- assign _hdr_brightness = _hdr_bg | color_brightness -%}
+    {%- assign _hdr_override = product.metafields.accentuate.text_colour -%}
+    {%- if _hdr_override == 'light' -%}
+      {%- assign state_class = 'has-white-label' -%}
+    {%- elsif _hdr_override == 'dark' -%}
+      {%- assign state_class = 'darkred-color' -%}
+    {%- elsif _hdr_brightness > 140 -%}
+      {%- assign state_class = 'darkred-color' -%}
+    {%- else -%}
+      {%- assign state_class = 'has-white-label' -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- else -%}
+  {%- if template == 'index' or template == 'page.about' or template == 'page.training' -%}
+    {%- assign state_class = 'has-white-label' -%}
+  {%- elsif template == 'customers/login' or template == 'customers/register' -%}
+    {%- assign state_class = 'white-logo darkred-color' -%}
+  {%- endif -%}
+{%- endif -%}
+
+{%- comment -%} Wrap content in <header-component> so Horizon's inline header-height JS binds. {%- endcomment -%}
+<header-component
+  {% if section.settings.enable_sticky_header != 'never' %}data-sticky-state="static"{% endif %}
+>
+<div class="wrap-header {{ state_class }}">
+  <script>
+    /* R54: Sync state class from .wrap-header to its <header> ancestor synchronously
+       BEFORE first paint, so `header.has-white-label / .darkred-color / .white-logo`
+       CSS selectors apply on the first frame (no logo color flash on refresh). */
+    (function () {
+      var s = document.currentScript;
+      var wrap = s && s.parentElement;
+      if (!wrap) return;
+      var header = wrap.closest('header');
+      if (!header) return;
+      ['has-white-label', 'darkred-color', 'white-logo'].forEach(function (cls) {
+        if (wrap.classList.contains(cls)) header.classList.add(cls);
+      });
+    })();
+  </script>
+  <div class="container">
+    <div class="header">
+
+      <div class="logo">
+        <a href="{{ routes.root_url }}" aria-label="{{ shop.name }}">
+          {%- if s.logo_red != blank -%}
+            {{ s.logo_red | image_url: width: 400 | image_tag: alt: shop.name, class: 'red-logo', widths: '108,216,432' }}
+          {%- else -%}
+            <span class="logo-fallback">{{ shop.name }}</span>
+          {%- endif -%}
+          {%- if s.logo_white != blank -%}
+            {{ s.logo_white | image_url: width: 400 | image_tag: alt: shop.name, class: 'white-logo', widths: '108,216,432' }}
+          {%- endif -%}
+        </a>
+      </div>
+
+      <div class="header-right">
+
+        <button type="button" class="hamburger" aria-label="Menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+
+        <nav class="main-nav">
+          {%- render 'ona-site-nav', linklist: main_linklist, wrapper_class: 'menu-list' -%}
+
+          {%- if main_linklist2 != blank and main_linklist2.links.size > 0 -%}
+            {%- render 'ona-site-nav', linklist: main_linklist2, wrapper_class: 'another-menu-list' -%}
+          {%- endif -%}
+
+          <ul class="social-list">
+            {%- if s.social_instagram_link != blank -%}
+              <li><a target="_blank" rel="noopener" href="{{ s.social_instagram_link }}" class="icon-instagram" title="Instagram"></a></li>
+            {%- endif -%}
+            {%- if s.social_youtube_link != blank -%}
+              <li><a target="_blank" rel="noopener" href="{{ s.social_youtube_link }}" class="icon-youtube" title="YouTube"></a></li>
+            {%- endif -%}
+            {%- if s.social_facebook_link != blank -%}
+              <li><a target="_blank" rel="noopener" href="{{ s.social_facebook_link }}" class="icon-facebook" title="Facebook"></a></li>
+            {%- endif -%}
+          </ul>
+        </nav>
+
+        <ul class="icon-list">
+          {%- comment -%} USER — icomoon glyph; clicking opens Horizon's shopify-account popover {%- endcomment -%}
+          <li>
+            {%- if shop.customer_accounts_enabled -%}
+              <shopify-account>
+                <a href="{{ routes.account_url }}" class="icon-user" aria-label="Account" slot="signed-out-avatar"></a>
+              </shopify-account>
+            {%- else -%}
+              <a href="{{ routes.account_login_url }}" class="icon-user" aria-label="Account"></a>
+            {%- endif -%}
+          </li>
+
+          {%- comment -%} SEARCH — icomoon glyph; triggers Horizon's global <search-modal> {%- endcomment -%}
+          <li>
+            <search-button>
+              <button type="button" class="icon-search button-unstyled" on:click="#search-modal/showDialog" aria-label="Search" aria-haspopup="dialog"></button>
+            </search-button>
+          </li>
+
+          {%- comment -%} CART — header click goes to /cart, but drawer markup stays so ATC auto-opens it. {%- endcomment -%}
+          <li>
+            {%- if settings.cart_type == 'drawer' and template.name != 'cart' -%}
+              <script src="{{ 'cart-drawer.js' | asset_url }}" type="module" fetchpriority="low"></script>
+
+              {%- capture empty_cart_drawer_content -%}
+                <div class="cart-drawer__header">
+                  <button
+                    ref="closeButton"
+                    on:click="cart-drawer-component/close"
+                    class="button close-button cart-drawer__close-button button-unstyled"
+                    aria-label="{{ 'actions.close_dialog' | t }}"
+                  >
+                    <span class="svg-wrapper">{{- 'icon-close.svg' | inline_asset_content -}}</span>
+                  </button>
+                </div>
+                <div class="cart-drawer__content" aria-label="{{ 'accessibility.cart' | t }}">
+                  <h2 class="cart-drawer__heading h4 cart-drawer__heading--empty" id="cart-drawer-heading-empty">
+                    {{ 'content.your_cart_is_empty' | t }}
+                  </h2>
+                  <div class="cart-drawer__items">
+                    {%- render 'cart-products', force_empty: true -%}
+                  </div>
+                </div>
+              {%- endcapture -%}
+
+              <cart-drawer-component
+                class="cart-drawer"
+                auto-open
+              >
+                <template id="empty-cart-template">{{ empty_cart_drawer_content }}</template>
+
+                <cart-icon
+                  class="header-actions__cart-icon{% unless cart == empty %} header-actions__cart-icon--has-cart{% endunless %}"
+                  data-testid="cart-icon"
+                >
+                  {%- comment -%} Trigger is a plain link to /cart. Drawer still
+                       auto-opens on add-to-cart via cart-drawer-component's
+                       auto-open attribute. {%- endcomment -%}
+                  <a
+                    href="{{ routes.cart_url }}"
+                    class="ona-cart-trigger"
+                    aria-label="{{ 'accessibility.cart' | t }}"
+                    data-testid="cart-link"
+                  >
+                    <span class="icon-shop" aria-hidden="true"></span>
+                    {%- render 'cart-bubble', limit: 100 -%}
+                  </a>
+                </cart-icon>
+
+                <dialog
+                  ref="dialog"
+                  class="cart-drawer__dialog dialog-modal dialog-drawer color-{{ settings.drawer_color_scheme }}{% if cart.empty? %} cart-drawer--empty{% endif %}"
+                  data-testid="cart-drawer-dialog"
+                  aria-labelledby="{% if cart.empty? %}cart-drawer-heading-empty{% else %}cart-drawer-heading{% endif %}"
+                  scroll-lock
+                  cart-summary-sticky="true"
+                >
+                  <span ref="liveRegion" class="visually-hidden" role="status"></span>
+                  <div
+                    class="cart-drawer__inner"
+                    data-hydration-key="cart-drawer-inner"
+                  >
+                    {%- capture cart_items_children -%}
+                      {%- if cart.empty? -%}
+                        {{ empty_cart_drawer_content }}
+                      {%- else -%}
+                        <div class="cart-drawer__header" id="cart-drawer-header">
+                          <h2 class="cart-drawer__heading h4" id="cart-drawer-heading">
+                            {{ 'content.cart_title' | t }}
+                            {%- render 'cart-bubble' -%}
+                          </h2>
+                          <button
+                            ref="closeButton"
+                            on:click="cart-drawer-component/close"
+                            class="button close-button cart-drawer__close-button button-unstyled"
+                            aria-label="{{ 'actions.close_dialog' | t }}"
+                          >
+                            <span class="svg-wrapper">{{- 'icon-close.svg' | inline_asset_content -}}</span>
+                          </button>
+                        </div>
+
+                        <scroll-hint
+                          class="cart-drawer__content"
+                          aria-label="{{ 'accessibility.cart' | t }}"
+                          style="--header-height: 60px;"
+                        >
+                          <scroll-hint class="cart-drawer__items">
+                            {%- render 'cart-products' -%}
+                          </scroll-hint>
+
+                          <div class="cart-drawer__summary">
+                            {%- render 'cart-summary', section_id: section.id -%}
+                          </div>
+                        </scroll-hint>
+                      {%- endif -%}
+                    {%- endcapture -%}
+                    {%- render 'cart-items-component', children: cart_items_children, is_drawer: true, section_id: section.id -%}
+                  </div>
+                </dialog>
+              </cart-drawer-component>
+
+              <span
+                ref="liveRegion"
+                class="visually-hidden"
+                role="status"
+                data-testid="cart-count-live-region"
+              ></span>
+
+              <script type="module" src="{{ 'header-actions.js' | asset_url }}" fetchpriority="low"></script>
+              <script>
+                document.addEventListener('cart:update', function (e) {
+                  var count = e.detail && e.detail.data && e.detail.data.itemCount;
+                  if (typeof count !== 'number') return;
+                  document.querySelectorAll('.header-actions__cart-icon .cart-bubble').forEach(function (bubble) {
+                    var countEl = bubble.querySelector('.cart-bubble__text-count');
+                    if (countEl) countEl.textContent = count <= 99 ? count : '99+';
+                    bubble.classList.toggle('visually-hidden', count === 0);
+                    if (countEl) countEl.classList.toggle('hidden', count === 0);
+                  });
+                });
+              </script>
+            {%- else -%}
+              <a href="{{ routes.cart_url }}" class="icon-shop" aria-label="Cart">
+                <span>{{ cart.item_count }}</span>
+              </a>
+            {%- endif -%}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+</header-component>
+
+{%- comment -%}
+  Horizon's cart-drawer, shopify-account, and header-actions styles normally
+  live in the native `snippets/header-actions.liquid` {% stylesheet %} block.
+  Because we replaced that snippet call with our own markup, Shopify never
+  loads those styles. Copy them verbatim so the cart drawer still renders
+  as a right-side full-height drawer (not a centered modal) and shopify-account
+  popover stays themed.
+{%- endcomment -%}
+{% stylesheet %}
+  .header {
+    --account-offset-top: calc(
+      var(--header-group-height) + (var(--header-height) * var(--transparent-header-offset-boolean))
+    );
+
+    &[data-sticky-state='active'] {
+      --account-offset-top: calc(var(--header-height) - 1px);
+    }
+  }
+
+  .account-button {
+    background: transparent;
+  }
+
+  .account-button__icon,
+  .account-button__text {
+    color: var(--color-account-icon);
+    transition: color var(--header-content-transition-timing);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  shopify-account {
+    --shopify-account-font-heading: var(--font-heading--family);
+    --shopify-account-font-heading-weight: var(--font-heading--weight);
+    --shopify-account-font-body: var(--font-body--family);
+    --shopify-account-font-body-weight: var(--font-body--weight);
+    --shopify-account-radius-base: var(--style-border-radius-popover);
+    --shopify-account-radius-button: var(--style-border-radius-buttons-primary);
+    --shopify-account-radius-button-small: var(--style-border-radius-buttons-primary);
+    --shopify-account-radius-input: var(--style-border-radius-buttons-primary);
+    --shopify-account-color-background: var(--color-background);
+    --shopify-account-color-text: var(--color-foreground);
+    --shopify-account-color-accent: var(--color-primary-button-background);
+    --shopify-account-color-accent-text: var(--color-primary-button-text);
+    --shopify-account-dialog-position-top: var(--account-offset-top);
+
+    &:not(:defined) {
+      min-width: 44px;
+      height: 44px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      line-height: normal;
+    }
+  }
+
+  .account-button__fallback {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: var(--shopify-account-color-accent, #0a142f);
+  }
+
+  .cart-drawer {
+    --cart-drawer-padding: var(--padding-xl) var(--padding-xl);
+    --cart-drawer-padding-desktop: var(--padding-xl) var(--padding-2xl);
+  }
+
+  .cart-drawer__dialog {
+    position: fixed;
+    overflow: hidden;
+    border-radius: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0 0 0 auto;
+    padding: 0;
+    border-left: var(--style-border-drawer);
+    box-shadow: var(--shadow-drawer);
+    background-color: var(--color-background);
+
+    @media screen and (min-width: 750px) {
+      width: var(--sidebar-width);
+      max-width: 95vw;
+    }
+  }
+
+  .cart-drawer__dialog:modal {
+    max-height: 100dvh;
+    overflow-y: hidden;
+  }
+
+  .cart-drawer__inner {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .cart-drawer__content {
+    height: calc(100% - var(--header-height));
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    background-color: var(--color-background);
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+
+  .cart-drawer__heading {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-xs);
+    margin-bottom: 0;
+  }
+
+  .cart-drawer__close-button {
+    margin-right: calc(var(--padding-sm) * -1);
+    top: var(--margin-sm);
+
+    @media screen and (max-width: 749px) {
+      top: var(--margin-2xs);
+    }
+  }
+
+  .cart-drawer--empty .cart-drawer__content {
+    text-align: center;
+    min-height: auto;
+  }
+
+  .cart-drawer--empty .cart-drawer__heading {
+    margin-bottom: var(--margin-md);
+  }
+
+  .cart-drawer__items .cart-items__table-row {
+    padding-bottom: var(--gap-xl);
+    border-bottom: var(--style-border-width) solid var(--color-border);
+    margin-bottom: var(--gap-xl);
+  }
+
+  .cart-drawer__items .cart-items__table-row:has(+ .cart-items__nested-line) {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+
+  .cart-drawer__items .cart-items__table-row:last-child {
+    border-bottom: none;
+  }
+
+  .cart-drawer__summary {
+    --cart-drawer-summary-padding: var(--padding-lg);
+
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--gap-xl);
+    padding: var(--cart-drawer-summary-padding);
+    margin-top: auto;
+    background-color: var(--color-background);
+    mask-image: linear-gradient(to bottom, transparent, black var(--cart-drawer-summary-padding));
+
+    @media screen and (min-width: 750px) {
+      --cart-drawer-summary-padding: var(--padding-2xl);
+    }
+  }
+
+  .cart-drawer__dialog[cart-summary-sticky='false'] .cart-drawer__summary {
+    position: static;
+    mask-image: none;
+  }
+
+  .cart-drawer__dialog[cart-summary-sticky='false'] .cart-drawer__items {
+    overflow: unset;
+  }
+
+  .cart-actions summary {
+    padding-inline: 0;
+    padding-block: var(--padding-sm);
+    line-height: 1.2;
+    min-height: var(--minimum-touch-target);
+  }
+
+  .cart-drawer__summary .cart__summary-totals:not(:has(.cart__subtotal-container:empty)) {
+    border-block-start: var(--style-border-width) solid var(--color-border);
+    padding-block-start: var(--padding-2xl);
+  }
+
+  .cart-drawer__summary .cart-note {
+    @media screen and (min-width: 750px) {
+      margin-block-start: var(--margin-3xs);
+    }
+  }
+
+  .cart-drawer__heading--empty {
+    display: flex;
+    justify-content: center;
+  }
+
+  .cart-drawer__items {
+    display: flex;
+    flex-direction: column;
+    padding-inline: var(--cart-drawer-padding);
+    overflow-y: auto;
+
+    @media screen and (min-width: 750px) {
+      padding-inline: var(--cart-drawer-padding-desktop);
+    }
+  }
+
+  .cart-drawer__items .cart-items__table-row {
+    padding-bottom: var(--gap-xl);
+    border-bottom: var(--style-border-width) solid var(--color-border);
+    margin-bottom: var(--gap-xl);
+  }
+
+  .cart-drawer__items .cart-items__table-row:last-child {
+    border-bottom: none;
+    padding-block-end: 0;
+    margin-block-end: 0;
+  }
+
+  .cart-drawer--empty .cart-drawer__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100dvh;
+    margin-top: 0;
+  }
+
+  .cart-drawer:not(:has(.cart-form)) .cart-drawer__content {
+    justify-content: center;
+  }
+
+  .cart-drawer__header {
+    background-color: var(--color-background);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: var(--cart-drawer-padding);
+    border-bottom: var(--style-border-width) solid none;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+
+    @media screen and (min-width: 750px) {
+      padding-inline: var(--cart-drawer-padding-desktop);
+    }
+  }
+
+  .cart-drawer--empty .cart-drawer__header {
+    justify-content: right;
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .cart-drawer--empty .cart-drawer__heading {
+    text-align: center;
+  }
+
+  /* .header-actions__cart-icon and its cart-bubble positioning are defined in main.css
+     to match the live theme's top-left placement. Intentionally omitted here. */
+
+  .cart-drawer__heading .cart-bubble {
+    width: fit-content;
+    border-radius: var(--style-border-radius-buttons-primary);
+    aspect-ratio: auto;
+    padding: var(--cart-padding);
+  }
+
+  .cart-drawer__heading .cart-bubble[data-maintain-ratio] {
+    width: min(1lh, 22px);
+    height: min(1lh, 22px);
+  }
+
+  .header-actions__cart-icon .cart-bubble__text,
+  .cart-drawer__heading .cart-bubble__text {
+    font-family: var(--font-paragraph--family);
+    font-weight: var(--font-paragraph--weight);
+  }
+
+  .cart-drawer__heading .cart-bubble .cart-bubble__background {
+    background-color: rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
+  }
+
+  .cart-drawer__heading .cart-bubble__text {
+    color: var(--color-foreground);
+    font-size: clamp(var(--font-size--3xs), 0.75em, var(--font-size--xs));
+  }
+
+  .cart-bubble.cart-bubble--animating .cart-bubble__background {
+    animation: grow var(--animation-speed) var(--animation-easing);
+  }
+
+  .cart-bubble--animating .cart-bubble__text {
+    --start-y: -1em;
+    --start-opacity: 1;
+    transform: translate(0, var(--start-y, -1em));
+    opacity: var(--start-opacity, 1);
+    animation: move-and-fade var(--animation-speed) var(--animation-easing);
+  }
+
+{% endstylesheet %}
+
+{% javascript %}
+  // R54: First-paint sync moved to inline <script> right after .wrap-header (no flash on refresh).
+  // This block now only handles theme editor reloads via shopify:section:load.
+  (function () {
+    function sync() {
+      var wrap = document.querySelector('.wrap-header');
+      if (!wrap) return;
+      var header = wrap.closest('header');
+      if (!header) return;
+      ['has-white-label', 'darkred-color', 'white-logo'].forEach(function (cls) {
+        header.classList.toggle(cls, wrap.classList.contains(cls));
+      });
+    }
+    document.addEventListener('shopify:section:load', sync);
+  })();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "ONA header",
+  "tag": "header",
+  "class": "site-header",
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "settings": [
+    { "type": "image_picker", "id": "logo_red", "label": "Logo (dark / default)" },
+    { "type": "image_picker", "id": "logo_white", "label": "Logo (white / transparent-header)" },
+    { "type": "link_list", "id": "main_linklist", "label": "Main menu", "default": "main-menu" },
+    { "type": "link_list", "id": "main_linklist2", "label": "Secondary menu (mobile only)", "default": "footer" },
+    { "type": "header", "content": "Social links (shown in mobile drawer)" },
+    { "type": "url", "id": "social_instagram_link", "label": "Instagram URL" },
+    { "type": "url", "id": "social_youtube_link", "label": "YouTube URL" },
+    { "type": "url", "id": "social_facebook_link", "label": "Facebook URL" }
+  ],
+  "presets": [
+    { "name": "ONA header" }
+  ]
+}
+{% endschema %}

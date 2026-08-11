@@ -1,0 +1,184 @@
+
+{%- comment -%}
+  ONA footer — 1:1 DOM fidelity with the live theme's sections/footer.liquid.
+  Structure:
+    <footer.site-footer>
+      .img-bg, .img-bg-mobile
+      .container
+        .footer-top
+          .list (EXPLORE:  h3 + menu)
+          .list (ENQUIRE:  h3 + menu + .tel-row)
+          .list (ACKNOWLEDGEMENT: h3 + p)
+          .list (Follow Us:  h3 + ul with icomoon IG/YT/FB)
+        .footer-bottom
+          .copyright
+          <ul> Privacy + ABN
+{%- endcomment -%}
+
+{%- assign main_linklist = linklists[section.settings.main_linklist] -%}
+{%- assign enquire_linklist = linklists[section.settings.main_linklist2] -%}
+{%- assign tel_raw = section.settings.tel | strip -%}
+
+<div class="img-bg"></div>
+<div class="img-bg-mobile"></div>
+
+<div class="container">
+    <div class="footer-top">
+      {%- comment -%} Col 1: EXPLORE {%- endcomment -%}
+      <div class="list">
+        <h3>EXPLORE </h3>
+        <ul class="footer-menu">
+          {%- for link in main_linklist.links -%}
+            <li><a href="{{ link.url }}">{{ link.title | escape }}</a></li>
+          {%- endfor -%}
+        </ul>
+      </div>
+
+      {%- comment -%} Col 2: ENQUIRE + phone {%- endcomment -%}
+      <div class="list">
+        <h3>ENQUIRE </h3>
+        <ul class="footer-menu">
+          {%- for link in enquire_linklist.links -%}
+            <li><a href="{{ link.url }}">{{ link.title | escape }}</a></li>
+          {%- endfor -%}
+        </ul>
+        {%- if tel_raw != blank -%}
+          {%- assign tel_digits = tel_raw | replace: ' ', '' -%}
+          <div class="tel-row"><a href="tel:{{ tel_digits }}">Ph. {{ tel_raw }}</a></div>
+        {%- endif -%}
+      </div>
+
+      {%- comment -%} Col 3: title + content (acknowledgement of country) {%- endcomment -%}
+      <div class="list">
+        <h3>{{ section.settings.title2 | escape }}</h3>
+        <p>{{ section.settings.content | escape }}</p>
+      </div>
+
+      {%- comment -%} Col 4: Follow Us (icomoon IG / YT / FB) {%- endcomment -%}
+      <div class="list">
+        <h3>Follow Us </h3>
+        <ul>
+          {%- if section.settings.social_instagram_link != blank -%}
+            <li><a target="_blank" rel="noopener" href="{{ section.settings.social_instagram_link }}" class="icon-instagram" title="Instagram"></a></li>
+          {%- endif -%}
+          {%- if section.settings.social_youtube_link != blank -%}
+            <li><a target="_blank" rel="noopener" href="{{ section.settings.social_youtube_link }}" class="icon-youtube" title="YouTube"></a></li>
+          {%- endif -%}
+          {%- if section.settings.social_facebook_link != blank -%}
+            <li><a target="_blank" rel="noopener" href="{{ section.settings.social_facebook_link }}" class="icon-facebook" title="Facebook"></a></li>
+          {%- endif -%}
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="copyright">{{ section.settings.copyright | escape }}</p>
+      <ul>
+        {%- if section.settings.privacy != blank -%}
+          <li><a href="{{ section.settings.privacy }}">Privacy</a></li>
+        {%- endif -%}
+        {%- if section.settings.abn != blank -%}
+          <li>ABN: {{ section.settings.abn | escape }}</li>
+        {%- endif -%}
+      </ul>
+    </div>
+  </div>
+
+{%- comment -%} R55: video lightbox container — ported from live/sections/footer.liquid:85.
+  Required by script.js video() handlers (.video-link.embed/.mp4/.file → .video-light-box fadeIn).
+  Used by training-bg, gust-r and any other section with .video-link click trigger. {%- endcomment -%}
+<div class="video-light-box">
+  <div class="video-box">
+    <button class="close" title="Close"></button>
+    <div class="play-iframe-video"></div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "ONA footer",
+  "tag": "div",
+  "class": "site-footer",
+  "enabled_on": {
+    "groups": ["footer"]
+  },
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "main_linklist",
+      "label": "Col 1 — EXPLORE menu",
+      "default": "footer"
+    },
+    {
+      "type": "link_list",
+      "id": "main_linklist2",
+      "label": "Col 2 — ENQUIRE menu",
+      "default": "footer"
+    },
+    {
+      "type": "text",
+      "id": "tel",
+      "label": "Phone",
+      "default": "02 6162 3321"
+    },
+    {
+      "type": "text",
+      "id": "title2",
+      "label": "Col 3 — Title",
+      "default": "ACKNOWLEDGEMENT OF COUNTRY"
+    },
+    {
+      "type": "textarea",
+      "id": "content",
+      "label": "Col 3 — Content",
+      "default": "In the spirit of reconciliation, ONA Coffee acknowledges the Traditional Custodians of the country throughout Australia and their connections to land, sea and community. We pay our respect to their elders past and present and extend that respect to all Aboriginal and Torres Strait Islander peoples today."
+    },
+    {
+      "type": "header",
+      "content": "Social links (Col 4)"
+    },
+    {
+      "type": "url",
+      "id": "social_instagram_link",
+      "label": "Instagram URL"
+    },
+    {
+      "type": "url",
+      "id": "social_youtube_link",
+      "label": "YouTube URL"
+    },
+    {
+      "type": "url",
+      "id": "social_facebook_link",
+      "label": "Facebook URL"
+    },
+    {
+      "type": "header",
+      "content": "Footer bottom"
+    },
+    {
+      "type": "text",
+      "id": "copyright",
+      "label": "Copyright",
+      "default": "Copyright 2026 ONA Coffee"
+    },
+    {
+      "type": "url",
+      "id": "privacy",
+      "label": "Privacy URL"
+    },
+    {
+      "type": "text",
+      "id": "abn",
+      "label": "ABN (Australian Business Number)",
+      "info": "Shown in footer bottom row, e.g. \"ABN: 12 345 678 901\"",
+      "default": "00 000 000 000"
+    }
+  ],
+  "presets": [
+    {
+      "name": "ONA footer"
+    }
+  ]
+}
+{% endschema %}

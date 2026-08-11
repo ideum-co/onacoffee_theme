@@ -1,0 +1,111 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "page_title": {
+      "type": "ona-page-title",
+      "settings": {
+        "title2": "",
+        "subtitle": "With nearly 350 retailers and cafe's nationwide, you will always be able to find good quality coffee close to you!"
+      }
+    },
+    "store_finder": {
+      "type": "ona-store-finder",
+      "settings": {
+        "heading": "Find a store",
+        "google_api_key": "",
+        "fallback_lat": "-35.2809",
+        "fallback_lng": "149.1300"
+      }
+    },
+    "flagship_intro": {
+      "type": "ona-flagship-intro",
+      "settings": {
+        "heading": "Flagship stores",
+        "body": "<p>Our five flagship stores are located in Canberra, Melbourne and Sydney. Here you can get more than just your daily coffee. Each location offers a unique coffee experience prepared by specialist baristas and served with a story to you.</p>"
+      }
+    },
+    "locations_content": {
+      "type": "ona-locations-content",
+      "blocks": {
+        "ab2bd9ab-53cf-43cd-815d-3b213dd82523": {
+          "type": "block",
+          "settings": {
+            "image": "shopify://shop_images/ona_sydney_1720x_7d8f95f8-28db-4263-97c5-8a872e03f69f.jpg",
+            "location": "58 Smith Street, Marrickville NSW 2204",
+            "title": "ONA Sydney",
+            "address": "",
+            "time": "<p>Monday to Friday – 7:30am to 3pm</p><p>Weekends – 8am to 3pm</p>",
+            "email": "onacoffeesydney.com"
+          }
+        },
+        "37486d18-7d40-4732-b952-d198e05bf47e": {
+          "type": "block",
+          "settings": {
+            "image": "shopify://shop_images/image-10_1720x_791685c0-cc82-43cc-abbf-cbec4e9a6480.jpg",
+            "location": "Canberra, ACT",
+            "title": "The Cupping Room",
+            "address": "1/1-13 University Ave, Canberra ACT",
+            "time": "<p>Monday to Friday – 7:30am to 3pm</p><p>Weekends – 8am to 3pm</p>",
+            "email": "thecuppingroom.com.au"
+          }
+        },
+        "a674583b-ffc3-4fa9-b807-7b955a460dec": {
+          "type": "block",
+          "disabled": true,
+          "settings": {
+            "image": "shopify://shop_images/image-24_2160x_2abc3d86-4ac7-433b-82de-6af736a4a2df.jpg",
+            "location": "Dickson, ACT",
+            "title": "Highroad",
+            "address": "1 Woolley St, Dickson ACT",
+            "time": "<p>Monday to Friday – 7:30am to 3pm</p><p>Weekends – 8am to 3pm</p>",
+            "email": "highrd.com.au"
+          }
+        },
+        "f776c7cf-5705-4eef-b820-61189d5c080b": {
+          "type": "block",
+          "settings": {
+            "image": "shopify://shop_images/image-9_web_1720x_c563d6f5-cc2e-4fb6-b8a7-2b3b88c6f6f5.jpg",
+            "location": "Fyshwick, ACT",
+            "title": "Coffee House",
+            "address": "68 Wollongong St, Fyshwick ACT",
+            "time": "<p>Monday to Friday – 7am to 3pm</p><p>Weekends – 8am to 3pm</p>",
+            "email": "onacoffeehouse.com.au"
+          }
+        },
+        "d8a70987-5f4b-47e4-9628-1f1df648fa6f": {
+          "type": "block",
+          "settings": {
+            "image": "shopify://shop_images/ONA_MELB-1551-v1636430639508.webp",
+            "location": "Brunswick, VIC",
+            "title": "ONA Melbourne",
+            "address": "22 Ovens St, Brunswick VIC",
+            "time": "<p>Monday to Friday – 8:00am to 3pm</p><p>Weekends – 8:30am to 3pm</p>",
+            "email": "onacoffeemelbourne.com"
+          }
+        }
+      },
+      "block_order": [
+        "ab2bd9ab-53cf-43cd-815d-3b213dd82523",
+        "37486d18-7d40-4732-b952-d198e05bf47e",
+        "a674583b-ffc3-4fa9-b807-7b955a460dec",
+        "f776c7cf-5705-4eef-b820-61189d5c080b",
+        "d8a70987-5f4b-47e4-9628-1f1df648fa6f"
+      ],
+      "settings": {}
+    }
+  },
+  "order": [
+    "page_title",
+    "store_finder",
+    "flagship_intro",
+    "locations_content"
+  ]
+}

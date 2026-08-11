@@ -1,0 +1,132 @@
+<section class="news-inner">
+  <div class="container">
+    <div class="img-box">
+      <div class="img-bg" style="background-image:url('{{ article.image | img_url: '2160x1240' }}');"></div>
+    </div>
+    <div class="share-btns">
+      Share
+      <a href="https://twitter.com/intent/tweet?url={{ article.url }}&text={{ article.title }}" target="_blank" title="Twitter"><span class="icon-twitter"></span></a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=https://onacoffee.com.au/{{ article.url }}" target="_blank" title="Facebook"><span class="icon-facebook"></span></a>
+    </div>
+    <h1>{{ article.title }}</h1>
+    <div class="tags-row">
+      {% for tag in article.tags %}
+      <span>{{ tag }}</span>
+      {% endfor %}
+    </div>
+    <div class="author">{{ article.metafields.accentuate.author_name }}</div>
+    
+    <div class="text-content-row wowo fadeInUp">
+      {{ article.content }}
+    </div>
+
+    {% if article.metafields.accentuate.product_news %}
+      {% for product in collections.all.products %}
+        {% if product.handle == article.metafields.accentuate.product_news %}
+          <div class="custom-product-row wowo fadeInUp">
+            <div class="product-img">
+              {% if article.metafields.accentuate.new %}
+              <img class="new-tag" src="{{ 'new.png' | asset_url }}" alt="">
+              {% endif %}
+              <img src="{{ product.featured_media | img_url: '' }}" alt="">
+            </div>
+            <div class="price">{% include 'product-price-listing', product: product, show_vendor: show_vendor %}</div>
+            <h3>{{ product.title }}</h3>
+            <div class="buy-btn"><a href="{{ product.url }}">SHOP NOW</a></div>
+          </div>
+        {% endif %}
+      {% endfor%}
+    {% endif %}
+
+    {% if article.metafields.accentuate.content_after_product1 %}
+    <div class="text-content-row wowo fadeInUp">
+      {{ article.metafields.accentuate.content_after_product1 }}
+    </div>
+    {% endif %}
+    
+    {% paginate blogs.brewguides.articles by 500 %}
+        {% if article.metafields.accentuate.brewguide_news %}
+          {% for article2 in blogs.brewguides.articles %}
+            {% if article2.handle == article.metafields.accentuate.brewguide_news %}
+              <div class="custom-brewguide-row wowo fadeInUp">
+                <div class="product-img">
+                  <img src="{{ article2.image | img_url: '826x602' }}" alt="">
+                </div>
+                <h3>{{ article2.title }}</h3>
+                <div class="buy-btn"><a href="{{ article2.url }}">VIEW BREWGUIDE</a></div>
+              </div>
+            {% endif %}
+          {% endfor%}
+        {% endif %}
+    {% endpaginate %}
+
+    <div class="author-bio-row wowo fadeInUp">
+      <div class="author-bio-bg">
+        <div class="two-cols">
+          <div class="img-box">
+            <div class="bg-img" style="background-image:url('{{ article.metafields.accentuate.photo_news }}');"></div>
+          </div>
+          <div class="text-box">
+            <h2>Author Bio</h2>
+            <h3>{{ article.metafields.accentuate.author_name }}</h3>
+            <div class="bio-text">{{ article.metafields.accentuate.bio_news }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% assign related_posts = "" %}
+    {% assign max = 0 %}
+    {% for rarticle in blogs.news.articles %}
+      {% if rarticle.handle != article.handle %}
+        {% if max < 3 %}
+        {% capture post %}
+            <div class="news-item">
+              <a href="{{ rarticle.url }}">
+                <div class="img-box">
+                  <div class="img-bg" style="background-image:url('{{ rarticle.image | img_url: '826x602' }}');"></div>
+                </div>
+                <h3>{{ rarticle.title | escape }}</h3>
+                <div class="tags-row">
+                    {% for tag in rarticle.tags %}
+                    <span>{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                <div class="author">{{ rarticle.metafields.accentuate.author_name }}</div>
+              </a>
+            </div>
+        {% endcapture %}
+        {% assign related_posts = related_posts | append:post %}
+        {% assign max = max | plus:1 %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+
+    
+  </div>
+</section>
+
+
+{% if related_posts.size > 0 %}
+  <section class="suggested-reading-block">
+    <div class="container">
+        <div class="suggested-reading">
+          <div class="title-box">
+            <h2>Suggested reading</h2>
+            <a href="/blogs/news/">See all</a>
+          </div>
+          <div class="post-row">
+            {{ related_posts }}
+          </div>
+        </div>
+    </div>
+  </section>
+{% else %}
+{% endif %}
+
+
+
+
+{% schema %}
+{ "name": "ONA news article", "settings": [] }
+{% endschema %}

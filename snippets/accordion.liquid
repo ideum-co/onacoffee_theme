@@ -1,0 +1,25 @@
+{%- assign product_accordions = product.metafields.custom.accordion.value -%}
+{%- if product_accordions and product_accordions.size > 0 -%}
+<div class="accordiondiv">
+  <div class="container">
+    <div class="content">
+      <h2>{{ title }}</h2>
+      {% if content %}
+      <div class="description">
+        {{ content }}
+      </div>
+      {% endif %}
+      <div class="accordion">
+        {% for accordion in product_accordions %}
+          <div class="accordion-list">
+            <div class="accordion-title">{{ accordion.title }} <i class="icon-close"></i></div>
+            <div class="accordion-content">
+              {{ accordion.description | metafield_tag }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{%- endif -%}

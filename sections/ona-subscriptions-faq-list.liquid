@@ -1,0 +1,57 @@
+<div class="list">
+  <h2>{{ section.settings.title2 }}</h2>
+  <div class="accordion">
+    {% if section.blocks.size > 0 %}
+      {% for block in section.blocks %}
+        <div class="accordion-list">
+          <div class="accordion-title">
+            {{ block.settings.title }} <i class="icon-close"></i>
+          </div>
+          <div class="accordion-content">
+            {{ block.settings.content }}
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Subscription FAQ list",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title2",
+      "label": "Title",
+      "default": "Subscriptions – FAQs"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "faq_block",
+      "name": "FAQ item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Question",
+          "default": "How do our Coffee Subscriptions work?"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Answer",
+          "default": "<p>Our Coffee Subscriptions are your way to enjoy café‑quality coffee at home, without manually ordering. Choose your favourite coffee, pick a delivery frequency, and we’ll take care of the rest.</p>"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 50,
+  "presets": [
+    {
+      "name": "Subscription FAQ list"
+    }
+  ]
+}
+{% endschema %}

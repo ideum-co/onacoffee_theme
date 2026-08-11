@@ -1,0 +1,328 @@
+{% assign limit = 24 %}
+{% paginate blog.articles by limit %}
+<section class="page-title">
+  <div class="container">
+    <h1>{{ blog.title }}</h1>
+  </div>
+</section>
+
+
+
+<section class="shop-content">
+    <div class="container">
+        <div class="shop-top">
+<!--           <a href="javascript:void(0);" class="filter">Sort by</a> -->
+          
+          
+      {% if limit < blog.articles_count %}
+      {% if paginate.current_page == paginate.pages %}
+      <p class="results">SHOWING {{ blog.articles_count | modulo: limit }} OF {{ blog.articles_count }} RESULTS</p>
+      {% else %}
+      <p class="results">SHOWING {{limit}} OF {{ blog.articles_count }} RESULTS</p>
+      {% endif %}
+      {% else %}
+      <p class="results">SHOWING ALL {{ blog.articles_count }} RESULTS</p>
+      {% endif %}
+          
+          
+           {% assign allcount = blog.articles_count %}
+        </div>
+        <div class="shop-filter">
+            <ul class="tab-filter blog-tab">
+              <li{% if current_tags %}{% else %} class="active"{% endif %} data-tag=""><a href="/blogs/brewguides">View All</a></li>
+              {% for tag in blog.all_tags %}
+                {% if tag contains 'Roast Type' or tag contains 'Coffee Type' or tag contains 'Brew Method' or tag contains 'Taste Notes' or tag contains 'Origin'%}
+              	{% else %}
+              		<li{% if current_tags contains tag %} class="active"{% endif %} data-tag="{{ tag | handle }}"><a href="/blogs/brewguides/tagged/{{ tag | handle }}">{{ tag }}</a></li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+        </div>
+        <div class="shop-list another-style" data-count="{{ allcount }}">
+          	{% for article in blog.articles %}
+            <div class="list">
+                <a href="{{ article.url }}" class="list-box">
+                    {% if article.image %}
+                      {% capture img_id %}ArticleImage-{{ article.image.id }}{% endcapture %}
+                      {% capture img_wrapper_id %}ArticleImageWrapper-{{ article.image.id }}{% endcapture %}
+                      {%- assign img_url = article.image | img_url: '1x1' | replace: '_1x1.', '_{width}x.' -%}
+                      {% include 'image-style', image: article.image, height: 345, wrapper_id: img_wrapper_id, img_id: img_id %}
+                            <div class="img">
+                              <img src="{{ article.image | img_url: '' }}"
+                                  width="{{ article.image.width }}"
+                                  height="{{ article.image.height }}"
+                                  loading="lazy"
+                                  decoding="async"
+                                  alt="">
+                            </div>
+                    {% endif %}
+
+                    <div class="text">
+                        <p>{{ article.title | escape }}</p>
+                        <span class="a-link">View Brewguide</span>
+                    </div>
+                </a>
+            </div>
+ 			{% endfor %}
+        </div>
+    </div>
+</section>
+
+
+
+{%- if paginate.pages > 1 -%}
+  {% include 'pagination', paginate: paginate %}
+{%- endif -%}
+
+
+<div class="filters-wrapper">
+    <div class="content">
+        <div class="filters-header">
+            <h2>Sort by</h2>
+          	{% assign cur = current_tags | escape %}
+         
+            <i class="icon-close"></i>
+        </div>
+        <div class="filters-content" data-url="{{shop.url}}{{blog.url}}/tagged/" data-back-url="{{shop.url}}{{blog.url}}/">
+          	{% assign allcur = collections.all.tags | escape %}
+          	{% if allcur contains 'Roast Type' %}
+            <div class="list">
+                <h3>Roast Type</h3>
+                <ul>
+                  <li{% if cur contains 'Roast Type' %}{% else %} class="active"{% endif %}><a data-handle="all" href="javascript:void(0);">All</a></li>
+                  {% for tag in blog.all_tags %}
+                    {% if tag contains 'Roast Type' %}
+                  		{% assign handle = tag | link_to_tag: tag | split: 'href="/blogs/brewguides/tagged/' | last | split: '"' | first %}
+                        {% assign name = tag | split: 'Roast Type.' %}
+						<li{% if cur contains tag %} class="active"{% endif %}><a data-handle="{{handle}}" href="javascript:void(0);">{{name}}</a></li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+            </div>
+          	{% endif %}
+          	{% if allcur contains 'Coffee Type' %}
+            <div class="list">
+                <h3>COFFEE TYPE</h3>
+                <ul>
+                  <li{% if cur contains 'Coffee Type' %}{% else %} class="active"{% endif %}><a data-handle="all" href="javascript:void(0);">All</a></li>
+                  {% for tag in blog.all_tags %}
+                    {% if tag contains 'Coffee Type' %}
+                  		{% assign handle = tag | link_to_tag: tag | split: 'href="/blogs/brewguides/tagged/' | last | split: '"' | first %}
+                        {% assign name = tag | split: 'Coffee Type.' %}
+						<li{% if cur contains tag %} class="active"{% endif %}><a data-handle="{{handle}}" href="javascript:void(0);">{{name}}</a></li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+            </div>
+          	{% endif %}
+          	{% if allcur contains 'Brew Method' %}
+            <div class="list">
+                <h3>BREW METHOD</h3>
+                <ul>
+                  <li{% if cur contains 'Brew Method' %}{% else %} class="active"{% endif %}><a data-handle="all" href="javascript:void(0);">All</a></li>
+                  {% for tag in blog.all_tags %}
+                    {% if tag contains 'Brew Method' %}
+                  		{% assign handle = tag | link_to_tag: tag | split: 'href="/blogs/brewguides/tagged/' | last | split: '"' | first %}
+                        {% assign name = tag | split: 'Brew Method.' %}
+						<li{% if cur contains tag %} class="active"{% endif %}><a data-handle="{{handle}}" href="javascript:void(0);">{{name}}</a></li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+            </div>
+          	{% endif %}
+          	{% if allcur contains 'Taste Notes' %}
+            <div class="list">
+                <h3>TASTE NOTES</h3>
+                <ul>
+                  <li{% if cur contains 'Taste Notes' %}{% else %} class="active"{% endif %}><a data-handle="all" href="javascript:void(0);">All</a></li>
+                  {% for tag in blog.all_tags %}
+                    {% if tag contains 'Taste Notes' %}
+                  		{% assign handle = tag | link_to_tag: tag | split: 'href="/blogs/brewguides/tagged/' | last | split: '"' | first %}
+                        {% assign name = tag | split: 'Taste Notes.' %}
+						<li{% if cur contains tag %} class="active"{% endif %}><a data-handle="{{handle}}" href="javascript:void(0);">{{name}}</a></li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+            </div>
+          	{% endif %}
+          	{% if allcur contains 'Origin' %}
+            <div class="list">
+                <h3>ORIGIN</h3>
+                <ul>
+                  <li{% if cur contains 'Origin' %}{% else %} class="active"{% endif %}><a data-handle="all" href="javascript:void(0);">All</a></li>
+                  {% for tag in blog.all_tags %}
+                    {% if tag contains 'Origin' %}
+                  		{% assign handle = tag | link_to_tag: tag | split: 'href="/blogs/brewguides/tagged/' | last | split: '"' | first %}
+                        {% assign name = tag | split: 'Origin.' %}
+						<li{% if cur contains tag %} class="active"{% endif %}><a data-handle="{{handle}}" href="javascript:void(0);">{{name}}</a></li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+            </div>
+          	{% endif %}
+        </div>
+      
+      {% assign handles = '' %}
+      {% for tag in current_tags %}
+      {% assign handle = tag | link_to_tag: tag | split: 'href="/blogs/brewguides/tagged/' | last | split: '"' | first %}
+      {% assign foo = forloop.index0 %}
+      {%if foo > 0 %}
+      {% assign handles =  handles | append: '+' %}
+      {% endif %}
+      {% assign handles =  handles | append: handle %}
+      {% endfor %}
+        <div class="filters-footer">
+          <p><a href="{{shop.url}}{{blog.url}}/{{handles}}" class="more-btn see-all"><span class="ajax-count">{% if allcount > 1 %}SEE {{ allcount }} RESULTS{% else %}{% if allcount == 1 %}SEE {{ allcount }} RESULT{% else %}NO RESULTS{% endif %}{% endif %}</span></a></p>
+          <p><a href="javascript:void(0);" class="a-clear clear-filter">CLEAR</a></p>
+        </div>
+    </div>
+</div>
+{% endpaginate %}
+
+
+
+{% schema %}
+{
+  "name": "ONA blog brewguides",
+  "settings": [
+    {
+      "type": "select",
+      "id": "layout",
+      "label": {
+        "cs": "Rozvržení",
+        "da": "Layout",
+        "de": "Layout",
+        "en": "Layout",
+        "es": "Diseño",
+        "fi": "Asettelu",
+        "fr": "Mise en page",
+        "it": "Layout",
+        "ja": "レイアウト",
+        "ko": "레이아웃",
+        "nb": "Oppsett",
+        "nl": "Opmaak",
+        "pl": "Układ",
+        "pt-BR": "Layout",
+        "pt-PT": "Esquema",
+        "sv": "Layout",
+        "th": "เลย์เอาต์",
+        "tr": "Düzen",
+        "vi": "Bố cục",
+        "zh-CN": "布局",
+        "zh-TW": "版面配置"
+      },
+      "default": "list",
+      "options": [
+        {
+          "value": "grid",
+          "label": {
+            "cs": "Mřížka",
+            "da": "Gitter",
+            "de": "Raster",
+            "en": "Grid",
+            "es": "Cuadrícula",
+            "fi": "Ruudukko",
+            "fr": "Grille",
+            "it": "Griglia",
+            "ja": "グリッド",
+            "ko": "그리드",
+            "nb": "Rutenett",
+            "nl": "Grid",
+            "pl": "Siatka",
+            "pt-BR": "Grade",
+            "pt-PT": "Grelha",
+            "sv": "Rutnät",
+            "th": "กริด",
+            "tr": "Izgara",
+            "vi": "Lưới",
+            "zh-CN": "网格",
+            "zh-TW": "網格"
+          }
+        },
+        {
+          "value": "list",
+          "label": {
+            "cs": "Seznam",
+            "da": "Liste",
+            "de": "Liste",
+            "en": "List",
+            "es": "Lista",
+            "fi": "Luettelo",
+            "fr": "Liste",
+            "it": "Elenco",
+            "ja": "リスト",
+            "ko": "목록",
+            "nb": "Liste",
+            "nl": "Lijst",
+            "pl": "Lista",
+            "pt-BR": "Lista",
+            "pt-PT": "Lista",
+            "sv": "Lista",
+            "th": "รายการ",
+            "tr": "Liste",
+            "vi": "Danh sách",
+            "zh-CN": "列表",
+            "zh-TW": "清單"
+          }
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "blog_show_author",
+      "label": {
+        "cs": "Zobrazit autora",
+        "da": "Vis forfatter",
+        "de": "Autor anzeigen",
+        "en": "Show author",
+        "es": "Mostrar autor",
+        "fi": "Näytä tekijä",
+        "fr": "Afficher l'auteur",
+        "it": "Mostra autore",
+        "ja": "執筆者を表示する",
+        "ko": "작성자 표시",
+        "nb": "Vis forfatter",
+        "nl": "Auteur weergeven",
+        "pl": "Pokaż autora",
+        "pt-BR": "Exibir autor",
+        "pt-PT": "Mostrar autor",
+        "sv": "Visa författare",
+        "th": "แสดงผู้เขียน",
+        "tr": "Yazarı göster",
+        "vi": "Hiển thị tác giả",
+        "zh-CN": "显示作者",
+        "zh-TW": "顯示作者"
+      },
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "blog_show_date",
+      "label": {
+        "cs": "Zobrazit datum",
+        "da": "Vis dato",
+        "de": "Datum anzeigen",
+        "en": "Show date",
+        "es": "Mostrar fecha",
+        "fi": "Näytä päivämäärä",
+        "fr": "Afficher la date",
+        "it": "Mostra data",
+        "ja": "日付を表示する",
+        "ko": "날짜 표시",
+        "nb": "Vis dato",
+        "nl": "Datum weergeven",
+        "pl": "Pokaż datę",
+        "pt-BR": "Exibir data",
+        "pt-PT": "Mostrar data",
+        "sv": "Visa datum",
+        "th": "แสดงวันที่",
+        "tr": "Tarihi göster",
+        "vi": "Hiển thị ngày",
+        "zh-CN": "显示日期",
+        "zh-TW": "顯示日期"
+      },
+      "default": true
+    }
+  ]
+}
+{% endschema %}

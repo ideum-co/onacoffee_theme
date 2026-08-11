@@ -1,0 +1,177 @@
+
+{%- comment -%}
+  ONA announcement bar — 1:1 DOM fidelity with live's sections/announcement-bar.liquid.
+  Structure:
+    <div class="announcement-bar">           (or <a> if message_link is set)
+      <div class="container">
+        <p class="announcement-bar__message">{text}</p>
+      </div>
+    </div>
+
+  Includes live's free-shipping countdown logic.
+{%- endcomment -%}
+
+{%- assign s = section.settings -%}
+
+{%- if s.show and s.message_text != blank -%}
+  {%- if s.home_page_only == false or template.name == 'index' -%}
+
+    {%- comment -%} Build the announcement message, honoring free shipping countdown {%- endcomment -%}
+    {%- assign announcement_message = s.message_text -%}
+    {%- if s.free_shipping_countdown -%}
+      {%- assign threshold_cents = s.free_shipping_threshold | times: 100 -%}
+      {%- assign left_cents = threshold_cents | minus: cart.total_price -%}
+      {%- assign left_money = left_cents | money -%}
+      {%- if cart.total_price > 0 and left_cents > 0 -%}
+        {%- assign announcement_message = s.free_shipping_notqualified | replace: '[price]', left_money -%}
+      {%- elsif cart.total_price > 0 and left_cents <= 0 -%}
+        {%- assign announcement_message = s.free_shipping_qualified -%}
+      {%- endif -%}
+    {%- endif -%}
+
+    {%- style -%}
+      .announcement-bar {
+        background-color: {{ s.color_bg }};
+        text-align: center;
+      }
+      .announcement-bar p {
+        padding: 10px 0;
+        font-size: {{ s.font_size }}px;
+        margin: 0 !important;
+      }
+      .announcement-bar__message,
+      .announcement-bar--link {
+        color: {{ s.color_text }};
+      }
+      .announcement-bar--link:hover,
+      .announcement-bar--link:hover .announcement-bar__message {
+        color: {{ s.color_text_hover }} !important;
+      }
+    {%- endstyle -%}
+
+    {%- if s.message_link == blank -%}
+      <div class="announcement-bar">
+        <div class="container">
+          <p class="announcement-bar__message">{{ announcement_message }}</p>
+        </div>
+      </div>
+    {%- else -%}
+      <a href="{{ s.message_link }}" class="announcement-bar announcement-bar--link">
+        <div class="container">
+          <p class="announcement-bar__message">{{ announcement_message }}</p>
+        </div>
+      </a>
+    {%- endif -%}
+
+  {%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "ONA announcement",
+  "tag": "aside",
+  "class": "ona-announcement-wrap",
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show",
+      "label": "Show announcement",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "home_page_only",
+      "label": "Home page only",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "message_text",
+      "label": "Text",
+      "default": "Welcome to ONA Coffee"
+    },
+    {
+      "type": "url",
+      "id": "message_link",
+      "label": "Link (optional)"
+    },
+    {
+      "type": "header",
+      "content": "Free shipping countdown"
+    },
+    {
+      "type": "checkbox",
+      "id": "free_shipping_countdown",
+      "label": "Show free shipping countdown",
+      "info": "Only takes effect when there is at least one item in the cart.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "free_shipping_threshold",
+      "label": "Free shipping threshold",
+      "min": 5,
+      "max": 500,
+      "step": 5,
+      "unit": "$",
+      "default": 60
+    },
+    {
+      "type": "textarea",
+      "id": "free_shipping_notqualified",
+      "label": "Message (not qualified)",
+      "default": "Add just [price] to your cart to receive free shipping!"
+    },
+    {
+      "type": "textarea",
+      "id": "free_shipping_qualified",
+      "label": "Message (qualified)",
+      "default": "Your order qualifies for free shipping!"
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "color",
+      "id": "color_bg",
+      "label": "Background",
+      "default": "#2b2c30"
+    },
+    {
+      "type": "color",
+      "id": "color_text",
+      "label": "Text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "color_text_hover",
+      "label": "Link hover",
+      "default": "#f3b1c5"
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "label": "Font size",
+      "min": 8,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    }
+  ],
+  "presets": [
+    {
+      "name": "ONA announcement"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,56 @@
+{% assign limit = 12 %}
+{% paginate blog.articles by limit %}
+<section class="page-title">
+  <div class="container">
+    <h1>{{ blog.title }}</h1>
+  </div>
+</section>
+<section class="news-list-wrap">
+  <div class="container">
+    <div class="filter-row">
+      <div class="filter-box">
+        <p>I'm interested in</p>
+        <div class="filter-form">
+          <div class="filter-select">
+            <div class="current-value" data-current-tag="all">All articles</div>
+            <ul>
+              <li><button data-tag="all">All articles</button></li>
+              {% for tag in blog.all_tags %}
+              	<li><button data-tag="{{ tag | handle }}">{{ tag }}</button></li>
+              {% endfor %}
+            </ul>
+          </div>
+          <button class="ajax-filter-btn">FIND</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="news-list">
+      {% for article in blog.articles %}
+        
+        <div class="news-item">
+          <a {% if article.metafields.custom.custom_external_links != blank %}target="_blank" href="{{ article.metafields.custom.custom_external_links }}"{% else %}href="{{ article.url }}"{% endif %}>
+            <div class="img-box">
+              <div class="img-bg" style="background-image:url('{{ article.image | img_url: '826x602' }}');"></div>
+            </div>
+            <h3>{{ article.title | escape }}</h3>
+            <div class="tags-row">
+                {% for tag in article.tags %}
+                <span>{{ tag }}</span>
+                {% endfor %}
+            </div>
+            <div class="author">{{ article.metafields.accentuate.author_name }}</div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+    {%- if paginate.pages > 1 -%}
+      <butto class="ajax-load-more-news-btn" data-post-type="/blogs/news?page=" data-current-page="1" data-max-page="{{ paginate.pages }}"><span>Load more</span></butto>
+    {%- endif -%}
+  </div>
+</section>
+{% endpaginate %}
+
+{% schema %}
+{ "name": "ONA blog news", "settings": [] }
+{% endschema %}

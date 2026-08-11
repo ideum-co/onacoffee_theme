@@ -1,0 +1,180 @@
+ <section class="store-finder store-finder-default" data-id="store-finder-content">
+    <div class="container">
+        <div class="top">
+            <div class="left">
+                <h2>Store finder</h2>
+                <ul class="state">
+                    <li><a href="#" data-state="all">All</a></li>
+                    <li><a href="#" data-state="ACT">ACT</a></li>
+                    <li><a href="#" data-state="NSW">NSW</a></li>
+                    <li><a href="#" data-state="QLD">QLD</a></li>
+                    <li><a href="#" data-state="SA">SA</a></li>
+                    <li><a href="#" data-state="WA">WA</a></li>
+                    <li><a href="#" data-state="NT">NT</a></li>
+                    <li><a href="#" data-state="TAS">TAS</a></li>
+                    <li><a href="#" data-state="VIC">VIC</a></li>
+                </ul>
+            </div>
+           
+        </div>
+        <div class="content">
+          	<div class="no-store" style="display:none;">
+              <p>"Oops, there are no stores near the location you've searched. <br><button class="get-current-location">Click here</button> to search for a store near your current location.</p>
+          	</div>
+            <div class="store-list left" style="overflow: hidden;">
+                <div class="address-box mCustomScrollbar">
+                    <div class="list">
+                    </div>
+                </div>
+                <div class="address-all">
+                    <div class="list">
+                        <ul class="addr">
+                          {% if section.blocks.size > 0 %}
+                            {% for block in section.blocks %}
+                            <li data-state="{{ block.settings.state }}" data-area="{{ block.settings.suburb }}" class="row">
+                                <div data-la="{{ block.settings.latitude }}" data-lo="{{ block.settings.longitude }}" data-state="{{ block.settings.state }}" data-area="{{ block.settings.suburb }}" class="addr-list">
+                                    {{ block.settings.title }}
+                                    <div class="map-content">
+                                        <div class="lists">
+                                            <div class="text">
+												<h3>{{ block.settings.title }}</h3>
+                                                <i class="icon-close"></i>
+                                                <div class="bottom">
+                                                    <div class="left">
+                                                        <p>{{ block.settings.storeaddress }}</p>
+                                                        {% if block.settings.storeaddressurl %} 
+                                                      		<p><a target="_blank" href="{{ block.settings.storeaddressurl }}" class="a-btn">Website</a></p> 
+                                                      		{% else %}
+                                                      		<p></p>
+                                                      	{% endif %} 
+                                                    </div>
+                                                    <div class="right">
+                                                      {{ block.settings.time }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                          {% endif %} 
+						</ul>
+                    </div>
+                </div>
+            </div>
+         
+          <script>
+            var res = [];
+            jQuery('.address-all .list .addr .row').each(function () {
+              res.push(jQuery(this).attr('data-area'));
+            });
+            var new_arr=[];
+            for(var i=0;i<res.length;i++) {
+              var items=res[i];
+              if($.inArray(items,new_arr)==-1) {
+                new_arr.push(items);
+              }
+            }
+            var newHtml = '';
+            for(var j=0;j<new_arr.length;j++){
+              newHtml += '<li>'+ new_arr[j] +'</li>';
+            }
+            jQuery('#the-basics .area-list').html(newHtml);
+
+            jQuery('.store-finder .state li:nth-child(1)').addClass('active');
+            var Ahtml = '';
+            jQuery('.store-finder .address-all .list .addr .row').each(function () {
+              Ahtml += jQuery(this).html();
+            });
+          
+          </script>
+        </div>
+    </div>
+</section>
+<style>
+  .store-finder.store-finder-default{
+    display:none;
+  }
+</style>
+{% schema %}
+{
+  "name": {
+    "en": "Store finder"
+  },
+  "blocks": [
+    {
+      "type": "store",
+      "name": {
+        "en": "Store"
+      },
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title"
+        },
+        {
+          "type": "text",
+          "id": "storeaddress",
+          "label": {
+            "en": "Store address"
+          }
+        },
+        {
+          "type": "url",
+          "id": "storeaddressurl",
+          "label": {
+            "en": "Store address url"
+          }
+        },
+        {
+          "type": "richtext",
+          "id": "time",
+          "label": {
+            "en": "Open time"
+          }
+        },
+        {
+          "type": "radio",
+          "id": "state",
+          "label": {
+            "en": "State"
+          },
+		  "options":[
+		    {"value":"ACT", "label":"ACT"},
+		    {"value":"NSW", "label":"NSW"},
+		    {"value":"QLD", "label":"QLD"},
+		    {"value":"SA", "label":"SA"},
+		    {"value":"WA", "label":"WA"},
+		    {"value":"NT", "label":"NT"},
+		    {"value":"TAS", "label":"TAS"},
+		    {"value":"VIC", "label":"VIC"}
+		  ]
+        },
+        {
+          "type": "text",
+          "id": "suburb",
+          "label": {
+            "en": "Suburb"
+          }
+        },
+        {
+          "type": "text",
+          "id": "longitude",
+          "label": {
+            "en": "Longitude"
+          }
+        },
+        {
+          "type": "text",
+          "id": "latitude",
+          "label": {
+            "en": "Latitude"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

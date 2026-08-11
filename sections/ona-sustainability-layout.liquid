@@ -1,0 +1,75 @@
+<section class="two-columns-content">
+  <div class="container">
+    <div class="content">
+      <div class="left-box wowo fadeInUp">
+        {%- assign subtitle = section.settings.subtitle | default: page.metafields.accentuate.sub_title -%}
+        {%- if subtitle != blank -%}
+          <h2>{{ subtitle }}</h2>
+        {%- endif -%}
+
+        {%- assign images = page.metafields.accentuate.image -%}
+        {%- if images != blank -%}
+          <div class="image-slider">
+            {%- for image in images -%}
+              <div class="slider-list">
+                <img src="{{ image }}" alt="" loading="lazy" decoding="async">
+              </div>
+            {%- endfor -%}
+          </div>
+        {%- elsif section.blocks.size > 0 -%}
+          <div class="image-slider">
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'slide' and block.settings.image != blank -%}
+                {%- assign sl_h = 1200 | divided_by: block.settings.image.aspect_ratio | round -%}
+                <div class="slider-list" {{ block.shopify_attributes }}>
+                  <img src="{{ block.settings.image | img_url: '1200x' }}" alt="{{ block.settings.image.alt | escape }}" width="1200" height="{{ sl_h }}" loading="lazy" decoding="async">
+                </div>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </div>
+      <div class="right-box wowo fadeInUp">
+        <div class="list">
+          {% if section.settings.body != blank %}
+            {{ section.settings.body }}
+          {% elsif page.content.size > 0 %}
+            {{ page.content }}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Sustainability layout",
+  "settings": [
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Left column subtitle",
+      "info": "Leave blank to fall back to page.metafields.accentuate.sub_title"
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Right column body",
+      "info": "Leave blank to fall back to page content"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide image",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" }
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "Sustainability layout", "category": "Text" }
+  ]
+}
+{% endschema %}

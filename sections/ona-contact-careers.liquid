@@ -1,0 +1,64 @@
+<section class="careers-another">
+  <div class="container">
+    <div class="content">
+      <div class="left-box wowo fadeInUp">
+        <div class="img">
+          {%- assign cc_h = 1270 | divided_by: section.settings.image.aspect_ratio | round -%}
+         	<img src="{{ section.settings.image | img_url: '1270x' }}" alt="" width="1270" height="{{ cc_h }}" loading="lazy" decoding="async">
+        </div>
+      </div>
+      <div class="right-box">
+        <div class="box wowo fadeInUp">
+          <h2>{{ section.settings.title2 }}</h2>
+          <h3>{{ section.settings.subtitle }}</h3>
+          {{ section.settings.content }}
+          <p><a href="{{ section.settings.url }}" class="a-link">VIEW LISTING</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": {
+    "en": "Carrers"
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title2",
+      "label": {
+		"en": "Title"
+      }
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": {
+		"en": "Sub title"
+      }
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": {
+		"en": "Content"
+      }
+    },
+    {
+      "type": "url",
+      "id": "url",
+      "label": {
+		"en": "Button url"
+      }
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": {
+		"en": "Image"
+      }
+    }
+  ]
+}
+{% endschema %}

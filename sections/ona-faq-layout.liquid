@@ -1,0 +1,36 @@
+<section class="faq">
+  <div class="container">
+    <div class="content">
+      <div class="left-box wowo fadeInUp">
+        {% if section.settings.body != blank %}
+          {{ section.settings.body }}
+        {% elsif page.content.size > 0 %}
+          {{ page.content }}
+        {% endif %}
+      </div>
+      <div class="right-box wowo fadeInUp">
+        {% content_for 'blocks' %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "FAQ layout",
+  "settings": [
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Left column body",
+      "info": "Leave blank to fall back to page content"
+    }
+  ],
+  "blocks": [
+    { "type": "_faq-category" }
+  ],
+  "presets": [
+    { "name": "FAQ layout", "category": "Text" }
+  ]
+}
+{% endschema %}

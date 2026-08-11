@@ -1,0 +1,20 @@
+<div class="list" {{ block.shopify_attributes }}>
+  {% if block.settings.title != blank %}
+    <h2>{{ block.settings.title }}</h2>
+  {% endif %}
+  <div class="accordion">
+    {% content_for 'blocks' %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "FAQ category",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Category title" }
+  ],
+  "blocks": [
+    { "type": "_faq-item" }
+  ]
+}
+{% endschema %}

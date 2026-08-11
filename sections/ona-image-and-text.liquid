@@ -1,0 +1,41 @@
+<section class="about-image-text">
+  <div class="container">
+    <div class="image wowo fadeInUp">
+      <img class="img-bg" src="{{ section.settings.image | img_url: '1016x' }}" alt="{{ section.settings.image.alt | escape }}" loading="lazy" decoding="async">
+      <svg class="animated-svg" width="404" height="359" viewBox="0 0 404 359" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <mask id="mask0" mask-type="alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="404" height="359">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M0 0H404V359H0V0Z" fill="white"/>
+        </mask>
+        <g mask="url(#mask0)">
+          <path class="start" fill-rule="evenodd" clip-rule="evenodd" d="M176.403 0.00157038C304.367 -0.377034 402.079 67.745 403.967 158.644C406.094 261.082 306.388 357.641 197.092 358.987C93.332 360.265 1.02616 265.445 0.00812456 156.537C-0.868836 62.6051 69.3185 0.318986 176.403 0.00157038Z" fill="#D0994D"/>
+          <path class="medium" fill-rule="evenodd" clip-rule="evenodd" d="M207.061 0.00147765C251.724 0.208909 292.165 21.1333 326.672 45.733C359.549 69.1699 384.929 99.6267 396.606 135.124C407.989 169.727 406.392 207.006 390.681 240.308C375.704 272.055 344.359 294.13 312.185 314.072C280.264 333.858 245.919 349.44 207.061 354.121C163.25 359.4 113.516 365.509 78.3398 342.246C43.3033 319.076 44.6332 274.517 31.5179 238.031C18.6046 202.108 -8.03745 167.385 2.35117 130.85C13.0099 93.3654 50.6853 67.5195 86.5147 44.6176C122.567 21.5731 162.279 -0.206502 207.061 0.00147765Z" fill="#D0994D"/>
+          <path class="end" fill-rule="evenodd" clip-rule="evenodd" d="M194.247 1.46191C236.315 -3.68139 280.224 4.78553 315.424 26.248C351.37 48.166 374.637 82.8631 388.62 119.978C402.762 157.518 411.882 199.548 394.418 235.926C377.551 271.061 333.817 285.719 298.745 307.189C265.103 327.784 234.716 355.266 194.247 358.469C151.912 361.82 108.474 349.166 75.5581 324.854C43.6422 301.281 30.7606 264.328 18.5844 228.723C6.58347 193.631 -8.71639 156.007 6.12223 121.814C20.6835 88.26 62.2057 74.044 94.7428 53.2284C126.765 32.7421 155.377 6.21413 194.247 1.46191Z" fill="#D0994D"/>
+        </g>
+      </svg>
+    </div>
+    <div class="text wowo fadeInUp">
+      <h2>{{ section.settings.title2 }}</h2>
+      <h3>{{ section.settings.content }}</h3>
+      <p>
+        <a href="{{ section.settings.button }}" class="a-link">learn more</a>
+      </p>
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": "ONA Image & text",
+  "enabled_on": {
+    "templates": ["*"]
+  },
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "title2", "label": "Title" },
+    { "type": "textarea", "id": "content", "label": "Content" },
+    { "type": "url", "id": "button", "label": "Button URL" }
+  ],
+  "presets": [
+    { "name": "ONA Image & text" }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,292 @@
+<!-- CANARY-R33-2026-04-28 move preload <link> out of .banner-top-slider so slick does not pick them up as slides -->
+{%- comment -%}
+  R26/R33 — hero LCP preload kept BEFORE <section> so slick (bound to .banner-top-slider)
+  does not wrap the <link> tags into .slick-slide (caused 2 empty slides in R26).
+  preload <link> is valid anywhere in the document; placement does not affect priority.
+{%- endcomment -%}
+{%- if template.name == 'index' and section.blocks.size > 0 -%}
+  {%- assign first_block = section.blocks.first -%}
+  {%- comment -%}
+    URL MUST match the CSS `background-image: url(...)` below byte-for-byte
+    (same filter — `img_url: '1920x'` / `'828x'` — and same protocol-relative
+    host) or the preloaded file is never reused and we double-download.
+    `media` scopes each preload to the breakpoint whose CSS actually uses it.
+  {%- endcomment -%}
+  {%- if first_block.settings.bgmb -%}
+    <link rel="preload" as="image"
+          href="{{ first_block.settings.bgmb | img_url: '828x' }}"
+          media="(max-width: 991.98px)" fetchpriority="high">
+  {%- endif -%}
+  {%- if first_block.settings.bg -%}
+    <link rel="preload" as="image"
+          href="{{ first_block.settings.bg | img_url: '1920x' }}"
+          media="(min-width: 992px)" fetchpriority="high">
+  {%- endif -%}
+{%- endif -%}
+<section
+  class="banner-top-slider"
+  data-section-id="{{ section.id }}"
+  style="padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px;"
+>
+  {% if section.blocks.size > 0 %}
+    {% for block in section.blocks %}
+      <div class="slider-list">
+        {% if forloop.first %}
+          <div class="img-bg pc-show" style="background-image: url('{{ block.settings.bg | img_url: '1920x' }}')"></div>
+          <div class="img-bg mobile-show" style="background-image: url('{{ block.settings.bgmb | img_url: '828x' }}')"></div>
+        {% else %}
+          <div class="img-bg pc-show" data-bg="{{ block.settings.bg | img_url: '1920x' }}"></div>
+          <div class="img-bg mobile-show" data-bg="{{ block.settings.bgmb | img_url: '828x' }}"></div>
+        {% endif %}
+        <div class="container">
+          <div class="text">
+            {% if block.settings.title2 != blank %}
+              <h2>{{ block.settings.title2 }}</h2>
+            {% endif %}
+
+            {% if block.settings.content != blank %}
+              <p>{{ block.settings.content }}</p>
+            {% endif %}
+
+            {% if block.settings.button_text and block.settings.button_link %}
+              <a
+                href="{{ block.settings.button_link }}"
+                class="slider-button {{ block.settings.button_style }} {{ block.settings.button_size }}"
+                style="
+                  color: {{ block.settings.button_text_colour }};
+                  {% if block.settings.button_style == 'filled' %}
+                    background-color: {{ block.settings.button_bg_colour }};
+                  {% else %}
+                    background-color: transparent;
+                  {% endif %}
+                  border-color: {{ block.settings.button_bg_colour }};
+                  font-size: {{ block.settings.button_text_size }}px;
+                "
+              >
+                {{ block.settings.button_text }}
+              </a>
+            {% endif %}
+          </div>
+          <div class="image">
+            {%- liquid
+              assign img_loading = 'lazy'
+              assign img_fp = 'auto'
+              if forloop.first
+                assign img_loading = 'eager'
+                assign img_fp = 'high'
+              endif
+            -%}
+            {{ block.settings.image
+               | image_url: width: 1020
+               | image_tag:
+                   widths: '320, 480, 640, 800, 1020, 1400',
+                   sizes: '(max-width: 991.98px) 90vw, 50vw',
+                   loading: img_loading,
+                   fetchpriority: img_fp,
+                   alt: '' }}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
+</section>
+
+{% javascript %}
+  // Self-contained slick init for banner-top-slider. Replaces the global handler in script.js
+  // so it survives Shopify theme-editor section reloads and avoids duplicate arrow appends.
+  (function () {
+    function initSlider($el) {
+      if ($el.hasClass('slick-initialized')) return;
+      $el.slick({
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        arrows: true,
+        fade: true,
+        dots: true,
+        infinite: true,
+        speed: 600,
+        autoplay: true,
+        pauseOnHover: false,
+        pauseOnFocus: false,
+        autoplaySpeed: 5000,
+        cssEase: 'cubic-bezier(0, 0, 0.58, 1)'
+      });
+      $el.find('.slider-list').addClass('move');
+      $el.off('beforeChange.onaBanner').on('beforeChange.onaBanner', function () {
+        var $list = $el.find('.slider-list');
+        $list.removeClass('move');
+        setTimeout(function () { $list.addClass('move'); }, 400);
+      });
+      var $dots = $el.find('.slick-dots');
+      if ($dots.find('.prev-arrow').length === 0) {
+        $dots.append('<li class="prev-arrow"></li><li class="next-arrow"></li>');
+      }
+    }
+
+    function applyLazyBgs() {
+      jQuery('.banner-top-slider .img-bg[data-bg]').each(function () {
+        var $bg = jQuery(this);
+        $bg.css('background-image', 'url(' + $bg.attr('data-bg') + ')').removeAttr('data-bg');
+      });
+    }
+
+    function boot(root) {
+      if (typeof jQuery === 'undefined' || !jQuery.fn || !jQuery.fn.slick) {
+        return setTimeout(function () { boot(root); }, 100);
+      }
+      var $scope = root ? jQuery(root) : jQuery(document);
+      $scope.find('.banner-top-slider').each(function () {
+        initSlider(jQuery(this));
+      });
+      if (document.readyState === 'complete') {
+        applyLazyBgs();
+      } else {
+        jQuery(window).one('load.onaBannerLazyBg', applyLazyBgs);
+      }
+    }
+
+    // Single delegated arrow handler (safe to register once; guarded with a flag)
+    if (!window.__onaBannerArrowsBound) {
+      window.__onaBannerArrowsBound = true;
+      jQuery(document).on('click', '.banner-top-slider .slick-dots .prev-arrow', function (e) {
+        e.preventDefault();
+        jQuery(this).closest('.banner-top-slider').slick('slickPrev');
+      });
+      jQuery(document).on('click', '.banner-top-slider .slick-dots .next-arrow', function (e) {
+        e.preventDefault();
+        jQuery(this).closest('.banner-top-slider').slick('slickNext');
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { boot(); });
+    } else {
+      boot();
+    }
+
+    // Re-init on theme editor section reload
+    document.addEventListener('shopify:section:load', function (e) {
+      if (e.target && e.target.querySelector('.banner-top-slider')) boot(e.target);
+    });
+    document.addEventListener('shopify:section:unload', function (e) {
+      if (!e.target) return;
+      var el = e.target.querySelector('.banner-top-slider.slick-initialized');
+      if (el) jQuery(el).slick('unslick');
+    });
+  })();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": {
+    "en": "Banner"
+  },
+  "settings": [
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding (px)",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding (px)",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "default": 10
+    }
+  ],
+  "max_blocks": 6,
+  "blocks": [
+    {
+      "type": "image_picker",
+      "name": {
+        "en": "Slider"
+      },
+      "settings": [
+        {
+          "type": "text",
+          "id": "title2",
+          "label": { "en": "Title" },
+          "default": "Slide Title"
+        },
+        {
+          "type": "text",
+          "id": "content",
+          "label": { "en": "Content" }
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": { "en": "Image" }
+        },
+        {
+          "type": "image_picker",
+          "id": "bg",
+          "label": { "en": "Background" }
+        },
+        {
+          "type": "image_picker",
+          "id": "bgmb",
+          "label": { "en": "Background (Mobile)" }
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": { "en": "Button Text" }
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": { "en": "Button Link" }
+        },
+        {
+          "type": "select",
+          "id": "button_style",
+          "label": "Button Style",
+          "default": "filled",
+          "options": [
+            { "value": "filled", "label": "Filled" },
+            { "value": "outline", "label": "Outline" }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "button_size",
+          "label": "Button Size",
+          "default": "medium",
+          "options": [
+            { "value": "small", "label": "Small" },
+            { "value": "medium", "label": "Medium" },
+            { "value": "large", "label": "Large" }
+          ]
+        },
+        {
+          "type": "color",
+          "id": "button_bg_colour",
+          "label": "Button Background Colour"
+        },
+        {
+          "type": "color",
+          "id": "button_text_colour",
+          "label": "Button Text Colour"
+        },
+        {
+          "type": "range",
+          "id": "button_text_size",
+          "label": "Button Text Size (px)",
+          "min": 10,
+          "max": 30,
+          "step": 1,
+          "default": 16
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

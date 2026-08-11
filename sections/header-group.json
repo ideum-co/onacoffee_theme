@@ -1,0 +1,30 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "header",
+  "name": "Header",
+  "sections": {
+    "ona_header": {
+      "type": "ona-header",
+      "settings": {
+        "logo_red": "shopify://shop_images/logo.png",
+        "logo_white": "shopify://shop_images/logo-white.png",
+        "main_linklist": "main-menu",
+        "main_linklist2": "enquire",
+        "social_instagram_link": "https://www.instagram.com/onacoffee/",
+        "social_youtube_link": "https://www.youtube.com/channel/UCvwLJ4owqt_I2QqqC2OE0_A",
+        "social_facebook_link": "https://www.facebook.com/onacoffee/"
+      }
+    }
+  },
+  "order": [
+    "ona_header"
+  ]
+}

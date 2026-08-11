@@ -1,0 +1,316 @@
+{%- comment -%}
+  ONA featured collection — grid of product cards with inline variant picker +
+  AJAX Add to cart. Self-authored from live visual inspection.
+{%- endcomment -%}
+
+{%- assign col = collections[section.settings.collection] -%}
+{%- assign per_row = section.settings.products_per_row | default: '4' -%}
+{%- assign rows = section.settings.rows | default: 1 -%}
+{%- assign limit = per_row | plus: 0 | times: rows -%}
+
+<section class="ona-fc" data-section-id="{{ section.id }}" data-section-type="ona-featured-collection">
+  {%- if section.settings.title != blank -%}
+    <div class="ona-fc__header"><h2>{{ section.settings.title | escape }}</h2></div>
+  {%- endif -%}
+
+  <ul class="ona-fc__grid ona-fc__grid--{{ per_row }}">
+    {%- for p in col.products limit: limit -%}
+      {%- assign v0 = p.selected_or_first_available_variant -%}
+      <li class="ona-fc__card" data-ona-card data-product-id="{{ p.id }}">
+        {%- if section.settings.badge_text != blank -%}
+          <span class="ona-fc__badge">{{ section.settings.badge_text }}</span>
+        {%- endif -%}
+
+        <a href="{{ p.url }}" class="ona-fc__media" aria-label="{{ p.title | escape }}">
+          {%- if p.featured_image -%}
+            <img
+              src="{{ p.featured_image | image_url: width: 540 }}"
+              srcset="{{ p.featured_image | image_url: width: 360 }} 360w, {{ p.featured_image | image_url: width: 540 }} 540w, {{ p.featured_image | image_url: width: 720 }} 720w"
+              sizes="(min-width: 750px) 25vw, 50vw"
+              alt="{{ p.featured_image.alt | default: p.title | escape }}"
+              loading="lazy"
+            >
+          {%- endif -%}
+        </a>
+
+        <div class="ona-fc__tags">{% render 'ona-product-tags', product: p %}</div>
+
+        <a href="{{ p.url }}" class="ona-fc__title">{{ p.title | escape }}</a>
+
+        <div class="ona-fc__price">
+          <span data-card-price>
+            {%- if p.price_varies -%}from {{ p.price_min | money }}{%- else -%}{{ v0.price | money }}{%- endif -%}
+          </span>
+        </div>
+
+        {%- if p.variants.size > 1 and p.options.size == 1 -%}
+          {%- assign opt_name = p.options.first -%}
+          <div class="ona-fc__opt">
+            <span class="ona-fc__opt-label">{{ opt_name }}: <strong data-card-opt-value>{{ v0.title }}</strong></span>
+            <div class="ona-fc__opt-pills" role="radiogroup" aria-label="{{ opt_name }}">
+              {%- for var in p.variants -%}
+                <button type="button"
+                        class="ona-fc__pill{% if var.id == v0.id %} ona-fc__pill--active{% endif %}{% unless var.available %} ona-fc__pill--sold-out{% endunless %}"
+                        data-card-pill
+                        data-variant-id="{{ var.id }}"
+                        data-variant-title="{{ var.title | escape }}"
+                        data-variant-price="{{ var.price | money }}"
+                        data-variant-available="{{ var.available }}"
+                        role="radio"
+                        aria-checked="{% if var.id == v0.id %}true{% else %}false{% endif %}">
+                  {{- var.title -}}
+                </button>
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endif -%}
+
+        <form action="{{ routes.cart_add_url }}" method="post" data-card-form>
+          <input type="hidden" name="id" value="{{ v0.id }}" data-card-variant-input>
+          <input type="hidden" name="quantity" value="1">
+          <button type="submit" class="ona-fc__atc"{% unless v0.available %} disabled{% endunless %} data-card-atc>
+            {%- if v0.available -%}Add to cart{%- else -%}Sold out{%- endif -%}
+          </button>
+        </form>
+      </li>
+    {%- else -%}
+      <li class="ona-fc__empty">No products to show.</li>
+    {%- endfor -%}
+  </ul>
+
+  {%- if section.settings.show_view_all and col.all_products_count > limit -%}
+    <div class="ona-fc__view-all"><a href="{{ col.url }}" class="ona-fc__view-all-link">View all</a></div>
+  {%- endif -%}
+</section>
+
+{% stylesheet %}
+  .ona-fc { max-width: 1440px; margin: 0 auto; padding: 40px 30px; }
+  .ona-fc__header { text-align: center; margin-bottom: 32px; }
+  .ona-fc__header h2 { font: 500 34px/1.2 'Karla', sans-serif; color: #2b2c30; margin: 0; }
+  .ona-fc__grid { list-style: none; padding: 0; margin: 0; display: grid; gap: 30px 24px; }
+  .ona-fc__grid--2 { grid-template-columns: repeat(2, 1fr); }
+  .ona-fc__grid--3 { grid-template-columns: repeat(3, 1fr); }
+  .ona-fc__grid--4 { grid-template-columns: repeat(4, 1fr); }
+  .ona-fc__grid--5 { grid-template-columns: repeat(5, 1fr); }
+  @media (max-width: 749px) {
+    .ona-fc__grid { grid-template-columns: repeat(2, 1fr); gap: 32px 16px; }
+  }
+
+  .ona-fc__card { position: relative; text-align: center; }
+  .ona-fc__badge {
+    position: absolute; top: 0; left: 0;
+    background: #e34d34; color: #fff;
+    font: 700 11px/1 'Karla Bold', 'Karla', sans-serif;
+    letter-spacing: 0.5px; text-transform: uppercase;
+    padding: 7px 10px; z-index: 2;
+  }
+  .ona-fc__media {
+    display: block; aspect-ratio: 168/250;
+    background: #f2f0eb; overflow: hidden; margin-bottom: 12px;
+  }
+  .ona-fc__media img {
+    width: 100%; height: 100%; display: block;
+    transition: transform 0.3s ease;
+    /* object-fit defined in main.css L27394 as single source of truth (section stylesheet loads after main.css and would otherwise override; see MODIFICATION_NOTES #41) */
+  }
+  .ona-fc__card:hover .ona-fc__media img { transform: scale(1.04); }
+  .ona-fc__title {
+    display: block; text-decoration: none;
+    font: 700 21px/1.2 'Karla Bold', 'Karla', sans-serif;
+    color: #2b2c30; margin-bottom: 4px;
+  }
+  a.ona-fc__title:not([disabled]):hover { color: #661a34; text-decoration: underline; }
+  .ona-fc__price { font: 700 15px/1.4 'Karla', sans-serif; color: #333; margin-bottom: 10px; }
+  .ona-fc__opt { margin-bottom: 12px; }
+  .ona-fc__opt-label {
+    display: block; font: 400 13px/1.4 'Karla', sans-serif;
+    color: #333; margin-bottom: 6px;
+  }
+  .ona-fc__opt-label strong { font-weight: 400; }
+  .ona-fc__opt-pills { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .ona-fc__card form[data-card-form] { display: flex; justify-content: center; }
+  .ona-fc__pill {
+    padding: 6px 14px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font: 400 13px/1 'Karla', sans-serif;
+    color: #2b2c30;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .ona-fc__pill:hover { border-color: #2b2c30; }
+  .ona-fc__pill--active {
+    background: #2b2c30; color: #fff; border-color: #2b2c30;
+  }
+  .ona-fc__pill--sold-out { opacity: 0.5; text-decoration: line-through; }
+  .ona-fc__atc {
+    display: block;
+    padding: 11px 12px; background: #2b2c30; color: #fff;
+    border: 1px solid #2b2c30; cursor: pointer;
+    font: 400 13px/1 'Karla', sans-serif;
+    letter-spacing: 1.2px; text-transform: uppercase;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+  .ona-fc__atc:hover:not([disabled]) { background: #661a34; border-color: #661a34; }
+  .ona-fc__atc[disabled] { background: #ccc; cursor: not-allowed; }
+  .ona-fc__atc.is-loading { opacity: 0.7; pointer-events: none; }
+  .ona-fc__empty { grid-column: 1 / -1; text-align: center; color: #888; padding: 40px 0; list-style: none; }
+  .ona-fc__view-all { text-align: center; margin-top: 32px; }
+  a.ona-fc__view-all-link,
+  .ona-fc__view-all a.ona-fc__view-all-link {
+    display: inline-block; padding: 10px 24px;
+    border: 1px solid #661a34;
+    background: transparent;
+    color: #661a34;
+    font: 400 14px/1 'Karla', sans-serif;
+    text-transform: uppercase; letter-spacing: 1.2px;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+  a.ona-fc__view-all-link:hover,
+  a.ona-fc__view-all-link:focus,
+  .ona-fc__view-all a.ona-fc__view-all-link:hover,
+  .ona-fc__view-all a.ona-fc__view-all-link:focus {
+    background: #661a34;
+    color: #fff;
+    border-color: #661a34;
+    text-decoration: none;
+  }
+{% endstylesheet %}
+
+<script>window.__onaAutoOpenCart = window.__onaAutoOpenCart || {{ settings.auto_open_cart_drawer | json }};</script>
+
+{% javascript %}
+  (function () {
+    function openCartDrawer() {
+      // Trigger Horizon's cart-drawer-component open if present
+      var drawer = document.querySelector('cart-drawer-component');
+      if (drawer && typeof drawer.open === 'function') { drawer.open(); return; }
+      // Fallback: click the cart trigger that normally opens it
+      var trigger = document.querySelector('[data-testid="cart-drawer-trigger"]');
+      trigger && trigger.click();
+    }
+
+    function refreshCartBubble() {
+      fetch('/?sections=header-group', { credentials: 'same-origin' })
+        .then(r => r.json())
+        .then(data => {
+          // Horizon's cart-icon subscribes to an updated cart; simplest: just fetch /cart.js and update bubble text
+          fetch('/cart.js', { credentials: 'same-origin' })
+            .then(r => r.json())
+            .then(cart => {
+              var bubbleText = document.querySelectorAll('[ref="cartBubbleCount"], .cart-bubble__text-count');
+              bubbleText.forEach(el => el.textContent = cart.item_count);
+              document.querySelectorAll('.cart-bubble').forEach(b => b.classList.toggle('visually-hidden', cart.item_count === 0));
+            })
+            .catch(() => {});
+        })
+        .catch(() => {});
+    }
+
+    document.querySelectorAll('[data-ona-card]').forEach(function (card) {
+      var pills = card.querySelectorAll('[data-card-pill]');
+      var variantInput = card.querySelector('[data-card-variant-input]');
+      var priceEl = card.querySelector('[data-card-price]');
+      var optVal = card.querySelector('[data-card-opt-value]');
+      var atc = card.querySelector('[data-card-atc]');
+      var form = card.querySelector('[data-card-form]');
+
+      pills.forEach(function (pill) {
+        pill.addEventListener('click', function () {
+          pills.forEach(function (p) {
+            p.classList.remove('ona-fc__pill--active');
+            p.setAttribute('aria-checked', 'false');
+          });
+          pill.classList.add('ona-fc__pill--active');
+          pill.setAttribute('aria-checked', 'true');
+          variantInput.value = pill.dataset.variantId;
+          // Price intentionally NOT changed here — card shows "from $X" (min price).
+          if (optVal) optVal.textContent = pill.dataset.variantTitle;
+          var available = pill.dataset.variantAvailable === 'true';
+          atc.disabled = !available;
+          atc.textContent = available ? 'Add to cart' : 'Sold out';
+        });
+      });
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        atc.classList.add('is-loading');
+        var label = atc.textContent;
+        atc.textContent = 'Adding…';
+
+        var body = new URLSearchParams();
+        body.append('id', variantInput.value);
+        body.append('quantity', '1');
+        // Request ona_header's section HTML so cart-items-component can morph in the fresh drawer content
+        body.append('sections', 'ona_header');
+
+        fetch('/cart/add.js', {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          body: body,
+          credentials: 'same-origin'
+        })
+        .then(function (r) { return r.ok ? r.json() : r.json().then(function (err) { throw err; }); })
+        .then(function (resp) {
+          atc.textContent = 'Added ✓';
+
+          // Dispatch cart:update so Horizon's cart-items-component + cart-icon pick up new data
+          document.dispatchEvent(new CustomEvent('cart:update', {
+            bubbles: true,
+            detail: {
+              resource: resp,
+              sourceId: variantInput.value,
+              data: {
+                source: 'ona-featured-collection',
+                sections: resp.sections || {},
+                itemCount: resp.item_count
+              }
+            }
+          }));
+
+          // R50: Liquid `{% if %}` was previously inlined here, which is illegal
+          // inside `{% javascript %}` (Shopify does not render Liquid inside
+          // this tag), so the raw `{%` token broke compiled_assets/scripts.js
+          // for the whole theme — symptom: every section's slick init failed.
+          // Setting is now exposed via inline <script> above the {% javascript %} block.
+          if (window.__onaAutoOpenCart) setTimeout(openCartDrawer, 120);
+          setTimeout(function () { atc.textContent = label; atc.classList.remove('is-loading'); }, 1500);
+        })
+        .catch(function (err) {
+          atc.textContent = (err && err.description) ? err.description : 'Error';
+          atc.classList.remove('is-loading');
+          setTimeout(function () { atc.textContent = label; }, 2000);
+        });
+      });
+    });
+  })();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "ONA Featured collection",
+  "class": "index-section",
+  "enabled_on": { "templates": ["*"] },
+  "settings": [
+    { "type": "text", "id": "title", "label": "Title", "default": "Featured collection" },
+    { "type": "collection", "id": "collection", "label": "Collection" },
+    {
+      "type": "select", "id": "products_per_row", "label": "Products per row",
+      "options": [
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" },
+        { "value": "5", "label": "5" }
+      ],
+      "default": "4"
+    },
+    { "type": "range", "id": "rows", "label": "Rows", "min": 1, "max": 4, "step": 1, "default": 1 },
+    { "type": "text", "id": "badge_text", "label": "Sale badge (optional)" },
+    { "type": "checkbox", "id": "show_view_all", "label": "Show \"View all\" link", "default": true }
+  ],
+  "presets": [
+    { "name": "ONA Featured collection" }
+  ]
+}
+{% endschema %}
