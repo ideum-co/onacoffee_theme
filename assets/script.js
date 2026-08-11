@@ -1440,28 +1440,6 @@ function animated(){
 
     }
 }
-function preorderProduct() {
-// 	jQuery('.product-form__cart-submit').click(function() {
-// 	  var text = jQuery(this).text();
-// 	  if(text=='Preorder Now'){
-// 		console.log('popup!');
-// 		jQuery('.preorder-tips-popup').addClass('show-popup');
-// 	  }
-// 	});
-	jQuery('.preorder-tips-popup .close-btn').click(function(event) {
-		event.stopPropagation();
-		jQuery('.preorder-tips-popup').removeClass('show-popup');
-	});
-	jQuery('.preorder-tips-popup').click(function(event) {
-		event.stopPropagation();
-		jQuery('.preorder-tips-popup').removeClass('show-popup');
-	});
-	jQuery('.preorder-tips-popup .popup-box').click(function(event) {
-		event.stopPropagation();
-	});
-	
-}
-
 function productTab() {
 	jQuery('.coffee-tab ul li button').click(function() {
 		jQuery(this).parent().siblings().removeClass('active');
@@ -1548,7 +1526,6 @@ jQuery(document).ready(function(jQuery) {
     // also removed.
     jQuery('.w-webflow-badge').remove();
     // wowo();
-	preorderProduct();
     menuHamburger();
     syncOnaDropdown();
     getScrollbarWidth();

@@ -27,9 +27,7 @@
         </thead>
         <tbody>
           {%- for item in cart.items -%}
-            {%- assign is_gift = false -%}
-            {%- if item.id == 40126200709311 -%}{%- assign is_gift = true -%}{%- endif -%}
-            <tr class="cart__row" data-item-id="{{ item.id }}" ref="cartItemRows[]" data-key="{{ item.key }}">
+            <tr class="cart__row" ref="cartItemRows[]" data-key="{{ item.key }}">
               <td class="cart__meta small--text-left">
                 <div class="cart__product-information">
                   <div class="cart__image-wrapper">
@@ -71,11 +69,9 @@
                       </ul>
                     {%- endif -%}
 
-                    {%- unless is_gift -%}
-                      <p class="cart__remove">
-                        <button type="button" class="custom-cart-remove-line button-unstyled" on:click="/onLineItemRemove/{{ item.index | plus: 1 }}" aria-label="Remove {{ item.title | escape }}">Remove</button>
-                      </p>
-                    {%- endunless -%}
+                    <p class="cart__remove">
+                      <button type="button" class="custom-cart-remove-line button-unstyled" on:click="/onLineItemRemove/{{ item.index | plus: 1 }}" aria-label="Remove {{ item.title | escape }}">Remove</button>
+                    </p>
                   </div>
                 </div>
               </td>
@@ -84,8 +80,6 @@
                 {%- if item.original_price != item.final_price -%}
                   <s>{{ item.original_price | money }}</s>
                   <span class="order-discount">{{ item.final_price | money }}</span>
-                {%- elsif is_gift -%}
-                  Free
                 {%- else -%}
                   {{ item.original_price | money }}
                 {%- endif -%}
@@ -112,7 +106,7 @@
               </td>
 
               <td class="cart__final-price text-right small--hide">
-                {%- if is_gift -%}Free{%- else -%}{{ item.final_line_price | money }}{%- endif -%}
+                {{ item.final_line_price | money }}
               </td>
 
               <td class="cart-items__error hidden" ref="cartItemErrorContainer-{{ item.index | plus: 1 }}">
@@ -167,32 +161,7 @@
               <div class="cart-btns-row">
                 <a class="go-back-shop-btn" href="/collections/all">CONTINUE SHOPPING</a>
                 <div class="cart__submit-controls">
-                  {%- comment -%}
-                    Fix 2026-08-10: this loop used to flag ANY non-blank line-item property as
-                    a "preorder" item, including hidden app-internal properties -- e.g. Qikify's
-                    free-gift markers (_qbk-trigger-id, _qbk-offer-id, _qbk-offer-type). Every
-                    cart containing the campaign's free-gift line item plus one normal paid item
-                    was hitting the mixed-cart branch below and getting its checkout button
-                    hard-disabled on this page. Mirrors the underscore-prefix filter already used
-                    a few lines up for the visible property list.
-                  {%- endcomment -%}
-                  {%- assign normal_count = 0 -%}
-                  {%- assign preorder_count = 0 -%}
-                  {%- for item in cart.items -%}
-                    {%- assign has_pp = false -%}
-                    {%- for p in item.properties -%}
-                      {%- assign first_char = p.first | slice: 0 -%}
-                      {%- if p.last != blank and first_char != '_' -%}{%- assign has_pp = true -%}{%- endif -%}
-                    {%- endfor -%}
-                    {%- if has_pp -%}{%- assign preorder_count = preorder_count | plus: 1 -%}{%- else -%}{%- assign normal_count = normal_count | plus: 1 -%}{%- endif -%}
-                  {%- endfor -%}
-
-                  {%- if normal_count > 0 and preorder_count > 0 -%}
-                    <script>jQuery(document).ready(function(){ jQuery('.preorder-tips-popup').addClass('show-popup'); });</script>
-                    <input disabled type="submit" name="checkout" class="cart__submit btn btn--small-wide hide-btn" value="Check out">
-                  {%- else -%}
-                    <input type="submit" name="checkout" class="cart__submit btn btn--small-wide" value="Check out">
-                  {%- endif -%}
+                  <input type="submit" name="checkout" class="cart__submit btn btn--small-wide" value="Check out">
                 </div>
               </div>
               {%- if additional_checkout_buttons -%}
@@ -213,20 +182,6 @@
       <p>Enable cookies to use the shopping cart</p>
     </div>
     <a href="/collections/all" class="btn btn--has-icon-after cart__continue-btn">Continue shopping{% include 'icon-arrow-right' %}</a>
-  </div>
-</div>
-
-<style>
-  tr[data-item-id="40126200709311"] .cart__remove{display:none;}
-</style>
-
-<div class="preorder-tips-popup">
-  <div class="popup-box">
-    <button class="close-btn" type="button" onclick="this.closest('.preorder-tips-popup').classList.remove('show-popup')">×</button>
-    <div class="popup-text">
-      <h2>{{ settings.ppc_title | default: 'Pre-order items detected' }}</h2>
-      {{ settings.ppc_content | default: '<p>Your cart contains both regular and pre-order items. Please check out separately.</p>' }}
-    </div>
   </div>
 </div>
 
