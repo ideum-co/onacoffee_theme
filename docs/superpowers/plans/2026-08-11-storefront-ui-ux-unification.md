@@ -123,7 +123,10 @@ assert(card_css.include?('min-height: 44px'), 'card controls lack 44px target')
 assert(card_css.include?('min-height: 48px'), 'card CTA lacks 48px target')
 assert(card_css.include?('@media (prefers-reduced-motion: reduce)'), 'card motion ignores reduced-motion preference')
 assert(card_js.include?("document.addEventListener('submit'"), 'shared card controller is not delegated')
-assert(card_js.include?("new CustomEvent('cart:add'"), 'shared card controller does not emit native cart add event')
+assert(card_js.include?("document.querySelector('cart-items-component[data-drawer]')"), 'shared card does not resolve the active drawer section')
+assert(!card_js.include?("new CustomEvent('cart:add'"), 'shared card emits a non-native cart:add event')
+assert(card_js.scan(/new CustomEvent\('cart:update'/).length == 1, 'shared card must emit exactly one native cart update event')
+assert(card_js.include?('item_count: itemCount') && card_js.include?('itemCount,'), 'shared card event lacks the native cart total')
 
 [featured, collection, search, recommendations].each_with_index do |source, index|
   assert(source.include?("render 'ona-product-card'"), "card consumer #{index + 1} does not render shared card")
@@ -312,20 +315,29 @@ Create `assets/ona-product-card.js` as an ES module. It must:
 2. Scope all changes with `pill.closest('[data-ona-card]')`.
 3. Update `aria-checked`, active class, variant input, displayed price, option label, availability, and CTA copy.
 4. Handle submits on `[data-card-form]` through one document listener.
-5. POST `FormData` to `window.Shopify.routes.root + 'cart/add.js'` with `sections=ona_header`.
-6. Dispatch both the native `cart:add` event consumed by `cart-drawer-component` and the existing `cart:update` compatibility event.
-7. Restore button state on success or error and never retry a failed mutation automatically.
+5. Before the POST, resolve the active `cart-items-component[data-drawer]` and use its `data-section-id`; use `ona_header` only as a defensive fallback when the native drawer component is absent.
+6. POST `FormData` to `window.Shopify.routes.root + 'cart/add.js'` with `sections` set to that resolved section ID.
+7. Read the total item count from `[ref="cartItemCount"]` inside the returned `sections[drawerSectionId]` HTML. Do not issue a follow-up GET.
+8. Dispatch exactly one native `cart:update` event. Its `resource.item_count` and `data.itemCount` must contain the same parsed total, and `data` must also contain `source`, `productId`, `variantId`, and the returned `sections`.
+9. Restore button and pill state on success or error and never retry a failed mutation automatically.
 
-Use this event contract after a successful response:
+Use this event contract after validating the requested section and parsing its item count:
 
 ```javascript
-document.dispatchEvent(new CustomEvent('cart:add', {
-  bubbles: true,
-  detail: { resource: response, sourceId: variantInput.value }
-}));
+const resource = { ...response, item_count: itemCount };
 document.dispatchEvent(new CustomEvent('cart:update', {
   bubbles: true,
-  detail: { resource: response, sourceId: variantInput.value, data: { sections: response.sections || {} } }
+  detail: {
+    resource,
+    sourceId: submittedVariantId,
+    data: {
+      source: 'ona-product-card',
+      productId: card.dataset.productId,
+      variantId: submittedVariantId,
+      itemCount,
+      sections
+    }
+  }
 }));
 ```
 

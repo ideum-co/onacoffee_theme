@@ -65,7 +65,10 @@
     addToCart.textContent = 'Adding…';
 
     const formData = new FormData(form);
-    formData.set('sections', 'ona_header');
+    const drawerCartItems = document.querySelector('cart-items-component[data-drawer]');
+    // `ona_header` is only a defensive fallback when the native drawer component is absent.
+    const drawerSectionId = drawerCartItems?.dataset.sectionId || 'ona_header';
+    formData.set('sections', drawerSectionId);
 
     try {
       const request = await fetch(`${window.Shopify.routes.root}cart/add.js`, {
@@ -83,19 +86,33 @@
         throw new Error(response.description || response.message || 'Unable to add this item to the cart.');
       }
 
-      document.dispatchEvent(
-        new CustomEvent('cart:add', {
-          bubbles: true,
-          detail: { resource: response, sourceId: submittedVariantId },
-        })
-      );
+      const sections = response.sections || {};
+      const drawerSectionHtml = sections[drawerSectionId];
+      if (typeof drawerSectionHtml !== 'string') {
+        throw new Error(`Cart response is missing section "${drawerSectionId}".`);
+      }
+
+      const sectionDocument = new DOMParser().parseFromString(drawerSectionHtml, 'text/html');
+      const itemCountText = sectionDocument.querySelector('[ref="cartItemCount"]')?.textContent?.trim() || '';
+      const itemCount = Number.parseInt(itemCountText, 10);
+      if (!Number.isFinite(itemCount)) {
+        throw new Error(`Cart section "${drawerSectionId}" is missing its item count.`);
+      }
+
+      const resource = { ...response, item_count: itemCount };
       document.dispatchEvent(
         new CustomEvent('cart:update', {
           bubbles: true,
           detail: {
-            resource: response,
+            resource,
             sourceId: submittedVariantId,
-            data: { sections: response.sections || {} },
+            data: {
+              source: 'ona-product-card',
+              productId: card.dataset.productId,
+              variantId: submittedVariantId,
+              itemCount,
+              sections,
+            },
           },
         })
       );
