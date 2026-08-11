@@ -108,12 +108,12 @@ recommendations_card_css = recommendations.index("'ona-product-card.css' | asset
 recommendations_card_js = recommendations.index("'ona-product-card.js' | asset_url")
 assert(recommendations_card_css && recommendations_card_css < recommendations_root, 'recommendations can hydrate cards before shared card CSS loads')
 assert(recommendations_card_js && recommendations_card_js < recommendations_root, 'recommendations can hydrate cards before shared card controller loads')
-collection_card_wrapper = %r{<div class="list">\s*\{% render 'ona-product-card', product: product, index: [^ ]+ %\}\s*</div>}
+collection_card_wrapper = %r{<div class="list ona-card-list__item">\s*\{% render 'ona-product-card', product: product, index: [^ ]+ %\}\s*</div>}
 search_card_wrapper = %r{<div class="list">\s*\{% render 'ona-product-card', product: item, index: [^ ]+ %\}\s*</div>}
 assert(collection.match?(collection_card_wrapper), 'collection card bypasses the responsive grid item hook')
 assert(search.match?(search_card_wrapper), 'search product card bypasses the responsive grid item hook')
 featured_exclusion = %r{unless p\.handle == 'ona-tote'.*<li class="ona-fc__item">.*render 'ona-product-card', product: p, index: card_index.*</li>.*endunless}m
-collection_exclusion = %r{unless product\.handle == 'ona-tote'.*<div class="list">.*render 'ona-product-card', product: product, index: card_index.*</div>.*endunless}m
+collection_exclusion = %r{unless product\.handle == 'ona-tote'.*<div class="list ona-card-list__item">.*render 'ona-product-card', product: product, index: card_index.*</div>.*endunless}m
 search_exclusion = %r{if item\.object_type == 'product'.*unless item\.handle == 'ona-tote'.*<div class="list">.*render 'ona-product-card', product: item, index: card_index.*</div>.*endunless.*else}m
 recommendations_exclusion = %r{if product == blank or product\.handle != 'ona-tote'.*<div class="resource-list__item">.*if product != blank.*render 'ona-product-card', product: product, index: rendered_item_count.*</div>.*endif}m
 assert(featured.match?(featured_exclusion), 'featured collection can render an empty list item for an excluded product')
@@ -139,7 +139,7 @@ assert(product_summary_block.match?(summary_with_link), 'PDP renders a full-deta
 assert(product_template.include?('ona_subscription_reserve'), 'PDP lacks subscription reservation block')
 assert(subscription_block.include?('closest.product.selling_plan_groups'), 'subscription reserve is not product-aware')
 assert(subscription_block.match?(/@media \(max-width: 749px\).*?\.ona-subscription-reserve\s*\{[^}]*min-block-size:\s*148px/m), 'mobile subscription reserve is not 148px tall')
-assert(!subscription_block.match?(/\.ona-subscription-reserve\[data-state='unavailable'\]\s*\{[^}]*min-block-size:/m), 'unavailable subscription state overrides the responsive reserve height')
+assert(subscription_block.match?(/\.ona-subscription-reserve\[data-state='unavailable'\]\s*\{[^}]*min-block-size:\s*0/m), 'unavailable subscription state retains the oversized loading reserve')
 quantity_targets = %r{\.quantity-selector :is\(\.quantity-minus, \.quantity-plus, input\[type='number'\]\).*?min-width:\s*44px;.*?min-height:\s*44px;}m
 assert(product_section.match?(quantity_targets), 'real quantity controls lack 44px touch targets')
 assert(subscription_js.include?('8000'), 'Appstle failure timeout is not eight seconds')

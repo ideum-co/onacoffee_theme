@@ -59,6 +59,9 @@ assert(card_css.include?('grid-template-rows:') && card_css.match?(/grid-templat
 assert(card_css.include?('-webkit-line-clamp: 2'), 'card title is not visually clamped to two lines')
 assert(card_css.match?(/\.ona-card__media img\s*\{[^}]*padding:\s*0;[^}]*max-width:\s*none;/m), 'card image does not neutralize legacy geometry')
 assert(card_css.include?('.ona-card__placeholder'), 'card placeholder lacks shared geometry styles')
+assert(consumers.fetch('sections/ona-collection-template.liquid').include?('shop-list ona-card-list'), 'collection grid lacks the shared card layout hook')
+assert(card_css.match?(/\.ona-card-list\s*>\s*\.ona-card-list__item\s*\{[^}]*margin-bottom:\s*64px;/m), 'collection card spacing still inherits the legacy 210px gap')
+assert(card_css.match?(/@media \(max-width: 575\.98px\)[\s\S]*?\.ona-card-list\s*>\s*\.ona-card-list__item\s*\{[^}]*width:\s*50%;/m), 'collection cards do not retain the approved two-column mobile grid')
 
 assert(ona_recommendations.include?("render 'ona-product-card'"), 'active ONA recommendations retain the legacy card')
 asset_index = ona_recommendations.index("'ona-product-card.css' | asset_url")

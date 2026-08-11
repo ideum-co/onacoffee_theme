@@ -12,6 +12,7 @@ end
 
 sources = %w[assets/ona-fixes.css assets/main.css].to_h { |path| [path, read(path)] }
 served = read('assets/main.min.css')
+banner = read('sections/ona-banner-slider.liquid')
 served_block = served[/\[data-section-type=ona-slideshow\] \.slideshow__btn,[\s\S]*?@media only screen and \(max-width:749px\)/]
 
 sources.each do |path, css|
@@ -29,5 +30,8 @@ assert(served_block.include?('--color-primary-button-background'), 'served CSS l
 assert(served_block.include?('--color-primary-button-hover-background'), 'served CSS lacks the real primary-button hover token')
 assert(served_block.match?(/slideshow__btn:focus-visible[^}]*outline:3px solid[^}]*box-shadow:/), 'served CSS lacks the focus-visible treatment')
 assert(!served_block.include?('--color-btn-primary'), 'served CTA retains undefined legacy button tokens')
+
+assert(banner.include?('class="slider-button ona-hero-cta'), 'actual homepage hero CTA lacks its component hook')
+assert(banner.match?(/\.ona-hero-cta\s*\{[^}]*min-height:\s*48px;[^}]*padding:\s*12px 24px;/m), 'actual homepage hero CTA lacks visible padding and height')
 
 puts 'PASS: hero CTA source and served artifacts'

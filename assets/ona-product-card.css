@@ -164,6 +164,27 @@
   transform: scale(1.025);
 }
 
+.shop-list.ona-card-list {
+  margin-inline: -16px;
+}
+
+.ona-card-list > .ona-card-list__item {
+  padding-inline: 16px;
+  margin-bottom: 64px;
+}
+
+@media (max-width: 575.98px) {
+  .shop-list.ona-card-list {
+    margin-inline: -8px;
+  }
+
+  .ona-card-list > .ona-card-list__item {
+    width: 50%;
+    padding-inline: 8px;
+    margin-bottom: 40px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ona-card__media img {
     transition: none;

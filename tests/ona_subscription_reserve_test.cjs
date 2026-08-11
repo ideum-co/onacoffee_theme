@@ -188,6 +188,9 @@ const timeoutId = [...timers.keys()].find((id) => !timersBeforeTimeoutReserve.ha
 timers.get(timeoutId)();
 assert.equal(timedOut.reserve.dataset.state, 'unavailable');
 assert.equal(timedOut.label.textContent, timedOut.reserve.dataset.unavailableLabel);
+assert.notEqual(timedOut.reserve.observer.disconnected, true, 'timeout stops watching before late Appstle hydration');
+timedOut.revealWrapper();
+assert.equal(timedOut.reserve.dataset.state, 'ready', 'late Appstle hydration leaves the unavailable reserve visible');
 assert.equal(timedOut.reserve.observer.disconnected, true);
 
 console.log('PASS: subscription reserve morph and section lifecycle');

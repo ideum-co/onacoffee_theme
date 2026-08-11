@@ -52,7 +52,10 @@ function createSubscriptionReserveController() {
     };
 
     const markUnavailable = () => {
-      stopWatching(reserve);
+      if (resource.timeoutId) {
+        window.clearTimeout(resource.timeoutId);
+        resource.timeoutId = null;
+      }
       reserve.dataset.state = 'unavailable';
       if (label) label.textContent = reserve.dataset.unavailableLabel || '';
     };

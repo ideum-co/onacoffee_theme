@@ -51,7 +51,7 @@
             {% if block.settings.button_text and block.settings.button_link %}
               <a
                 href="{{ block.settings.button_link }}"
-                class="slider-button {{ block.settings.button_style }} {{ block.settings.button_size }}"
+                class="slider-button ona-hero-cta {{ block.settings.button_style }} {{ block.settings.button_size }}"
                 style="
                   color: {{ block.settings.button_text_colour }};
                   {% if block.settings.button_style == 'filled' %}
@@ -90,6 +90,26 @@
     {% endfor %}
   {% endif %}
 </section>
+
+{% stylesheet %}
+  .banner-top-slider .ona-hero-cta {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 12px 24px;
+    border-style: solid;
+    border-width: 1px;
+    line-height: 1.2;
+    text-decoration: none;
+  }
+
+  .banner-top-slider .ona-hero-cta:focus-visible {
+    outline: 3px solid currentColor;
+    outline-offset: 3px;
+  }
+{% endstylesheet %}
 
 {% javascript %}
   // Self-contained slick init for banner-top-slider. Replaces the global handler in script.js
