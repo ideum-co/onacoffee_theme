@@ -1,44 +1,98 @@
-const reserves = document.querySelectorAll('[data-ona-subscription-reserve]');
+const reserveSelector = '[data-ona-subscription-reserve]';
+const controllerKey = Symbol.for('ona.subscriptionReserve.controller');
 
-reserves.forEach((reserve) => {
-  if (reserve.dataset.initialized === 'true') return;
+function createSubscriptionReserveController() {
+  const resources = new WeakMap();
 
-  reserve.dataset.initialized = 'true';
+  function reservesWithin(root) {
+    if (!root) return [];
 
-  const productDetails = reserve.closest('.product-details');
-  const label = reserve.querySelector('.ona-subscription-reserve__label');
-  let observer;
-  let timeoutId;
+    const reserves = [];
 
-  const markReady = () => {
-    window.clearTimeout(timeoutId);
-    observer?.disconnect();
-    reserve.dataset.state = 'ready';
+    if (root.matches?.(reserveSelector)) reserves.push(root);
+    root.querySelectorAll?.(reserveSelector).forEach((reserve) => reserves.push(reserve));
 
-    if (label) label.textContent = '';
-  };
-
-  const markUnavailable = () => {
-    observer?.disconnect();
-    reserve.dataset.state = 'unavailable';
-
-    if (label) label.textContent = 'Subscription options are temporarily unavailable';
-  };
-
-  if (!productDetails) {
-    markUnavailable();
-    return;
+    return reserves;
   }
 
-  if (productDetails.querySelector('.appstle_subscription_wrapper_div')) {
-    markReady();
-    return;
+  function stopWatching(reserve, { resetInitialized = false } = {}) {
+    const resource = resources.get(reserve);
+
+    if (resource) {
+      window.clearTimeout(resource.timeoutId);
+      resource.observer?.disconnect();
+      resources.delete(reserve);
+    }
+
+    if (resetInitialized) delete reserve.dataset.initialized;
   }
 
-  observer = new MutationObserver(() => {
-    if (productDetails.querySelector('.appstle_subscription_wrapper_div')) markReady();
-  });
+  function initializeReserve(reserve) {
+    if (reserve.dataset.initialized === 'true') return;
 
-  observer.observe(productDetails, { childList: true, subtree: true });
-  timeoutId = window.setTimeout(markUnavailable, 8000);
-});
+    reserve.dataset.initialized = 'true';
+
+    const productDetails = reserve.closest('.product-details');
+    const label = reserve.querySelector('.ona-subscription-reserve__label');
+    const resource = { observer: null, timeoutId: null };
+    resources.set(reserve, resource);
+
+    const markReady = () => {
+      stopWatching(reserve);
+      reserve.dataset.state = 'ready';
+
+      if (label) label.textContent = '';
+    };
+
+    const markUnavailable = () => {
+      stopWatching(reserve);
+      reserve.dataset.state = 'unavailable';
+
+      if (label) label.textContent = 'Subscription options are temporarily unavailable';
+    };
+
+    if (!productDetails) {
+      markUnavailable();
+      return;
+    }
+
+    if (productDetails.querySelector('.appstle_subscription_wrapper_div')) {
+      markReady();
+      return;
+    }
+
+    resource.observer = new MutationObserver(() => {
+      if (!reserve.isConnected) {
+        stopWatching(reserve, { resetInitialized: true });
+        return;
+      }
+
+      if (productDetails.querySelector('.appstle_subscription_wrapper_div')) markReady();
+    });
+
+    resource.observer.observe(productDetails, { childList: true, subtree: true });
+    resource.timeoutId = window.setTimeout(markUnavailable, 8000);
+  }
+
+  function initializeWithin(root) {
+    reservesWithin(root).forEach(initializeReserve);
+  }
+
+  function cleanupWithin(root) {
+    reservesWithin(root).forEach((reserve) => stopWatching(reserve, { resetInitialized: true }));
+  }
+
+  return { cleanupWithin, initializeWithin };
+}
+
+let controller = window[controllerKey];
+
+if (!controller) {
+  controller = createSubscriptionReserveController();
+  window[controllerKey] = controller;
+
+  document.addEventListener('shopify:section:load', (event) => controller.initializeWithin(event.target));
+  document.addEventListener('shopify:section:unload', (event) => controller.cleanupWithin(event.target));
+}
+
+controller.initializeWithin(document);

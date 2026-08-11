@@ -49,6 +49,7 @@ card_js = read_repo('assets/ona-product-card.js')
 slideshow = read_repo('sections/ona-slideshow.liquid')
 slideshow_css = read_repo('assets/ona-fixes.css')
 product_template = read_repo('templates/product.default.json')
+product_section = read_repo('sections/ona-product-information.liquid')
 subscription_block = read_repo('blocks/ona-subscription-reserve.liquid')
 subscription_js = read_repo('assets/ona-subscription-reserve.js')
 
@@ -128,6 +129,10 @@ summary_with_link = %r{\{% if closest\.product\.description != blank %\}.*trunca
 assert(product_template.match?(summary_with_link), 'PDP renders a full-details link for a blank description')
 assert(product_template.include?('ona_subscription_reserve'), 'PDP lacks subscription reservation block')
 assert(subscription_block.include?('closest.product.selling_plan_groups'), 'subscription reserve is not product-aware')
+assert(subscription_block.match?(/@media \(max-width: 749px\).*?\.ona-subscription-reserve\s*\{[^}]*min-block-size:\s*148px/m), 'mobile subscription reserve is not 148px tall')
+assert(!subscription_block.match?(/\.ona-subscription-reserve\[data-state='unavailable'\]\s*\{[^}]*min-block-size:/m), 'unavailable subscription state overrides the responsive reserve height')
+quantity_targets = %r{\.quantity-selector :is\(\.quantity-minus, \.quantity-plus, input\[type='number'\]\).*?min-width:\s*44px;.*?min-height:\s*44px;}m
+assert(product_section.match?(quantity_targets), 'real quantity controls lack 44px touch targets')
 assert(subscription_js.include?('8000'), 'Appstle failure timeout is not eight seconds')
 assert(subscription_js.include?('MutationObserver'), 'Appstle reservation does not observe vendor rendering')
 
