@@ -10,7 +10,17 @@
     if selected_compare_at_price > selected_variant.price
       assign selected_on_sale = true
     endif
+    assign has_native_variant_selector = false
+    if product.variants.size > 1 and product.options.size == 1
+      assign has_native_variant_selector = true
+    endif
+    assign show_from_price = false
+    if product.options.size >= 2 and product.price_varies
+      assign show_from_price = true
+    endif
+    assign product_min_price = product.price_min | money
     assign card_uid = section.id | default: 'card' | append: '-' | append: product.id | append: '-' | append: index
+    assign card_form_id = 'ona-card-form-' | append: card_uid
   -%}
   <article
     class="ona-card"
@@ -62,15 +72,21 @@
       <a href="{{ product.url }}">{{ product.title | escape }}</a>
     </h3>
 
-    <div class="ona-card__price{% if selected_on_sale %} price--on-sale{% endif %}" data-card-price>
-      <span class="price-item" data-card-current-price>{{ selected_variant.price | money }}</span>
-      <span class="price-item price-item--compare" data-card-compare-price{% unless selected_on_sale %} hidden{% endunless %}>
-        <s data-card-compare-value>{% if selected_on_sale %}{{ selected_compare_at_price | money }}{% endif %}</s>
-      </span>
+    <div class="ona-card__price{% if selected_on_sale and show_from_price == false %} price--on-sale{% endif %}" data-card-price>
+      {%- if show_from_price -%}
+        <span class="price-item">
+          {{- 'products.product.from_lowest_price_html' | t: lowest_price: product_min_price -}}
+        </span>
+      {%- else -%}
+        <span class="price-item" data-card-current-price>{{ selected_variant.price | money }}</span>
+        <span class="price-item price-item--compare" data-card-compare-price{% unless selected_on_sale %} hidden{% endunless %}>
+          <s data-card-compare-value>{% if selected_on_sale %}{{ selected_compare_at_price | money }}{% endif %}</s>
+        </span>
+      {%- endif -%}
     </div>
 
     <div class="ona-card__options">
-      {%- if product.variants.size > 1 and product.options.size == 1 -%}
+      {%- if has_native_variant_selector -%}
         {%- assign option_name = product.options.first -%}
         <fieldset class="ona-card__option">
           <legend class="ona-card__option-label">
@@ -89,7 +105,8 @@
                 type="radio"
                 class="visually-hidden ona-card__radio"
                 id="{{ radio_id }}"
-                name="ona-card-variant-{{ card_uid }}"
+                name="id"
+                form="{{ card_form_id }}"
                 value="{{ variant.id }}"
                 data-card-radio
                 data-variant-id="{{ variant.id }}"
@@ -117,8 +134,10 @@
       {%- if product.options.size >= 2 -%}
         <a class="ona-card__choose" href="{{ product.url }}">{{ 'actions.show_all_options' | t }}</a>
       {%- else -%}
-        <form action="{{ routes.cart_add_url }}" method="post" data-card-form data-cart-url="{{ routes.cart_url }}">
-          <input type="hidden" name="id" value="{{ selected_variant.id }}" data-card-variant-input>
+        <form id="{{ card_form_id }}" action="{{ routes.cart_add_url }}" method="post" data-card-form data-cart-url="{{ routes.cart_url }}">
+          {%- unless has_native_variant_selector -%}
+            <input type="hidden" name="id" value="{{ selected_variant.id }}" data-card-variant-input>
+          {%- endunless -%}
           <input type="hidden" name="quantity" value="1">
           <button
             type="submit"

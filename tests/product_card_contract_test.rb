@@ -33,6 +33,12 @@ end
 
 assert(card.include?('type="radio"') && card.include?('data-card-radio'), 'card variants do not use native radios')
 assert(!card.include?('role="radiogroup"') && !card.include?('role="radio"'), 'card retains incomplete ARIA radio behavior')
+native_form_variant = %r{<input\s+[^>]*type="radio"[^>]*name="id"[^>]*form="\{\{ card_form_id \}\}"[^>]*>}m
+assert(card.match?(native_form_variant), 'card radios are not native id controls owned by the add form')
+assert(card.include?('id="{{ card_form_id }}"'), 'card add form lacks the stable id referenced by native variant radios')
+assert(!card.include?('name="ona-card-variant-{{ card_uid }}"'), 'card radios retain a JS-only field name')
+simple_hidden_id = %r{unless has_native_variant_selector.*?<input type="hidden" name="id" value="\{\{ selected_variant\.id \}\}" data-card-variant-input>}m
+assert(card.match?(simple_hidden_id), 'single-variant cards do not retain a non-duplicated native id field')
 assert(card.include?('data-card-current-price'), 'card lacks a stable current-price node')
 assert(card.include?('data-variant-available="{{ selected_variant.available }}"'), 'card lacks initial availability state')
 assert(card.include?('data-card-compare-price') && card.include?('data-card-compare-value'), 'card lacks stable compare-at nodes')
@@ -41,6 +47,11 @@ assert(card.include?('role="alert"') && card.include?('data-card-error'), 'card 
 assert(card.include?("'products.product.add_to_cart' | t"), 'card add label is not localized')
 assert(card.include?("'actions.show_all_options' | t"), 'card choose-options label is not localized')
 assert(!card_js.match?(/['"](?:Add to cart|Adding…|Sold out|Unable to add this item to the cart\.)['"]/), 'card JS contains English UI labels')
+
+complex_from_price = %r{if product\.options\.size >= 2 and product\.price_varies.*?assign show_from_price = true.*?product\.price_min \| money.*?'products\.product\.from_lowest_price_html' \| t: lowest_price: product_min_price}m
+assert(card.match?(complex_from_price), 'complex variable-price cards do not render the localized minimum From price')
+simple_variant_price = %r{if show_from_price.*?from_lowest_price_html.*?else.*?data-card-current-price.*?data-card-compare-price}m
+assert(card.match?(simple_variant_price), 'simple cards no longer retain variant current/compare-at price nodes')
 
 assert(card.match?(/if featured_image.*?<img/m), 'card image is not conditional')
 assert(card.include?('placeholder_svg_tag'), 'card lacks a stable no-image placeholder')

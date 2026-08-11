@@ -53,7 +53,6 @@
     const currentPrice = card.querySelector('[data-card-current-price]');
     const optionValue = card.querySelector('[data-card-opt-value]');
     const price = card.querySelector('[data-card-price]');
-    const variantInput = card.querySelector('[data-card-variant-input]');
     const available = radio.dataset.variantAvailable === 'true';
     const onSale = radio.dataset.variantOnSale === 'true';
 
@@ -62,7 +61,6 @@
       label?.classList.toggle('ona-card__pill--active', candidate === radio);
     });
 
-    if (variantInput) variantInput.value = radio.dataset.variantId || '';
     if (currentPrice) currentPrice.textContent = radio.dataset.variantPrice || '';
     if (compareValue) compareValue.textContent = onSale ? radio.dataset.variantCompareAtPrice || '' : '';
     if (comparePrice) comparePrice.hidden = !onSale;
@@ -130,7 +128,7 @@
     window.location.assign(cartUrl);
   }
 
-  async function performMutation({ card, form, sectionId, submittedVariantId }) {
+  async function performMutation({ card, form, formData, sectionId, submittedVariantId }) {
     const fallbackMessage = card.dataset.labelAddError || '';
     let ambiguous = false;
 
@@ -139,7 +137,6 @@
       return;
     }
 
-    const formData = new FormData(form);
     formData.set('sections', sectionId);
 
     try {
@@ -215,15 +212,24 @@
 
     const form = event.target;
     const card = form.closest('[data-ona-card]');
-    const variantInput = card?.querySelector('[data-card-variant-input]');
     const addToCart = card?.querySelector('[data-card-atc]');
     const drawerContext = resolveDrawerContext();
 
     // Keep Shopify's native POST/navigation when the drawer cannot consume the AJAX response.
-    if (!card || !variantInput || !addToCart || !drawerContext) return;
+    if (!card || !addToCart || !drawerContext) return;
+
+    if (form.dataset.cardSubmitting === 'true') {
+      event.preventDefault();
+      return;
+    }
+
+    // Snapshot native form controls before the submitting state disables radios.
+    const formData = new FormData(form);
+    const variantEntry = formData.get('id');
+    const submittedVariantId = typeof variantEntry === 'string' ? variantEntry : '';
+    if (!submittedVariantId) return;
 
     event.preventDefault();
-    if (form.dataset.cardSubmitting === 'true') return;
 
     clearError(card);
     setSubmittingState(card, form, true);
@@ -231,8 +237,9 @@
     const mutation = {
       card,
       form,
+      formData,
       sectionId: drawerContext.sectionId,
-      submittedVariantId: variantInput.value,
+      submittedVariantId,
     };
 
     mutationQueue = mutationQueue.then(() => performMutation(mutation), () => performMutation(mutation));

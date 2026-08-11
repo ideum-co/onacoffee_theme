@@ -81,6 +81,13 @@ class FakeFormData {
   constructor(form) {
     this.form = form;
     this.values = new Map();
+
+    const selectedRadio = form.cardState?.radios.find((radio) => radio.checked && !radio.disabled);
+    const variantId = selectedRadio?.value || form.cardState?.variantInput?.value;
+    if (variantId) this.values.set('id', variantId);
+  }
+  get(key) {
+    return this.values.get(key) ?? null;
   }
   set(key, value) {
     this.values.set(key, value);
@@ -140,7 +147,7 @@ vm.runInContext(source, context);
 assert.equal(listeners.get('change')?.length, 1, 'controller must install one delegated change listener');
 assert.equal(listeners.get('submit')?.length, 1, 'controller must install one delegated submit listener');
 
-function createCard({ productId = 'product-1', variantId = 'variant-1' } = {}) {
+function createCard({ nativeVariantForm = false, productId = 'product-1', variantId = 'variant-1' } = {}) {
   const addToCart = new FakeElement();
   addToCart.textContent = 'Agregar al carrito';
   const comparePrice = new FakeElement();
@@ -163,8 +170,8 @@ function createCard({ productId = 'product-1', variantId = 'variant-1' } = {}) {
     ['[data-card-error]', error],
     ['[data-card-opt-value]', optionValue],
     ['[data-card-price]', priceContainer],
-    ['[data-card-variant-input]', variantInput],
   ]);
+  if (!nativeVariantForm) selectors.set('[data-card-variant-input]', variantInput);
 
   const card = new FakeElement();
   card.dataset = {
@@ -181,12 +188,15 @@ function createCard({ productId = 'product-1', variantId = 'variant-1' } = {}) {
   form.dataset.cartUrl = '/cart';
   form.closest = (selector) => (selector === '[data-ona-card]' ? card : null);
 
-  return { addToCart, card, comparePrice, compareValue, currentPrice, error, form, optionValue, priceContainer, radios, variantInput };
+  const state = { addToCart, card, comparePrice, compareValue, currentPrice, error, form, optionValue, priceContainer, radios, variantInput: nativeVariantForm ? null : variantInput };
+  form.cardState = state;
+  return state;
 }
 
 function createRadio(cardState, data) {
   const radio = new FakeInput();
   Object.assign(radio.dataset, data);
+  radio.value = data.variantId || '';
   radio.closest = (selector) => (selector === '[data-ona-card]' ? cardState.card : null);
   cardState.radios.push(radio);
   return radio;
@@ -233,7 +243,7 @@ function deferred() {
 }
 
 async function run() {
-  const priceCard = createCard();
+  const priceCard = createCard({ nativeVariantForm: true });
   const sale = createRadio(priceCard, {
     variantAvailable: 'true',
     variantCompareAtPrice: '$20.00',
@@ -244,7 +254,7 @@ async function run() {
   });
   sale.checked = true;
   dispatch('change', { target: sale });
-  assert.equal(priceCard.variantInput.value, 'sale');
+  assert.equal(new FakeFormData(priceCard.form).get('id'), 'sale');
   assert.equal(priceCard.currentPrice.textContent, '$15.00');
   assert.equal(priceCard.compareValue.textContent, '$20.00');
   assert.equal(priceCard.comparePrice.hidden, false);
@@ -259,8 +269,10 @@ async function run() {
     variantPrice: '$18.00',
     variantTitle: '1 kg',
   });
+  sale.checked = false;
   regular.checked = true;
   dispatch('change', { target: regular });
+  assert.equal(new FakeFormData(priceCard.form).get('id'), 'regular');
   assert.equal(priceCard.currentPrice.textContent, '$18.00');
   assert.equal(priceCard.compareValue.textContent, '');
   assert.equal(priceCard.comparePrice.hidden, true);
@@ -282,6 +294,29 @@ async function run() {
       return selector === 'cart-drawer-component' ? drawer : null;
     },
   };
+
+  fetchCalls = [];
+  emittedEvents.length = 0;
+  fetchImplementation = async () => response(1);
+  const nativeVariantCard = createCard({ nativeVariantForm: true, variantId: 'initial' });
+  const nativeSelected = createRadio(nativeVariantCard, {
+    variantAvailable: 'true',
+    variantCompareAtPrice: '',
+    variantId: 'selected-without-hidden',
+    variantOnSale: 'false',
+    variantPrice: '$22.00',
+    variantTitle: '1 kg',
+  });
+  nativeSelected.checked = true;
+  const nativeSubmit = submitEvent(nativeVariantCard.form);
+  const nativeDuplicateSubmit = submitEvent(nativeVariantCard.form);
+  dispatch('submit', nativeSubmit);
+  dispatch('submit', nativeDuplicateSubmit);
+  await flush();
+  assert.equal(nativeSubmit.prevented, 1, 'native radio-owned forms must retain AJAX enhancement');
+  assert.equal(nativeDuplicateSubmit.prevented, 1, 'a disabled external radio must not let a duplicate native POST escape while AJAX is pending');
+  assert.equal(fetchCalls.length, 1);
+  assert.equal(fetchCalls[0][1].body.get('id'), 'selected-without-hidden', 'AJAX must snapshot the checked native id before disabling controls');
 
   const firstRequest = deferred();
   const secondRequest = deferred();

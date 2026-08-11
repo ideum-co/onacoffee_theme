@@ -91,7 +91,11 @@ assert(card_js.include?('item_count: itemCount'), 'shared card resource lacks th
 assert(card_js.include?("source: 'ona-product-card'"), 'shared card update lacks a native event source')
 assert(card_js.include?('itemCount,'), 'shared card update data lacks the native cart total')
 assert(card_js.include?('sections,'), 'shared card update event lacks section HTML')
-assert(card_js.include?('submittedVariantId: variantInput.value'), 'shared card events can report a variant changed in flight')
+form_snapshot_index = card_js.index('const formData = new FormData(form)')
+disable_controls_index = card_js.index('setSubmittingState(card, form, true)')
+assert(form_snapshot_index && disable_controls_index && form_snapshot_index < disable_controls_index, 'shared card does not snapshot native variant controls before disabling them')
+assert(card_js.include?("const variantEntry = formData.get('id')"), 'shared card does not derive the submitted variant from the native form')
+assert(card_js.match?(/formData,\s*sectionId: drawerContext\.sectionId,\s*submittedVariantId,/m), 'shared card queue does not preserve the snapshotted form and variant')
 assert(card_js.scan(/sourceId: submittedVariantId/).length == 1, 'shared card event does not preserve the submitted variant ID')
 assert(card_js.scan(/\bfetch\s*\(/).length == 1, 'shared card controller can issue duplicate cart mutations')
 
