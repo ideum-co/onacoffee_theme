@@ -56,7 +56,7 @@ assert(header.include?('data-testid="cart-drawer-trigger"'), 'header lacks nativ
 assert(header.include?('on:click="cart-drawer-component/open"'), 'header cart link does not open native drawer')
 assert(header.include?('href="{{ routes.cart_url }}"'), 'header cart trigger lacks /cart fallback')
 
-assert(card.include?('class="ona-card"'), 'shared ONA card root missing')
+assert(card.include?('<article class="ona-card"'), 'shared ONA card root is not a semantic article')
 assert(card.include?('data-ona-card'), 'shared card behavior hook missing')
 assert(card.include?('ona-card__media') && card.include?('ona-card__title') && card.include?('ona-card__action'), 'shared card semantic regions missing')
 assert(card.include?("'ona-product-card.css' | asset_url | stylesheet_tag"), 'shared card stylesheet is not loaded')
@@ -94,6 +94,15 @@ assert(card_js.scan(/\bfetch\s*\(/).length == 1, 'shared card controller can iss
 [featured, collection, search, recommendations].each_with_index do |source, index|
   assert(source.include?("render 'ona-product-card'"), "card consumer #{index + 1} does not render shared card")
 end
+recommendations_root = recommendations.index('<product-recommendations')
+recommendations_card_css = recommendations.index("'ona-product-card.css' | asset_url | stylesheet_tag")
+recommendations_card_js = recommendations.index("'ona-product-card.js' | asset_url")
+assert(recommendations_card_css && recommendations_card_css < recommendations_root, 'recommendations can hydrate cards before shared card CSS loads')
+assert(recommendations_card_js && recommendations_card_js < recommendations_root, 'recommendations can hydrate cards before shared card controller loads')
+collection_card_wrapper = %r{<div class="list">\s*\{% render 'ona-product-card', product: product, index: forloop\.index %\}\s*</div>}
+search_card_wrapper = %r{<div class="list">\s*\{% render 'ona-product-card', product: item, index: forloop\.index %\}\s*</div>}
+assert(collection.match?(collection_card_wrapper), 'collection card bypasses the responsive grid item hook')
+assert(search.match?(search_card_wrapper), 'search product card bypasses the responsive grid item hook')
 assert(!featured.include?('ona-fc__pill'), 'featured collection retains duplicate card UI')
 assert(!featured.include?("fetch('/cart/add.js'"), 'featured collection retains duplicate cart controller')
 assert(!collection.include?("fetch('/cart/add.js'"), 'collection retains duplicate cart controller')

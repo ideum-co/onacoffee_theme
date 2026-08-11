@@ -21,7 +21,9 @@
         <div class="shop-list">
           {% for item in search.results %}
             {% if item.object_type == 'product' %}
-              {% render 'ona-product-card', product: item, index: forloop.index %}
+              <div class="list">
+                {% render 'ona-product-card', product: item, index: forloop.index %}
+              </div>
             {% else %}
               <div class="list">
                 <a href="{{ item.url }}" class="list-box{% if item.image == null %} page-center{% endif %}">

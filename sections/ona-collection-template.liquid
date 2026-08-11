@@ -118,7 +118,9 @@
     </div>
     <div class="shop-list test" data-count="{{ collection.products_count }}">
       {% for product in collection.products %}
-        {% render 'ona-product-card', product: product, index: forloop.index %}
+        <div class="list">
+          {% render 'ona-product-card', product: product, index: forloop.index %}
+        </div>
       {% endfor %}
     </div>
 
