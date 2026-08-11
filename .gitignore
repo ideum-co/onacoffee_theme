@@ -2,3 +2,5 @@
 *.unison.tmp
 *.swp
 *~
+.worktrees/
+.superpowers/
