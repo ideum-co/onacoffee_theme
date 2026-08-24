@@ -13,8 +13,17 @@
 
 {% capture product_card_children %}
   <div class="featured-product-card-layout">
-    <div class="featured-product-heading-region">
+    {% capture featured_product_heading %}
       {% content_for 'block', type: 'text', id: 'featured-product-heading' %}
+    {% endcapture %}
+    {% assign featured_product_heading = featured_product_heading | strip %}
+    {% assign featured_product_heading_present = false %}
+    {% if featured_product_heading != blank %}
+      {% assign featured_product_heading_present = true %}
+    {% endif %}
+
+    <div class="featured-product-heading-region{% if featured_product_heading_present %} featured-product-heading-region--present{% else %} featured-product-heading-region--empty{% endif %}">
+      {{ featured_product_heading }}
     </div>
 
     <div class="featured-product-details-region">
@@ -50,7 +59,7 @@
     gap: var(--product-card-gap);
   }
 
-  .featured-product-heading-region:empty {
+  .featured-product-heading-region--empty {
     display: none;
   }
 

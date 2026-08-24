@@ -12,6 +12,21 @@ assert.match(
   'Product highlight must compose a native text block for its section heading',
 );
 assert.match(productBlock, /featured-product-heading-region/);
+assert.match(
+  productBlock,
+  /capture featured_product_heading[\s\S]*?content_for 'block', type: 'text', id: 'featured-product-heading'[\s\S]*?endcapture/,
+  'Heading output must be captured before deriving its presence',
+);
+assert.match(
+  productBlock,
+  /featured_product_heading\s*\|\s*strip[\s\S]*?featured_product_heading_present/,
+  'Heading presence must be derived from stripped Liquid output',
+);
+assert.match(
+  productBlock,
+  /featured-product-heading-region--(?:present|empty)/,
+  'Heading wrapper must carry an explicit Liquid-derived presence class',
+);
 assert.match(productBlock, /featured-product-details-region/);
 assert.match(productBlock, /featured-product-card-layout/);
 
@@ -24,6 +39,11 @@ assert.match(section, /\.featured-product-card-layout\s*\{[\s\S]*?display:\s*fle
 assert.match(section, /justify-content:\s*space-between/);
 assert.match(
   section,
-  /\.featured-product-heading-region:empty\s*\{[\s\S]*?display:\s*none/,
+  /\.featured-product-heading-region--empty\s*\{[\s\S]*?display:\s*none/,
   'Blank headings must not reserve space',
+);
+assert.match(
+  section,
+  /:has\(\.featured-product-heading-region--present\)/,
+  'Desktop distribution must require the Liquid-derived presence class',
 );
