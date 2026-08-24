@@ -47,3 +47,24 @@ assert.match(
   /:has\(\.featured-product-heading-region--present\)/,
   'Desktop distribution must require the Liquid-derived presence class',
 );
+
+for (const id of [
+  'content_padding_top',
+  'content_padding_bottom',
+  'content_padding_left',
+  'content_padding_right',
+]) {
+  assert.match(section, new RegExp(`"id"\\s*:\\s*"${id}"`), `Missing ${id}`);
+}
+
+for (const property of ['top', 'bottom', 'left', 'right']) {
+  assert.match(
+    section,
+    new RegExp(`--featured-content-padding-${property}:\\s*\\{\\{ section\\.settings\\.content_padding_${property} \\}\\}px`),
+    `Missing scoped ${property} padding variable`,
+  );
+}
+
+assert.match(section, /--padding-block:\s*var\(--featured-content-padding-top\) var\(--featured-content-padding-bottom\)/);
+assert.match(section, /--padding-inline:\s*var\(--featured-content-padding-left\) var\(--featured-content-padding-right\)/);
+assert.match(section, /@media screen and \(max-width: 749px\)[\s\S]*?min\(20px, var\(--featured-content-padding-left\)\)/);

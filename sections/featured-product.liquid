@@ -21,7 +21,13 @@
     section--full-width
     color-{{ section.settings.color_scheme }}
   "
-  style="--gallery-aspect-ratio: {{ gallery_aspect_ratio }};"
+  style="
+    --gallery-aspect-ratio: {{ gallery_aspect_ratio }};
+    --featured-content-padding-top: {{ section.settings.content_padding_top }}px;
+    --featured-content-padding-bottom: {{ section.settings.content_padding_bottom }}px;
+    --featured-content-padding-left: {{ section.settings.content_padding_left }}px;
+    --featured-content-padding-right: {{ section.settings.content_padding_right }}px;
+  "
   data-testid="featured-product-{{ section.id }}"
 >
   <h2 class="visually-hidden">{{ 'accessibility.featured_product' | t }}</h2>
@@ -75,16 +81,16 @@
   }
 
   .featured-product-section .product-grid__card {
-    --padding-block: 20px;
-    --padding-inline: 20px;
-
-    @media screen and (min-width: 750px) {
-      --padding-block: 40px;
-      --padding-inline: 40px;
-    }
+    --padding-block: var(--featured-content-padding-top) var(--featured-content-padding-bottom);
+    --padding-inline: var(--featured-content-padding-left) var(--featured-content-padding-right);
   }
 
   @media screen and (max-width: 749px) {
+    .featured-product-section .product-grid__card {
+      --padding-block: min(20px, var(--featured-content-padding-top)) min(20px, var(--featured-content-padding-bottom));
+      --padding-inline: min(20px, var(--featured-content-padding-left)) min(20px, var(--featured-content-padding-right));
+    }
+
     .featured-product-section .media-block {
       order: -1;
     }
@@ -153,6 +159,50 @@
       "id": "color_scheme",
       "label": "t:settings.color_scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Content column padding"
+    },
+    {
+      "type": "range",
+      "id": "content_padding_top",
+      "label": "Top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "content_padding_bottom",
+      "label": "Bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "content_padding_left",
+      "label": "Left",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "content_padding_right",
+      "label": "Right",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
     },
     {
       "type": "header",
