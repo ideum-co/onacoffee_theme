@@ -68,3 +68,11 @@ for (const property of ['top', 'bottom', 'left', 'right']) {
 assert.match(section, /--padding-block:\s*var\(--featured-content-padding-top\) var\(--featured-content-padding-bottom\)/);
 assert.match(section, /--padding-inline:\s*var\(--featured-content-padding-left\) var\(--featured-content-padding-right\)/);
 assert.match(section, /@media screen and \(max-width: 749px\)[\s\S]*?min\(20px, var\(--featured-content-padding-left\)\)/);
+
+assert.match(priceBlock, /"value"\s*:\s*"custom"/);
+for (const id of ['font', 'font_size', 'line_height', 'letter_spacing', 'case', 'wrap']) {
+  assert.match(priceBlock, new RegExp(`"id"\\s*:\\s*"${id}"`), `Featured price missing ${id}`);
+}
+assert.match(priceBlock, /render 'typography-style', settings: block_settings/);
+assert.match(priceBlock, /custom-typography/);
+assert.match(priceBlock, /block_settings\.type_preset == 'custom'/);
