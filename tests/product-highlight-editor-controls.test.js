@@ -65,8 +65,16 @@ for (const property of ['top', 'bottom', 'left', 'right']) {
   );
 }
 
-assert.match(section, /--padding-block:\s*var\(--featured-content-padding-top\) var\(--featured-content-padding-bottom\)/);
-assert.match(section, /--padding-inline:\s*var\(--featured-content-padding-left\) var\(--featured-content-padding-right\)/);
+for (const property of ['block-start', 'block-end', 'inline-start', 'inline-end']) {
+  assert.match(
+    section,
+    new RegExp(`--padding-${property}:\\s*(?:min\\(20px, )?var\\(--featured-content-padding-(?:top|bottom|left|right)\\)`),
+    `Missing leaf ${property} padding variable`,
+  );
+}
+
+assert.doesNotMatch(section, /--padding-block:\s*var\(--featured-content-padding-top\)/);
+assert.doesNotMatch(section, /--padding-inline:\s*var\(--featured-content-padding-left\)/);
 assert.match(section, /@media screen and \(max-width: 749px\)[\s\S]*?min\(20px, var\(--featured-content-padding-left\)\)/);
 
 assert.match(priceBlock, /"value"\s*:\s*"custom"/);
