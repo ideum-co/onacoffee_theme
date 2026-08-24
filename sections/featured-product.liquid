@@ -91,11 +91,31 @@
   }
 
   @media screen and (min-width: 750px) {
+    .featured-product-card-layout {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .featured-product-heading-region:empty {
+      display: none;
+    }
+
+    .featured-product-section .featured-product-card-layout:has(.featured-product-heading-region:not(:empty)) {
+      justify-content: space-between;
+    }
+
     .featured-product-section .product-card__content {
       --hugged-width: calc(var(--constrained-height) * var(--gallery-aspect-ratio, var(--media-preview-ratio)));
       width: min(100%, var(--hugged-width));
       margin-left: auto;
       margin-right: auto;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .featured-product-section .featured-product-card-layout {
+      min-height: auto;
+      gap: var(--gap-xl);
     }
   }
 {% endstylesheet %}
@@ -177,6 +197,17 @@
           "static": true,
           "name": "t:names.product",
           "blocks": {
+            "featured-product-heading": {
+              "type": "text",
+              "name": "Section heading",
+              "static": true,
+              "settings": {
+                "text": "<p>Product highlight</p>",
+                "type_preset": "h2",
+                "width": "100%",
+                "max_width": "none"
+              }
+            },
             "featured-product-title": {
               "type": "product-title",
               "name": "t:names.title",
