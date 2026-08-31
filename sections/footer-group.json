@@ -73,7 +73,10 @@
               }
             }
           },
-          "block_order": ["menu_enquire", "text_phone"]
+          "block_order": [
+            "menu_enquire",
+            "text_phone"
+          ]
         },
         "group_acknowledgement": {
           "type": "group",
@@ -134,7 +137,11 @@
               }
             }
           },
-          "block_order": ["heading", "text", "text_abn"]
+          "block_order": [
+            "heading",
+            "text",
+            "text_abn"
+          ]
         },
         "group_newsletter": {
           "type": "group",
@@ -194,15 +201,23 @@
                 "padding-block-start": 0,
                 "padding-block-end": 0,
                 "padding-inline-start": 0,
-                "padding-inline-end": 0,
-                "button_placement": "below"
+                "padding-inline-end": 0
               }
             }
           },
-          "block_order": ["heading", "text", "email_signup"]
+          "block_order": [
+            "heading",
+            "text",
+            "email_signup"
+          ]
         }
       },
-      "block_order": ["menu_explore", "group_enquire", "group_acknowledgement", "group_newsletter"],
+      "block_order": [
+        "menu_explore",
+        "group_enquire",
+        "group_acknowledgement",
+        "group_newsletter"
+      ],
       "name": "t:names.footer",
       "settings": {
         "section_width": "page-width",
@@ -223,7 +238,6 @@
             "max_width": "normal",
             "alignment": "left",
             "type_preset": "h4",
-            "letter_spacing": "0.18em",
             "case": "uppercase",
             "padding-block-start": 0,
             "padding-block-end": 0,
@@ -240,7 +254,10 @@
           }
         }
       },
-      "block_order": ["wordmark", "social_icons"],
+      "block_order": [
+        "wordmark",
+        "social_icons"
+      ],
       "settings": {
         "section_width": "page-width",
         "gap": 24,
@@ -266,9 +283,24 @@
             "font_size": "0.75rem",
             "case": "none"
           }
+        },
+        "privacy_link": {
+          "type": "button",
+          "settings": {
+            "label": "Privacy",
+            "link": "shopify://pages/privacy",
+            "open_in_new_tab": false,
+            "style_class": "link",
+            "width": "fit-content",
+            "width_mobile": "fit-content"
+          }
         }
       },
-      "block_order": ["copyright", "policy_list"],
+      "block_order": [
+        "copyright",
+        "policy_list",
+        "privacy_link"
+      ],
       "settings": {
         "section_width": "page-width",
         "gap": 24,
@@ -279,5 +311,9 @@
       }
     }
   },
-  "order": ["footer", "brand", "utilities"]
+  "order": [
+    "footer",
+    "brand",
+    "utilities"
+  ]
 }
