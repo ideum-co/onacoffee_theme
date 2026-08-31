@@ -48,8 +48,12 @@
   /* The wordmark's tracked-out look is design intent, not something the `letter_spacing`
      select can express (it only accepts tight/normal/loose, and only applies when
      type_preset is "custom" -- this block uses h4). Applied directly instead, scoped to
-     the one text block this section renders. */
-  .footer-brand .text-block {
+     the wordmark block specifically -- text.liquid emits `text-block--{{ block.id }}` on
+     every text block (block.id is prefixed, e.g. `AZDh...__wordmark`, not the bare JSON
+     key), so match on the stable `__wordmark` suffix rather than the full class; a plain
+     `.footer-brand .text-block` would also catch any other text block a merchant adds,
+     since this section allows up to 4. */
+  .footer-brand [class*="__wordmark"] {
     letter-spacing: 0.18em;
   }
 {% endstylesheet %}
