@@ -86,6 +86,16 @@
       text-align: right;
     }
   }
+
+  /* `.shopify-section` wrappers in a footer group don't establish their own stacking
+     context (position: relative with z-index: auto), so `.section-background`'s
+     z-index: -2 (set globally in base.css) falls back to competing in the page's
+     shared root stacking context instead of staying local to this section — normal
+     in-flow content elsewhere on the page ends up painting over it, hiding the panel
+     entirely. Raise it back to the local "auto" layer, scoped to just this section. */
+  .shopify-section:has(> .section > .utilities) > .section-background {
+    z-index: 0;
+  }
 {% endstylesheet %}
 
 {% schema %}

@@ -89,6 +89,15 @@
       grid-column: 1 / -1;
     }
   }
+
+  /* Rich-text links (e.g. a phone number) are nested one level below the block's own
+     scheme-scoped wrapper, so they fall outside the `.paragraph > *` rule that gives
+     menu links their color and pick up the theme's global brand-color link style
+     instead — invisible against a dark color scheme. Force them to match the
+     surrounding text color instead. */
+  .footer-content .rte a {
+    color: inherit;
+  }
 {% endstylesheet %}
 
 {% schema %}
