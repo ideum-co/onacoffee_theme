@@ -1,1 +1,319 @@
-{"type":"footer","name":"Footer","sections":{"ona_footer":{"type":"ona-footer","settings":{"main_linklist":"footer","main_linklist2":"enquire","tel":"02 6162 3321","title2":"ACKNOWLEDGEMENT OF COUNTRY","content":"In the spirit of reconciliation, ONA Coffee acknowledges the Traditional Custodians of the country throughout Australia and their connections to land, sea and community. We pay our respect to their elders past and present and extend that respect to all Aboriginal and Torres Strait Islander peoples today.","social_instagram_link":"https:\/\/www.instagram.com\/onacoffee\/","social_youtube_link":"https:\/\/www.youtube.com\/channel\/UCvwLJ4owqt_I2QqqC2OE0_A","social_facebook_link":"https:\/\/www.facebook.com\/onacoffee\/","copyright":"Copyright 2026 ONA Coffee","privacy":"shopify:\/\/pages\/privacy","abn":"34 152 428 585"}}},"order":["ona_footer"]}
+{
+  "type": "footer",
+  "name": "t:names.footer",
+  "sections": {
+    "footer": {
+      "type": "footer",
+      "blocks": {
+        "menu_explore": {
+          "type": "menu",
+          "settings": {
+            "menu": "footer",
+            "heading": "EXPLORE",
+            "menu_spacing": 12,
+            "show_as_accordion": true,
+            "accordion_icon": "plus",
+            "accordion_dividers": true,
+            "inherit_color_scheme": true,
+            "heading_preset": "h5",
+            "link_preset": "paragraph",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "group_enquire": {
+          "type": "group",
+          "settings": {
+            "content_direction": "column",
+            "vertical_on_mobile": true,
+            "horizontal_alignment": "flex-start",
+            "vertical_alignment": "center",
+            "gap": 12,
+            "width": "fill",
+            "inherit_color_scheme": true,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "menu_enquire": {
+              "type": "menu",
+              "settings": {
+                "menu": "enquire",
+                "heading": "ENQUIRE",
+                "menu_spacing": 12,
+                "show_as_accordion": true,
+                "accordion_icon": "plus",
+                "accordion_dividers": true,
+                "inherit_color_scheme": true,
+                "heading_preset": "h5",
+                "link_preset": "paragraph",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
+            },
+            "text_phone": {
+              "type": "text",
+              "settings": {
+                "text": "<p><a href=\"tel:0261623321\">Ph. 02 6162 3321</a></p>",
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
+                "type_preset": "paragraph",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
+            }
+          },
+          "block_order": [
+            "menu_enquire",
+            "text_phone"
+          ]
+        },
+        "group_acknowledgement": {
+          "type": "group",
+          "settings": {
+            "content_direction": "column",
+            "vertical_on_mobile": true,
+            "horizontal_alignment": "flex-start",
+            "vertical_alignment": "center",
+            "gap": 12,
+            "width": "fill",
+            "inherit_color_scheme": true,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "heading": {
+              "type": "text",
+              "settings": {
+                "text": "<p>ACKNOWLEDGEMENT OF COUNTRY</p>",
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
+                "type_preset": "h5",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
+            },
+            "text": {
+              "type": "text",
+              "settings": {
+                "text": "<p>In the spirit of reconciliation, ONA Coffee acknowledges the Traditional Custodians of the country throughout Australia and their connections to land, sea and community. We pay our respect to their elders past and present and extend that respect to all Aboriginal and Torres Strait Islander peoples today.</p>",
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
+                "type_preset": "paragraph",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
+            },
+            "text_abn": {
+              "type": "text",
+              "settings": {
+                "text": "<p>ABN: 34 152 428 585</p>",
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
+                "type_preset": "paragraph",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
+            }
+          },
+          "block_order": [
+            "heading",
+            "text",
+            "text_abn"
+          ]
+        },
+        "group_newsletter": {
+          "type": "group",
+          "settings": {
+            "content_direction": "column",
+            "vertical_on_mobile": true,
+            "horizontal_alignment": "flex-start",
+            "vertical_alignment": "center",
+            "gap": 12,
+            "width": "fill",
+            "inherit_color_scheme": true,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "heading": {
+              "type": "text",
+              "settings": {
+                "text": "<h6>STAY IN THE LOOP</h6>",
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
+                "type_preset": "h5",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
+            },
+            "text": {
+              "type": "text",
+              "settings": {
+                "text": "<p>Get heads ups on special releases, exclusive mini sales and announcements!</p>",
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
+                "type_preset": "paragraph",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
+            },
+            "email_signup": {
+              "type": "email-signup",
+              "settings": {
+                "width": "fill",
+                "heading": "",
+                "border_style": "all",
+                "border_width": 1,
+                "border_radius": 0,
+                "display_type": "text",
+                "label": "Sign up",
+                "integrated_button": false,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
+            }
+          },
+          "block_order": [
+            "heading",
+            "text",
+            "email_signup"
+          ]
+        }
+      },
+      "block_order": [
+        "menu_explore",
+        "group_enquire",
+        "group_acknowledgement",
+        "group_newsletter"
+      ],
+      "name": "t:names.footer",
+      "settings": {
+        "section_width": "page-width",
+        "gap": 40,
+        "color_scheme": "scheme-5",
+        "padding-block-start": 64,
+        "padding-block-end": 48
+      }
+    },
+    "brand": {
+      "type": "footer-brand",
+      "blocks": {
+        "wordmark": {
+          "type": "text",
+          "settings": {
+            "text": "<p>ONA COFFEE</p>",
+            "width": "fit-content",
+            "max_width": "normal",
+            "alignment": "left",
+            "type_preset": "h4",
+            "case": "uppercase",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          }
+        },
+        "social_icons": {
+          "type": "social-links",
+          "settings": {
+            "facebook_url": "https://www.facebook.com/onacoffee/",
+            "instagram_url": "https://www.instagram.com/onacoffee/",
+            "youtube_url": "https://www.youtube.com/channel/UCvwLJ4owqt_I2QqqC2OE0_A"
+          }
+        }
+      },
+      "block_order": [
+        "wordmark",
+        "social_icons"
+      ],
+      "settings": {
+        "section_width": "page-width",
+        "gap": 24,
+        "color_scheme": "scheme-5",
+        "padding-block-start": 24,
+        "padding-block-end": 32
+      }
+    },
+    "utilities": {
+      "type": "footer-utilities",
+      "blocks": {
+        "copyright": {
+          "type": "footer-copyright",
+          "settings": {
+            "show_powered_by": false,
+            "font_size": "0.75rem",
+            "case": "none"
+          }
+        },
+        "policy_list": {
+          "type": "footer-policy-list",
+          "settings": {
+            "font_size": "0.75rem",
+            "case": "none"
+          }
+        },
+        "privacy_link": {
+          "type": "button",
+          "settings": {
+            "label": "Privacy",
+            "link": "shopify://pages/privacy",
+            "open_in_new_tab": false,
+            "style_class": "link",
+            "width": "fit-content",
+            "width_mobile": "fit-content"
+          }
+        }
+      },
+      "block_order": [
+        "copyright",
+        "policy_list",
+        "privacy_link"
+      ],
+      "settings": {
+        "section_width": "page-width",
+        "gap": 24,
+        "color_scheme": "scheme-5",
+        "divider_thickness": 1,
+        "padding-block-start": 12,
+        "padding-block-end": 16
+      }
+    }
+  },
+  "order": [
+    "footer",
+    "brand",
+    "utilities"
+  ]
+}

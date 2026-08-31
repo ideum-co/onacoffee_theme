@@ -1,0 +1,136 @@
+
+
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
+<div
+  class="section section--{{ section.settings.section_width }} color-{{ section.settings.color_scheme }}"
+  {{ section.shopify_attributes }}
+>
+  <div
+    class="footer-brand spacing-style"
+    style="
+      {% render 'spacing-style', settings: section.settings %}
+      --footer-brand-gap: {{ section.settings.gap }}px;
+    "
+  >
+    {% content_for 'blocks' %}
+  </div>
+</div>
+
+{% stylesheet %}
+  /* One row: whatever is first sits at the start, whatever is last at the end. With a single
+     block it just aligns to the start. */
+  .footer-brand {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--footer-brand-gap);
+    inline-size: 100%;
+  }
+
+  /* `.shopify-section` wrappers in a footer group don't establish their own stacking
+     context (position: relative with z-index: auto), so `.section-background`'s
+     z-index: -2 (set globally in base.css) falls back to competing in the page's
+     shared root stacking context instead of staying local to this section — normal
+     in-flow content elsewhere on the page ends up painting over it, hiding the panel
+     entirely. Raise it back to the local "auto" layer, scoped to just this section. */
+  .shopify-section:has(> .section > .footer-brand) > .section-background {
+    z-index: 0;
+  }
+
+  @media screen and (max-width: 749px) {
+    .footer-brand {
+      justify-content: center;
+      text-align: center;
+    }
+  }
+
+  /* The wordmark's tracked-out look is design intent, not something the `letter_spacing`
+     select can express (it only accepts tight/normal/loose, and only applies when
+     type_preset is "custom" -- this block uses h4). Applied directly instead, scoped to
+     the wordmark block specifically -- text.liquid emits `text-block--{{ block.id }}` on
+     every text block (block.id is prefixed, e.g. `AZDh...__wordmark`, not the bare JSON
+     key), so match on the stable `__wordmark` suffix rather than the full class; a plain
+     `.footer-brand .text-block` would also catch any other text block a merchant adds,
+     since this section allows up to 4. */
+  .footer-brand [class*="__wordmark"] {
+    letter-spacing: 0.18em;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.footer_brand",
+  "class": "section-wrapper",
+  "max_blocks": 4,
+  "blocks": [
+    { "type": "text" },
+    { "type": "image" },
+    { "type": "logo" },
+    { "type": "social-links" },
+    { "type": "group" },
+    { "type": "@app" }
+  ],
+  "enabled_on": {
+    "groups": ["footer"]
+  },
+  "settings": [
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.width",
+      "options": [
+        { "value": "page-width", "label": "t:options.page" },
+        { "value": "full-width", "label": "t:options.full" }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "t:settings.gap",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 32
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.footer_brand",
+      "category": "t:categories.footer"
+    }
+  ]
+}
+{% endschema %}

@@ -313,6 +313,7 @@
     "filters": "Filtering and sorting",
     "follow_on_shop": "Follow on Shop",
     "footer": "Footer",
+    "footer_brand": "Footer brand",
     "footer_password": "Password footer",
     // Footer block containing copyright, policies, and social links
     "footer_utilities": "Footer utilities",

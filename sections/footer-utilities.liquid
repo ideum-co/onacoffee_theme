@@ -1,16 +1,38 @@
 
 
+{% liquid
+  assign rendered_block_count = 0
+  for block in section.blocks
+    if block.type == 'footer-policy-list'
+      if shop.policies.size > 0
+        assign rendered_block_count = rendered_block_count | plus: 1
+      endif
+    else
+      assign rendered_block_count = rendered_block_count | plus: 1
+    endif
+  endfor
+%}
 <div class="section-background color-{{ section.settings.color_scheme }}"></div>
 <div
   class="section section--{{ section.settings.section_width }} color-{{ section.settings.color_scheme }}"
   {{ section.shopify_attributes }}
 >
   <div
-    class="utilities utilities--blocks-{{ section.blocks.size }} spacing-style"
+    class="utilities utilities--blocks-{{ rendered_block_count }} spacing-style"
     style="{% render 'spacing-style', settings: section.settings %} --border-width: {{ section.settings.divider_thickness }}px; --gap: {{ section.settings.gap }}px;"
     data-testid="footer-utilities"
   >
     {% content_for 'blocks' %}
+  </div>
+</div>
+
+{%- comment -%} Preserved from the retired ona-footer.liquid: required by script.js's video()
+  handlers (.video-link.embed/.mp4/.file -> .video-light-box fadeIn), used by training-bg,
+  gust-r and any other section with a .video-link click trigger. {%- endcomment -%}
+<div class="video-light-box">
+  <div class="video-box">
+    <button class="close" title="Close"></button>
+    <div class="play-iframe-video"></div>
   </div>
 </div>
 
@@ -85,6 +107,16 @@
       justify-self: end;
       text-align: right;
     }
+  }
+
+  /* `.shopify-section` wrappers in a footer group don't establish their own stacking
+     context (position: relative with z-index: auto), so `.section-background`'s
+     z-index: -2 (set globally in base.css) falls back to competing in the page's
+     shared root stacking context instead of staying local to this section — normal
+     in-flow content elsewhere on the page ends up painting over it, hiding the panel
+     entirely. Raise it back to the local "auto" layer, scoped to just this section. */
+  .shopify-section:has(> .section > .utilities) > .section-background {
+    z-index: 0;
   }
 {% endstylesheet %}
 
@@ -174,6 +206,9 @@
     },
     {
       "type": "social-links"
+    },
+    {
+      "type": "button"
     }
   ],
   "presets": [
