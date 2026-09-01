@@ -75,9 +75,9 @@
                     data-card-pill
                     data-variant-id="{{ var.id }}"
                     data-variant-title="{{ var.title | escape }}"
-                    data-variant-price="{{ var.price | money }}"
+                    data-variant-price="{{ var.price | money | strip_html | escape }}"
                     data-variant-on-sale="{{ var_on_sale }}"
-                    data-variant-compare-price="{% if var_on_sale %}{{ var.compare_at_price | money }}{% endif %}"
+                    data-variant-compare-price="{% if var_on_sale %}{{ var.compare_at_price | money | strip_html | escape }}{% endif %}"
                     data-variant-available="{{ var.available }}"
                     role="radio"
                     aria-checked="{% if var.id == v0.id %}true{% else %}false{% endif %}">

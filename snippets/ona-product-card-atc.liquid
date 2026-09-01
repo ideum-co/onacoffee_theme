@@ -1,0 +1,190 @@
+{%- comment -%}
+  Shared AJAX add-to-cart handler for ona-product-card.liquid grids.
+  Render this once per page from any section that includes ona-product-card
+  cards (collection grid, search results, etc). Previously duplicated only
+  inside ona-collection-template.liquid, which meant /search's product cards
+  (rendered by ona-search-results.liquid) fell back to a native full-page
+  form submission on add-to-cart -- no drawer, no AJAX, jarring reload.
+{%- endcomment -%}
+{%- assign promo_hide_atc = false -%}
+{%- if promo_hide_atc -%}
+  <style>.shop-list [data-ona-card] [data-card-form] { display: none !important; }</style>
+{%- endif -%}
+<script type="module">
+  /* ONA Product Card - Variant picker & AJAX Add to Cart
+     Mirrors the functionality from ona-featured-collection.liquid */
+  import { CartAddEvent } from '@theme/events';
+
+  window.__onaAutoOpenCart = window.__onaAutoOpenCart || {{ settings.auto_open_cart_drawer | json }};
+
+  (function () {
+    // Qikify free-gift-popup promo ended 2026-08-16; grid/search add-to-cart
+    // re-enabled 2026-08-23 (Felipe).
+    var PROMO_HIDE_ATC = false;
+
+    function openCartDrawer() {
+      var drawer = document.querySelector('cart-drawer-component');
+      if (drawer && typeof drawer.open === 'function') { drawer.open(); return; }
+      var trigger = document.querySelector('[data-testid="cart-drawer-trigger"]');
+      trigger && trigger.click();
+    }
+
+    function initOnaCards() {
+      document.querySelectorAll('.shop-list [data-ona-card]').forEach(function (card) {
+        if (card.dataset.onaCardInit) return;
+        card.dataset.onaCardInit = 'true';
+
+        var pills = card.querySelectorAll('[data-card-pill]');
+        var variantInput = card.querySelector('[data-card-variant-input]');
+        var priceEl = card.querySelector('[data-card-price]');
+        var priceWrap = card.querySelector('[data-card-price-wrap]');
+        var optVal = card.querySelector('[data-card-opt-value]');
+        var atc = card.querySelector('[data-card-atc]');
+        var form = card.querySelector('[data-card-form]');
+        var cardLink = card.querySelector('a.list-box');
+        var productUrl = cardLink ? cardLink.getAttribute('href') : null;
+
+        if (!form || !atc) return;
+
+        function goToProduct(variantId) {
+          if (!productUrl) return;
+          var sep = productUrl.indexOf('?') === -1 ? '?' : '&';
+          window.location.href = variantId ? (productUrl + sep + 'variant=' + variantId) : productUrl;
+        }
+
+        if (PROMO_HIDE_ATC) {
+          form.style.display = 'none';
+        }
+
+        pills.forEach(function (pill) {
+          pill.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (PROMO_HIDE_ATC) {
+              goToProduct(pill.dataset.variantId);
+              return;
+            }
+
+            pills.forEach(function (p) {
+              p.classList.remove('ona-pc__pill--active');
+              p.setAttribute('aria-checked', 'false');
+            });
+            pill.classList.add('ona-pc__pill--active');
+            pill.setAttribute('aria-checked', 'true');
+            if (variantInput) variantInput.value = pill.dataset.variantId;
+            // Unlike ona-featured-collection.liquid's carousel cards (which
+            // intentionally keep showing the collection-wide "from $X" price),
+            // this card's Add to cart button acts on a specific variant the
+            // shopper just picked -- showing a different product's/size's price
+            // next to it is misleading. Swap in the pill's own pre-formatted
+            // price (data-variant-price, already Liquid `money`-filtered) so the
+            // displayed price always matches what Add to cart will actually add.
+            if (priceEl && pill.dataset.variantPrice) priceEl.textContent = pill.dataset.variantPrice;
+            // The compare-at ("was $X") price and on-sale styling were emitted from the
+            // PRODUCT's compare_at_price, not the selected variant's -- a variant with a
+            // different sale state than the one Liquid rendered by default left a stale
+            // or missing strikethrough price once the shopper switched sizes. Each pill
+            // carries its own variant's sale state/compare price, so rebuild the compare
+            // element (or drop it) to match on every selection instead of just the price.
+            if (priceWrap) {
+              var variantOnSale = pill.dataset.variantOnSale === 'true';
+              priceWrap.classList.toggle('price--on-sale', variantOnSale);
+              var compareEl = priceWrap.querySelector('.price-item--compare');
+              if (variantOnSale && pill.dataset.variantComparePrice) {
+                if (!compareEl) {
+                  compareEl = document.createElement('span');
+                  compareEl.className = 'price-item price-item--compare';
+                  compareEl.appendChild(document.createElement('s'));
+                  priceWrap.appendChild(compareEl);
+                }
+                compareEl.querySelector('s').textContent = pill.dataset.variantComparePrice;
+              } else if (compareEl) {
+                compareEl.remove();
+              }
+            }
+            if (optVal) optVal.textContent = pill.dataset.variantTitle;
+            var available = pill.dataset.variantAvailable === 'true';
+            atc.disabled = !available;
+            atc.textContent = available ? 'Add to cart' : 'Sold out';
+          });
+        });
+
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+
+          if (PROMO_HIDE_ATC) {
+            goToProduct(variantInput ? variantInput.value : '');
+            return;
+          }
+
+          atc.classList.add('is-loading');
+          var label = atc.textContent;
+          atc.textContent = 'Adding…';
+
+          var body = new URLSearchParams();
+          body.append('id', variantInput ? variantInput.value : '');
+          body.append('quantity', '1');
+          body.append('sections', 'ona_header');
+
+          fetch('/cart/add.js', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: body.toString(),
+            credentials: 'same-origin'
+          })
+          .then(function (r) { return r.ok ? r.json() : r.json().then(function (err) { throw err; }); })
+          .then(function (resp) {
+            atc.textContent = 'Added ✓';
+
+            // Bug 2: /cart/add.js does NOT return `item_count`, so `resp.item_count`
+            // is undefined. Dispatching the cart:update event with an undefined count
+            // was making the cart-icon script treat it as 0 and briefly flip the
+            // badge to the "empty" style (white). Fetch /cart.js to get the true
+            // count before dispatching. /cart/count.js is not available on this store.
+            fetch('/cart.js', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+              .then(function (r) { return r.json(); })
+              .catch(function () { return { item_count: undefined }; })
+              .then(function (cart) {
+                // Bug 3: dispatched a plain CustomEvent('cart:update', ...) instead of a
+                // real CartAddEvent instance. Same event name and a similar detail shape,
+                // but third-party listeners that do `event instanceof CartAddEvent` (the
+                // native theme class from @theme/events, same one product-form-component
+                // uses) never matched, so they silently ignored every collection-grid add.
+                // Also fixed: `resource` must be the full cart object (.items/.total_price),
+                // not the raw single-line-item response from /cart/add.js -- any listener
+                // reading the cart total off this event needs the real cart, not that.
+                document.dispatchEvent(new CartAddEvent(cart, variantInput ? variantInput.value : '', {
+                  source: 'product-form-component',
+                  sections: resp.sections || {},
+                  itemCount: cart.item_count
+                }));
+              });
+
+            // Bug 1: `window.__onaAutoOpenCart` is never set, so this branch was
+            // dead code and the drawer never opened. Open unconditionally.
+            setTimeout(openCartDrawer, 120);
+            setTimeout(function () { atc.textContent = label; atc.classList.remove('is-loading'); }, 1500);
+          })
+          .catch(function (err) {
+            atc.textContent = (err && err.description) ? err.description : 'Error';
+            atc.classList.remove('is-loading');
+            setTimeout(function () { atc.textContent = label; }, 2000);
+          });
+        });
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initOnaCards);
+    } else {
+      initOnaCards();
+    }
+
+    document.addEventListener('shopify:section:load', initOnaCards);
+  })();
+</script>
