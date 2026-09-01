@@ -9,6 +9,24 @@
 
 {% assign block_settings = block.settings %}
 
+{%- comment -%}
+  Collection-card price sync (product-card-price-sync.js) needs the same
+  currency-code decision snippets/price.liquid makes for the visible price, so
+  the per-variant data attributes below match its formatting instead of always
+  using the bare `money` filter -- otherwise selecting a variant could drop (or
+  add) the currency code the initial render already shows.
+{%- endcomment -%}
+{%- liquid
+  assign use_currency = false
+  if product.id == product_resource.id
+    if settings.currency_code_enabled_product_pages
+      assign use_currency = true
+    endif
+  elsif settings.currency_code_enabled_product_cards
+    assign use_currency = true
+  endif
+-%}
+
 {% unless product_resource.has_only_default_variant %}
   {% liquid
     assign button_background_brightness = section.settings.color_scheme.settings.foreground | color_brightness
@@ -123,16 +141,47 @@
                       variant. Rather than touch that native fetch/morph pipeline (a prior
                       attempt to patch it broke the picker itself), each pill carries its own
                       variant's real price directly so a small additive listener can update
-                      the display without needing a round trip.
+                      the display without needing a round trip. Formatted with the same
+                      use_currency decision as snippets/price.liquid so switching variants
+                      can't drop/add the currency code the initial render already shows.
                     {%- endcomment -%}
-                    data-variant-price="{{ product_option_value.variant.price | money | strip_html | escape }}"
+                    {% if use_currency %}
+                      data-variant-price="{{ product_option_value.variant.price | money_with_currency | strip_html | escape }}"
+                    {% else %}
+                      data-variant-price="{{ product_option_value.variant.price | money | strip_html | escape }}"
+                    {% endif %}
                     {% assign variant_compare_at = product_option_value.variant.compare_at_price %}
                     {% if variant_compare_at > product_option_value.variant.price %}
                       data-variant-on-sale="true"
-                      data-variant-compare-price="{{ variant_compare_at | money | strip_html | escape }}"
+                      {% if use_currency %}
+                        data-variant-compare-price="{{ variant_compare_at | money_with_currency | strip_html | escape }}"
+                      {% else %}
+                        data-variant-compare-price="{{ variant_compare_at | money | strip_html | escape }}"
+                      {% endif %}
                     {% else %}
                       data-variant-on-sale="false"
                     {% endif %}
+                    {%- comment -%}
+                      Same gap as the total price above: selecting a variant with a different
+                      unit-price measurement leaves the card's <unit-price> on whichever
+                      variant rendered first. data-variant-unit-price carries the fully
+                      formatted "price/measurement" string (blank when this variant has no
+                      unit price at all, e.g. mixed catalogs); data-unit-price-a11y-label
+                      lets the listener build the same visually-hidden label
+                      snippets/unit-price.liquid renders, in case the initially selected
+                      variant had no unit price and the element doesn't exist yet to update.
+                    {%- endcomment -%}
+                    {% if product_option_value.variant.unit_price %}
+                      {% if use_currency %}
+                        {% assign variant_unit_price = product_option_value.variant.unit_price | money_with_currency %}
+                      {% else %}
+                        {% assign variant_unit_price = product_option_value.variant.unit_price | money %}
+                      {% endif %}
+                      data-variant-unit-price="{{ variant_unit_price | unit_price_with_measurement: product_option_value.variant.unit_price_measurement | strip_html | escape }}"
+                    {% else %}
+                      data-variant-unit-price=""
+                    {% endif %}
+                    data-unit-price-a11y-label="{{ 'accessibility.unit_price' | t | escape }}"
                   {% endif %}
                   {% if product_option_value.selected %}
                     data-current-checked="true"

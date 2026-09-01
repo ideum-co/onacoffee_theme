@@ -24,6 +24,41 @@
  * alongside the native mechanism, which still handles everything else (buy-button
  * availability, swatch state, the real product page) exactly as before.
  */
+function updateUnitPrice(priceContainer, radio) {
+  const unitPriceText = radio.dataset.variantUnitPrice || '';
+  let unitPriceEl = priceContainer.querySelector('.unit-price');
+
+  if (!unitPriceText) {
+    // This variant has no unit price (e.g. mixed catalog) -- remove any stale
+    // one left over from a previously selected variant that did have one.
+    if (unitPriceEl) unitPriceEl.remove();
+    return;
+  }
+
+  if (!unitPriceEl) {
+    // The initially selected variant had no unit price, so price.liquid never
+    // rendered the element at all. Build the same markup snippets/unit-price.liquid
+    // would, using the a11y label carried on the pill itself.
+    unitPriceEl = document.createElement('small');
+    unitPriceEl.className = 'unit-price';
+    const label = document.createElement('span');
+    label.className = 'visually-hidden';
+    label.textContent = radio.dataset.unitPriceA11yLabel || '';
+    unitPriceEl.appendChild(label);
+    unitPriceEl.appendChild(document.createTextNode(''));
+    priceContainer.appendChild(unitPriceEl);
+  }
+
+  // Keep the visually-hidden label node intact; only the trailing text node
+  // (the actual "$X.XX/unit" string) needs updating.
+  const textNode = Array.from(unitPriceEl.childNodes).find((node) => node.nodeType === Node.TEXT_NODE);
+  if (textNode) {
+    textNode.textContent = unitPriceText;
+  } else {
+    unitPriceEl.appendChild(document.createTextNode(unitPriceText));
+  }
+}
+
 function updateCardPrice(radio) {
   if (!(radio instanceof HTMLInputElement) || radio.dataset.variantPrice === undefined) return;
 
@@ -51,6 +86,8 @@ function updateCardPrice(radio) {
 
   if (regularWrap) regularWrap.classList.toggle('price__hidden', onSale);
   if (saleWrap) saleWrap.classList.toggle('price__hidden', !onSale);
+
+  updateUnitPrice(priceContainer, radio);
 }
 
 document.addEventListener('change', (event) => {
