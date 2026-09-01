@@ -194,6 +194,7 @@
 
         var pills = card.querySelectorAll('[data-card-pill]');
         var variantInput = card.querySelector('[data-card-variant-input]');
+        var priceEl = card.querySelector('[data-card-price]');
         var optVal = card.querySelector('[data-card-opt-value]');
         var atc = card.querySelector('[data-card-atc]');
         var form = card.querySelector('[data-card-form]');
@@ -211,6 +212,14 @@
             pill.classList.add('ona-pc__pill--active');
             pill.setAttribute('aria-checked', 'true');
             if (variantInput) variantInput.value = pill.dataset.variantId;
+            // Unlike ona-featured-collection.liquid's carousel cards (which
+            // intentionally keep showing the collection-wide "from $X" price),
+            // this card's Add to cart button acts on a specific variant the
+            // shopper just picked -- showing a different product's/size's price
+            // next to it is misleading. Swap in the pill's own pre-formatted
+            // price (data-variant-price, already Liquid `money`-filtered) so the
+            // displayed price always matches what Add to cart will actually add.
+            if (priceEl && pill.dataset.variantPrice) priceEl.textContent = pill.dataset.variantPrice;
             if (optVal) optVal.textContent = pill.dataset.variantTitle;
             var available = pill.dataset.variantAvailable === 'true';
             atc.disabled = !available;
