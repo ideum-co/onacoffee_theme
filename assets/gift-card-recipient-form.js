@@ -312,6 +312,14 @@ class GiftCardRecipientForm extends Component {
    * @param {CartErrorEvent} event - The cart error event
    */
   #displayCartError(event) {
+    // Cart errors are broadcast document-wide; a collection grid can render one
+    // GiftCardRecipientForm per gift-card product, so without this check an error
+    // from submitting one product's form would display in every gift-card form on the page.
+    const formId = this.dataset.formId;
+    if (formId && event.detail?.sourceId && event.detail.sourceId !== formId) {
+      return;
+    }
+
     if (event.detail?.data) {
       const { message, errors, description } = event.detail.data;
 

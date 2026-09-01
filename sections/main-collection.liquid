@@ -67,17 +67,22 @@
     {% paginate collection.products by products_per_page %}
       {% capture children %}
         {% for product in collection.products %}
-          <li
-            id="{{ section.id }}-{{ product.id }}"
-            class="product-grid__item product-grid__item--{{ forloop.index0 }}"
-            data-page="{{ paginate.current_page }}"
-            data-product-id="{{ product.id }}"
-            ref="cards[]"
-          >
-            {% # theme-check-disable %}
-            {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: product %}
-            {% # theme-check-enable %}
-          </li>
+          {%- comment -%} Preserves the old page's snippets/ona-product-card.liquid L6
+            `product.handle != 'ona-tote'` exclusion: ona-tote is intentionally kept out of
+            collection grids and has no equivalent skip in ona_theme2026's stock component. {%- endcomment -%}
+          {% unless product.handle == 'ona-tote' %}
+            <li
+              id="{{ section.id }}-{{ product.id }}"
+              class="product-grid__item product-grid__item--{{ forloop.index0 }}"
+              data-page="{{ paginate.current_page }}"
+              data-product-id="{{ product.id }}"
+              ref="cards[]"
+            >
+              {% # theme-check-disable %}
+              {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: product %}
+              {% # theme-check-enable %}
+            </li>
+          {% endunless %}
         {% endfor %}
       {% endcapture %}
 

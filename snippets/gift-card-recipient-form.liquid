@@ -3,6 +3,10 @@
 
   @param {object} product - The product object.
   @param {object} form - The product form object.
+  @param {string} form_id - The enclosing add-to-cart form's HTML id (product.id-scoped for
+    per-card uniqueness on collection grids); used to scope cart:error events to this instance.
+    NOTE: not the same as `form.id`, which is Shopify's own internal form identifier and does
+    not reflect the `id:` param passed to the `{% form %}` tag.
   @param {object} section - The section object to which this snippet belongs.
   @param {block} block - The block object, used for element IDs and editor attributes.
 {% enddoc %}
@@ -17,6 +21,7 @@
   class="recipient-form"
   data-section-id="{{ section.id }}"
   data-product-variant-id="{{ product.selected_or_first_available_variant.id }}"
+  data-form-id="{{ form_id }}"
 >
   <fieldset
     class="gift-card-form-option"
