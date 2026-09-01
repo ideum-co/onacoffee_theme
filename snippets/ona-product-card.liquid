@@ -43,7 +43,7 @@
           assign on_sale = true
         endif
       -%}
-      <div class="price{% if on_sale %} price--on-sale{% endif %}">
+      <div class="price{% if on_sale %} price--on-sale{% endif %}" data-card-price-wrap>
         {%- if product.price_varies -%}
           <span class="price-item" data-card-price>{{ 'products.product.from_lowest_price_html' | t: lowest_price: price }}</span>
         {%- else -%}
@@ -64,12 +64,20 @@
         <span class="ona-pc__opt-label">{{ opt_name }}: <strong data-card-opt-value>{{ v0.title }}</strong></span>
         <div class="ona-pc__opt-pills" role="radiogroup" aria-label="{{ opt_name }}">
           {%- for var in product.variants -%}
+            {%- liquid
+              assign var_on_sale = false
+              if var.compare_at_price > var.price
+                assign var_on_sale = true
+              endif
+            -%}
             <button type="button"
                     class="ona-pc__pill{% if var.id == v0.id %} ona-pc__pill--active{% endif %}{% unless var.available %} ona-pc__pill--sold-out{% endunless %}"
                     data-card-pill
                     data-variant-id="{{ var.id }}"
                     data-variant-title="{{ var.title | escape }}"
                     data-variant-price="{{ var.price | money }}"
+                    data-variant-on-sale="{{ var_on_sale }}"
+                    data-variant-compare-price="{% if var_on_sale %}{{ var.compare_at_price | money }}{% endif %}"
                     data-variant-available="{{ var.available }}"
                     role="radio"
                     aria-checked="{% if var.id == v0.id %}true{% else %}false{% endif %}">
