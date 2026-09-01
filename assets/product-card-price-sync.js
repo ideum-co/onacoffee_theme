@@ -1,3 +1,6 @@
+import { ThemeEvents } from '@theme/events';
+import { morph } from '@theme/morph';
+
 /**
  * Collection-card price sync.
  *
@@ -17,82 +20,48 @@
  * compute one from outside the block's own section) or reworking variant-picker.js's
  * fetch/morph path itself -- both touch fragile core theme JS shared by every
  * variant picker on the site; a prior attempt at the direct fix broke the picker
- * (dropdown markup got destroyed on first use). This listener sidesteps all of
- * that: each pill already carries the money-formatted price for its own variant
- * (snippets/variant-main-picker.liquid), so on selection this just writes that
- * value into the card's own price display directly. Purely additive -- it runs
- * alongside the native mechanism, which still handles everything else (buy-button
- * availability, swatch state, the real product page) exactly as before.
+ * (dropdown markup got destroyed on first use).
+ *
+ * This listener sidesteps all of that without touching any core file: it listens
+ * for the same variant:update event product-price.js already listens for, and
+ * morphs the card's own price container from the same fetched HTML -- just
+ * matched by DOM proximity (event.target.closest('product-card')) instead of the
+ * data-block-id product-price.js relies on.
+ *
+ * Two earlier versions of this fix instead hand-rolled the price/compare-price/
+ * unit-price update from per-pill data attributes computed at Liquid render
+ * time. That duplicated snippets/price.liquid's own formatting logic (and got
+ * it wrong twice -- a stale-text-node bug and a currency-formatting bug, both
+ * Codex-caught) and was fundamentally racy for multi-option products, since a
+ * pill's rendered price attribute only reflects what the OTHER options were set
+ * to at render time, not whatever the shopper has changed them to since.
+ *
+ * Reading the price straight out of the fetched HTML sidesteps all three
+ * problems at once: it's the exact same server-rendered markup
+ * snippets/price.liquid produces for the real product page (zero duplicated
+ * formatting logic to get wrong), and variant:update only fires once
+ * fetchUpdatedSection's own request has resolved with the FINAL settled variant
+ * for the complete current option combination (its #abortController already
+ * cancels/ignores stale in-flight requests), so this can't show a value for a
+ * combination that no longer matches what's actually selected.
+ *
+ * Purely additive -- it runs alongside the native mechanism, which still
+ * handles everything else (buy-button availability, swatch state, the real
+ * product page) exactly as before.
  */
-function updateUnitPrice(priceContainer, radio) {
-  const unitPriceText = radio.dataset.variantUnitPrice || '';
-  let unitPriceEl = priceContainer.querySelector('.unit-price');
+document.addEventListener(ThemeEvents.variantUpdate, (event) => {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
 
-  if (!unitPriceText) {
-    // This variant has no unit price (e.g. mixed catalog) -- remove any stale
-    // one left over from a previously selected variant that did have one.
-    if (unitPriceEl) unitPriceEl.remove();
-    return;
-  }
-
-  if (!unitPriceEl) {
-    // The initially selected variant had no unit price, so price.liquid never
-    // rendered the element at all. Build the same markup snippets/unit-price.liquid
-    // would, using the a11y label carried on the pill itself.
-    unitPriceEl = document.createElement('small');
-    unitPriceEl.className = 'unit-price';
-    const label = document.createElement('span');
-    label.className = 'visually-hidden';
-    label.textContent = radio.dataset.unitPriceA11yLabel || '';
-    unitPriceEl.appendChild(label);
-    unitPriceEl.appendChild(document.createTextNode(''));
-    priceContainer.appendChild(unitPriceEl);
-  }
-
-  // Keep the visually-hidden label node intact; only the trailing text node
-  // (the actual "$X.XX/unit" string) needs updating.
-  const textNode = Array.from(unitPriceEl.childNodes).find((node) => node.nodeType === Node.TEXT_NODE);
-  if (textNode) {
-    textNode.textContent = unitPriceText;
-  } else {
-    unitPriceEl.appendChild(document.createTextNode(unitPriceText));
-  }
-}
-
-function updateCardPrice(radio) {
-  if (!(radio instanceof HTMLInputElement) || radio.dataset.variantPrice === undefined) return;
-
-  const card = radio.closest('product-card');
+  const card = target.closest('product-card');
   if (!card) return;
 
   const priceContainer = card.querySelector('product-price [ref="priceContainer"]');
   if (!priceContainer) return;
 
-  const regularPrice = priceContainer.querySelector('.price__regular .price');
-  const salePriceEl = priceContainer.querySelector('.price__sale .price-item--sale.price');
-  const compareEl = priceContainer.querySelector('.price__sale .compare-at-price');
-  const regularWrap = priceContainer.querySelector('.price__regular');
-  const saleWrap = priceContainer.querySelector('.price__sale');
+  const newHtml = event.detail?.data?.html;
+  const newPriceContainer = newHtml?.querySelector?.('product-price [ref="priceContainer"]');
+  if (!newPriceContainer) return;
 
-  const onSale = radio.dataset.variantOnSale === 'true';
-  const price = radio.dataset.variantPrice;
-  const comparePrice = radio.dataset.variantComparePrice;
-
-  if (regularPrice) regularPrice.textContent = price;
-  if (onSale && comparePrice) {
-    if (salePriceEl) salePriceEl.textContent = price;
-    if (compareEl) compareEl.textContent = comparePrice;
-  }
-
-  if (regularWrap) regularWrap.classList.toggle('price__hidden', onSale);
-  if (saleWrap) saleWrap.classList.toggle('price__hidden', !onSale);
-
-  updateUnitPrice(priceContainer, radio);
-}
-
-document.addEventListener('change', (event) => {
-  const target = event.target;
-  if (target instanceof HTMLInputElement && target.type === 'radio' && target.closest('product-card')) {
-    updateCardPrice(target);
-  }
+  morph(priceContainer, newPriceContainer, { childrenOnly: true });
 });
