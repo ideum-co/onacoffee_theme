@@ -42,6 +42,16 @@
       results_size: collection.products_count
     %}
 
+    {%- comment -%} Ported from ona_theme2026's current main-collection.liquid: replaces
+      the old ona-collection-template.liquid's editor-configurable category_tile_1..10
+      collection pickers with a fixed curated handle list (see blocks/category-pills.liquid).
+      Note: the new list has 9 handles (no "gift-cards"/"merch") vs. the old page's 10
+      configurable slots -- carried over as-authored in the new theme, not reconciled. {%- endcomment -%}
+    {% content_for 'block',
+      type: 'category-pills',
+      id: 'category-pills'
+    %}
+
     {% assign products_per_page = 24 %}
 
     {% if section.settings.enable_infinite_scroll == false %}
