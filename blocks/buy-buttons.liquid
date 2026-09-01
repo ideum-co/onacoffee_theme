@@ -40,7 +40,7 @@
   {{ block.shopify_attributes }}
 >
   {%- if product != blank -%}
-    {%- assign product_form_id = 'BuyButtons-ProductForm-' | append: section.id -%}
+    {%- assign product_form_id = 'BuyButtons-ProductForm-' | append: section.id | append: '-' | append: product.id -%}
     <product-form-component
       data-section-id="{{ section.id }}"
       data-product-id="{{ product.id }}"
@@ -308,11 +308,11 @@
           ref="dialog"
           class="dialog-modal dialog-drawer pickup-location__dialog color-{{ settings.drawer_color_scheme }}"
           scroll-lock
-          aria-labelledby="pickup-dialog-heading"
+          aria-labelledby="pickup-dialog-heading-{{ closest.product.id }}"
           data-testid="pickup-location-dialog"
         >
           <h2
-            id="pickup-dialog-heading"
+            id="pickup-dialog-heading-{{ closest.product.id }}"
             class="visually-hidden"
           >
             {{ 'actions.view_store_information' | t }}

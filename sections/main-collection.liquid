@@ -1,5 +1,11 @@
 
 
+{%- comment -%} Preloaded unconditionally, not just inside each product-card render: if the
+  grid starts empty (e.g. an active filter excludes everything) and a later filter update
+  repopulates it via the Section Rendering API, newly-added cards can arrive without this
+  section's own <style> injection, per snippets/text-block-styles.liquid's own doc note that
+  dynamic entry points like empty product grids need to preload it. {%- endcomment -%}
+{% render 'text-block-styles' %}
 <script
   src="{{ 'results-list.js' | asset_url }}"
   type="module"
