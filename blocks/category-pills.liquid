@@ -16,6 +16,12 @@
       {% liquid
         assign pill_collection = collections[pill_handle]
         assign pill_label = pill_collection.title
+        # The old page hardcoded "All Coffee" for this pill rather than using the "all"
+        # collection's actual admin-set title ("All Products"); ona_theme2026's own
+        # category-pills.liquid has no equivalent override, so preserve it explicitly here.
+        if pill_handle == 'all'
+          assign pill_label = 'All Coffee'
+        endif
         assign is_active = false
         if current_handle == pill_handle
           assign is_active = true
