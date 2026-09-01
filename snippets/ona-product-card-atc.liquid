@@ -122,9 +122,10 @@
           var label = atc.textContent;
           atc.textContent = 'Adding…';
 
+          var quantityAdded = 1;
           var body = new URLSearchParams();
           body.append('id', variantInput ? variantInput.value : '');
-          body.append('quantity', '1');
+          body.append('quantity', String(quantityAdded));
           body.append('sections', 'ona_header');
 
           fetch('/cart/add.js', {
@@ -158,10 +159,18 @@
                 // Also fixed: `resource` must be the full cart object (.items/.total_price),
                 // not the raw single-line-item response from /cart/add.js -- any listener
                 // reading the cart total off this event needs the real cart, not that.
+                // `source: 'product-form-component'` tells cart-icon.js's listener to treat
+                // itemCount as a DELTA added to the badge's current count, not an absolute
+                // total (see its renderCartBubble: `this.currentCartCount + itemCount` for
+                // this source) -- the same semantics the real product-page form uses when it
+                // dispatches this event. Sending the fetched cart's absolute item_count here
+                // double-counts (a cart already showing 2, after adding 1, would jump to 5:
+                // 2 existing + 3 reported, instead of the correct 3). Send the quantity this
+                // request actually added instead.
                 document.dispatchEvent(new CartAddEvent(cart, variantInput ? variantInput.value : '', {
                   source: 'product-form-component',
                   sections: resp.sections || {},
-                  itemCount: cart.item_count
+                  itemCount: quantityAdded
                 }));
               });
 
