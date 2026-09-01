@@ -113,6 +113,26 @@
                   data-connected-product-url="{{ product_option_value.product_url }}"
                   {% if product_option_value.variant.id %}
                     data-variant-id="{{ product_option_value.variant.id }}"
+                    {%- comment -%}
+                      Collection-card price sync (product-card-price-sync.js): the native
+                      product-price.js update path relies on morphing in a fresh
+                      product-price[data-block-id=...] fetched via section_id=
+                      section-rendering-product-card, but that reference section renders a
+                      bare <product-price> with no data-block-id, so the selector never
+                      matches and the card's price silently stays on the initially-rendered
+                      variant. Rather than touch that native fetch/morph pipeline (a prior
+                      attempt to patch it broke the picker itself), each pill carries its own
+                      variant's real price directly so a small additive listener can update
+                      the display without needing a round trip.
+                    {%- endcomment -%}
+                    data-variant-price="{{ product_option_value.variant.price | money | strip_html | escape }}"
+                    {% assign variant_compare_at = product_option_value.variant.compare_at_price %}
+                    {% if variant_compare_at > product_option_value.variant.price %}
+                      data-variant-on-sale="true"
+                      data-variant-compare-price="{{ variant_compare_at | money | strip_html | escape }}"
+                    {% else %}
+                      data-variant-on-sale="false"
+                    {% endif %}
                   {% endif %}
                   {% if product_option_value.selected %}
                     data-current-checked="true"
