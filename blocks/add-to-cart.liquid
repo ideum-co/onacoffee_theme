@@ -10,7 +10,7 @@
 
 {% liquid
   assign class = 'add-to-cart-button ' | append: block.settings.style_class
-  assign id = 'BuyButtons-ProductSubmitButton-' | append: block.id
+  assign id = 'BuyButtons-ProductSubmitButton-' | append: block.id | append: '-' | append: closest.product.id
 %}
 
 <span
