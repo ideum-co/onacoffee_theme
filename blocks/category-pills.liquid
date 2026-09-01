@@ -23,7 +23,7 @@
       %}
       {% unless pill_collection == blank %}
         <a
-          href="/collections/{{ pill_handle }}"
+          href="{{ pill_collection.url }}"
           class="category-pills__pill{% if is_active %} is-active{% endif %}"
           {% if is_active %}
             aria-current="page"
