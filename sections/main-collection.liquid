@@ -4,8 +4,10 @@
   grid starts empty (e.g. an active filter excludes everything) and a later filter update
   repopulates it via the Section Rendering API, newly-added cards can arrive without this
   section's own <style> injection, per snippets/text-block-styles.liquid's own doc note that
-  dynamic entry points like empty product grids need to preload it. {%- endcomment -%}
+  dynamic entry points like empty product grids need to preload it. Same reasoning applies to
+  product-metafield-text-styles.liquid (roast/tastes lines on cards). {%- endcomment -%}
 {% render 'text-block-styles' %}
+{% render 'product-metafield-text-styles' %}
 <script
   src="{{ 'results-list.js' | asset_url }}"
   type="module"
