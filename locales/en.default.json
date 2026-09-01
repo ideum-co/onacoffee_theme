@@ -37,6 +37,7 @@
     "remove": "Remove",
     "reset_search": "Reset search",
     "scroll_to": "Scroll to {{ title }}",
+    "shop_by_category": "Shop by category",
     "search_results_count": "{{ count }} search results found for \"{{ query }}\"",
     "search_results_no_results": "No results found for \"{{ query }}\"",
     "search_suggestions_available": "Search suggestions available for \"{{ query }}\"",
