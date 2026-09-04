@@ -32,39 +32,22 @@
         {%- endif -%}
         <div class="shop-list">
           {%- for p in products limit: limit -%}
-            <div class="list">
-              <a href="{{ p.url }}" class="list-box">
-                <div class="img">
-                  <img src="{{ p.featured_media | img_url: '1024x1024' }}" alt="{{ p.featured_image.alt | default: p.title | escape }}" loading="lazy" decoding="async">
-                </div>
-                <div class="text">
-                  {%- liquid
-                    assign price = p.price | money
-                    assign on_sale = false
-                    if p.compare_at_price > p.price
-                      assign on_sale = true
-                    endif
-                  -%}
-                  <div class="price{% if on_sale %} price--on-sale{% endif %}">
-                    {%- if p.price_varies -%}
-                      <span class="price-item">from {{ price }}</span>
-                    {%- else -%}
-                      <span class="price-item">{{ price }}</span>
-                    {%- endif -%}
-                    {%- if on_sale -%}
-                      <span class="price-item price-item--compare"><s>{{ p.compare_at_price | money }}</s></span>
-                    {%- endif -%}
-                  </div>
-                  <p>{{ p.title }}</p>
-                </div>
-              </a>
-            </div>
+            {% render 'ona-product-card', product: p, index: forloop.index %}
           {%- endfor -%}
         </div>
       </div>
     </section>
   {%- endif -%}
 </product-recommendations>
+{%- comment -%}
+  Rendered OUTSIDE <product-recommendations> deliberately: that element's
+  innerHTML gets replaced wholesale by the fetch below when recommendations
+  aren't already server-rendered, and a <script> assigned via innerHTML never
+  executes. Keeping the ATC handler in the normal (non-replaced) server
+  response guarantees it always runs once on page load, regardless of which
+  path (server-rendered vs. fetched) actually produced the cards.
+{%- endcomment -%}
+{% render 'ona-product-card-atc' %}
 <script>
   (function(){
     var el = document.getElementById('product-recommendations-{{ section.id }}');
@@ -76,7 +59,15 @@
     fetch(url).then(function(r){ return r.text(); }).then(function(html){
       var doc = new DOMParser().parseFromString(html, 'text/html');
       var inner = doc.querySelector('#product-recommendations-{{ section.id }}');
-      if (inner) el.innerHTML = inner.innerHTML;
+      if (inner) {
+        el.innerHTML = inner.innerHTML;
+        // Cards just landed via innerHTML, so ona-product-card-atc.liquid's
+        // own init (bound on DOMContentLoaded, before these existed) never
+        // saw them. Its script also listens for 'shopify:section:load' --
+        // reuse that hook to pick up the freshly-injected cards without
+        // duplicating its init logic here.
+        document.dispatchEvent(new Event('shopify:section:load'));
+      }
     }).catch(function(e){ console.warn('[ONA recs]', e); });
   })();
 </script>
