@@ -158,18 +158,29 @@ window.__onaAutoOpenCart = window.__onaAutoOpenCart ?? false;
           .then(function (cart) {
             // Dispatch a real CartAddEvent (not a plain CustomEvent) so
             // listeners that check `event instanceof CartAddEvent` (the
-            // native theme class from @theme/events, same one
-            // product-form-component uses) actually see this add.
-            // `source: 'product-form-component'` tells cart-icon.js to treat
-            // itemCount as a DELTA added to the badge's current count, not an
-            // absolute total -- sending the fetched cart's absolute
-            // item_count here would double-count (a cart already showing 2,
-            // after adding 1, would jump to 5 instead of the correct 3).
+            // native theme class from @theme/events) actually see this add.
+            //
+            // This theme's actual header (sections/ona-header.liquid) does
+            // NOT load the native assets/cart-icon.js component -- only
+            // Shopify's unused stock snippets/header-actions.liquid does.
+            // ona-header.liquid instead registers its own inline
+            // `cart:update` listener that always treats `itemCount` as the
+            // new ABSOLUTE badge total and ignores `source` entirely
+            // (confirmed live: dispatching a delta of 1 with
+            // source: 'product-form-component' replaced a correct "8" with
+            // a wrong "1" instead of advancing it to "9"). Send the real
+            // fetched absolute total instead, and omit `source`, so this
+            // is correct against the listener that's actually active here
+            // -- and would still be correct if assets/cart-icon.js ever
+            // does get wired in later, since its own logic only adds
+            // itemCount to the current count when `source` identifies a
+            // product-form-component add; otherwise it just sets the count
+            // to itemCount directly, which is exactly right for an
+            // absolute value.
             document.dispatchEvent(
               new CartAddEvent(cart, variantId || '', {
-                source: 'product-form-component',
                 sections: resp.sections || {},
-                itemCount: quantityAdded,
+                itemCount: typeof cart.item_count === 'number' ? cart.item_count : undefined,
               })
             );
           });
