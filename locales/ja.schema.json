@@ -1106,7 +1106,9 @@
     "hide_logo_on_home_page_help": "ロゴは、固定ヘッダーが有効な場合は表示されたままになります",
     "media_type_info": "機能はメニューのリンクを元に表示されます。",
     "logo_height": "ヘッダーのロゴにのみ適用されます。",
-    "actions_display_style": "モバイルでは常にアイコンが表示されます"
+    "actions_display_style": "モバイルでは常にアイコンが表示されます",
+    "zero_uses_desktop": "Set to 0 to use the desktop value.",
+    "zero_uses_heading_level": "Set to 0 to use the size that comes with the heading level."
   },
   "categories": {
     "product_list": "特集コレクション",

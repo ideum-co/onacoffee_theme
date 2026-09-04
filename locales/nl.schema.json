@@ -1106,7 +1106,9 @@
     "hide_logo_on_home_page_help": "Logo blijft zichtbaar wanneer de vaste koptekst actief is",
     "media_type_info": "Functies worden gevuld vanuit je menulinks",
     "logo_height": "Alleen van invloed op het koptekstlogo",
-    "actions_display_style": "Op mobiel worden altijd pictogrammen gebruikt"
+    "actions_display_style": "Op mobiel worden altijd pictogrammen gebruikt",
+    "zero_uses_desktop": "Set to 0 to use the desktop value.",
+    "zero_uses_heading_level": "Set to 0 to use the size that comes with the heading level."
   },
   "categories": {
     "product_list": "Uitgelichte collectie",

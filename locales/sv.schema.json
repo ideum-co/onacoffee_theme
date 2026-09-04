@@ -1106,7 +1106,9 @@
     "hide_logo_on_home_page_help": "Logotypen förblir synlig när klistrigt sidhuvud är aktivt",
     "media_type_info": "Funktionerna hämtas från menylänkarna",
     "logo_height": "Påverkar endast sidhuvudslogotypen",
-    "actions_display_style": "Ikoner används alltid på mobilen"
+    "actions_display_style": "Ikoner används alltid på mobilen",
+    "zero_uses_desktop": "Set to 0 to use the desktop value.",
+    "zero_uses_heading_level": "Set to 0 to use the size that comes with the heading level."
   },
   "categories": {
     "basic": "Grundläggande",

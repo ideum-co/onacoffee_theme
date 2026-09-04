@@ -1106,7 +1106,9 @@
     "hide_logo_on_home_page_help": "O logo permanecerá visível quando o cabeçalho fixo estiver ativo",
     "media_type_info": "Os recursos são preenchidos com base nos links do menu",
     "logo_height": "Afeta apenas o logo do cabeçalho",
-    "actions_display_style": "Os ícones são sempre usados em dispositivos móveis"
+    "actions_display_style": "Os ícones são sempre usados em dispositivos móveis",
+    "zero_uses_desktop": "Set to 0 to use the desktop value.",
+    "zero_uses_heading_level": "Set to 0 to use the size that comes with the heading level."
   },
   "categories": {
     "basic": "Básico",

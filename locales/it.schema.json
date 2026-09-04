@@ -1106,7 +1106,9 @@
     "hide_logo_on_home_page_help": "Il logo rimarrà visibile quando l'header permanente è attivo",
     "media_type_info": "Le funzionalità vengono popolate dai link del menu",
     "logo_height": "Riguarda solo il logo dell’header",
-    "actions_display_style": "Le icone vengono sempre usate sui dispositivi mobili"
+    "actions_display_style": "Le icone vengono sempre usate sui dispositivi mobili",
+    "zero_uses_desktop": "Set to 0 to use the desktop value.",
+    "zero_uses_heading_level": "Set to 0 to use the size that comes with the heading level."
   },
   "categories": {
     "product_list": "Collezione in evidenza",

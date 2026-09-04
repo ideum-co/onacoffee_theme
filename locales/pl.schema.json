@@ -1106,7 +1106,9 @@
     "hide_logo_on_home_page_help": "Logo pozostanie widoczne, gdy aktywny jest lepki nagłówek",
     "media_type_info": "Funkcje są pobierane z linków menu",
     "logo_height": "Dotyczy tylko logo w nagłówku",
-    "actions_display_style": "Na urządzeniach mobilnych zawsze używane są ikony"
+    "actions_display_style": "Na urządzeniach mobilnych zawsze używane są ikony",
+    "zero_uses_desktop": "Set to 0 to use the desktop value.",
+    "zero_uses_heading_level": "Set to 0 to use the size that comes with the heading level."
   },
   "categories": {
     "product_list": "Polecana kolekcja",

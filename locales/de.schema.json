@@ -1106,7 +1106,9 @@
     "hide_logo_on_home_page_help": "Das Logo bleibt sichtbar, wenn der fixierte Header aktiv ist",
     "media_type_info": "Die Funktionen werden aus deinen Menü-Links übernommen",
     "logo_height": "Betrifft nur das Header-Logo",
-    "actions_display_style": "Auf Mobilgeräten werden immer Symbole verwendet"
+    "actions_display_style": "Auf Mobilgeräten werden immer Symbole verwendet",
+    "zero_uses_desktop": "Set to 0 to use the desktop value.",
+    "zero_uses_heading_level": "Set to 0 to use the size that comes with the heading level."
   },
   "categories": {
     "product_list": "Vorgestellte Kollektion",
