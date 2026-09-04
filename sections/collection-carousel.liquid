@@ -1,0 +1,896 @@
+{%- liquid
+  # The level is a setting so the page keeps one heading outline, but only h1 to h6 pass
+  # through - anything else would put an arbitrary tag name straight from a setting.
+  assign heading_tag = section.settings.heading_tag | default: 'h3'
+  unless heading_tag == 'h1' or heading_tag == 'h2' or heading_tag == 'h3' or heading_tag == 'h4' or heading_tag == 'h5' or heading_tag == 'h6'
+    assign heading_tag = 'h3'
+  endunless
+  # Ends the size chain: an explicit px value wins, then the typography preset, then the
+  # size that belongs to the chosen level. It has to be published as a variable because a
+  # class rule outranks the theme's `h3` selector, and an invalid var() resets to inherit
+  # rather than falling through to it.
+  assign heading_level_size = '--font-' | append: heading_tag | append: '--size'
+  assign settings = section.settings
+  # The preset travels as a class, which is how the theme's typography contract is entered:
+  # `custom-typography` reads the variables `typography-style` writes, and a named preset
+  # (h1 to h6, paragraph) carries its own rule in base.css. Without it the group of settings
+  # publishes variables nothing consumes.
+  assign heading_preset = settings.type_preset | default: 'rte'
+  # `columns_mobile` is a select, so it arrives as a string and would never compare against a
+  # number.
+  assign columns_mobile = settings.columns_mobile | times: 1
+  # Arrows are needed as soon as either view overflows. Gating them on the desktop count alone
+  # left a phone showing two of five collections with no way but a swipe to reach the rest.
+  assign show_arrows = false
+  if section.blocks.size > settings.columns or section.blocks.size > columns_mobile
+    assign show_arrows = true
+  endif
+  # `auto_hide_controls` only governs the `controls` slot, which this section does not render,
+  # so a view that does not overflow has to hide its own arrows.
+  assign arrows_mobile_only = false
+  if show_arrows and section.blocks.size <= settings.columns
+    assign arrows_mobile_only = true
+  endif
+-%}
+
+{%- capture slides -%}
+  {%- for block in section.blocks -%}
+    {%- liquid
+      assign block_collection = block.settings.collection
+
+      assign image = block.settings.image
+      if image == blank
+        assign image = block_collection.featured_image
+      endif
+
+      assign label = block.settings.label
+      if label == blank
+        assign label = block_collection.title
+      endif
+
+      assign url = block.settings.link
+      if url == blank
+        assign url = block_collection.url
+      endif
+    -%}
+    {%- capture slide_content -%}
+      <a
+        class="collection-carousel__item"
+        {% if url != blank %}
+          href="{{ url }}"
+        {% endif %}
+        {{ block.shopify_attributes }}
+      >
+        <span class="collection-carousel__media">
+          {%- if image != blank -%}
+            {{
+              image
+              | image_url: width: 1200
+              | image_tag:
+                widths: '300, 600, 900, 1200',
+                sizes: '(min-width: 750px) 25vw, 70vw',
+                loading: 'lazy',
+                class: 'collection-carousel__image'
+            }}
+          {%- endif -%}
+        </span>
+
+        {%- if label != blank -%}
+          <span class="collection-carousel__label">{{ label }}</span>
+        {%- endif -%}
+      </a>
+    {%- endcapture -%}
+    {%- render 'slideshow-slide',
+      index: forloop.index0,
+      children: slide_content,
+      class: 'collection-carousel__slide'
+    -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+<div
+  class="collection-carousel spacing-style{% if settings.uppercase_labels %} collection-carousel--uppercase{% endif %}{% if arrows_mobile_only %} collection-carousel--arrows-mobile-only{% endif %}"
+  style="
+    --section-heading-level-size: var({{ heading_level_size }});
+    --collection-carousel-background: {{ settings.background_color }};
+    --collection-carousel-color: {{ settings.text_color }};
+    --collection-carousel-heading-color: {{ settings.heading_color | default: settings.text_color }};
+    {%- comment -%}
+      Emitted only when set. Left at 0 the declaration that reads it is invalid, so the size
+      falls through to the typography preset and then to the chosen heading level - which is
+      what makes the level control anything more than the tag name.
+    {%- endcomment -%}
+    {%- if settings.heading_size > 0 %}
+      --collection-carousel-heading-size: {{ settings.heading_size }}px;
+    {%- endif %}
+    {%- if settings.heading_size_mobile > 0 %}
+      --collection-carousel-heading-size-mobile: {{ settings.heading_size_mobile }}px;
+    {%- endif %}
+    --collection-carousel-label-size: {{ settings.label_size }}px;
+    --collection-carousel-columns: {{ settings.columns }};
+    --collection-carousel-columns-mobile: {{ settings.columns_mobile }};
+    --collection-carousel-ratio: {{ settings.image_ratio }};
+    --collection-carousel-gap: {{ settings.column_gap }}px;
+    --collection-carousel-heading-align: {{ settings.heading_alignment }};
+    --collection-carousel-text-align: {{ settings.text_alignment }};
+    {%- comment -%}
+      The mobile counterparts are emitted only when chosen, so the phone rule can fall back
+      through them to the desktop value instead of shadowing it with an unset one.
+    {%- endcomment -%}
+    {%- if settings.padding_inline > 0 %}
+      --collection-carousel-padding-inline: {{ settings.padding_inline }}px;
+    {%- endif %}
+    {%- if settings.padding_inline_mobile > 0 %}
+      --collection-carousel-padding-inline-mobile: {{ settings.padding_inline_mobile }}px;
+    {%- endif %}
+    {%- if settings.column_gap_mobile > 0 %}
+      --collection-carousel-gap-mobile: {{ settings.column_gap_mobile }}px;
+    {%- endif %}
+    {%- if settings.heading_alignment_mobile != blank %}
+      --collection-carousel-heading-align-mobile: {{ settings.heading_alignment_mobile }};
+    {%- endif %}
+    {%- if settings.text_alignment_mobile != blank %}
+      --collection-carousel-text-align-mobile: {{ settings.text_alignment_mobile }};
+    {%- endif %}
+    {%- render 'spacing-style', settings: settings %}
+  "
+  {{ section.shopify_attributes }}
+>
+  {%- if settings.heading != blank -%}
+    <{{ heading_tag }}
+      class="collection-carousel__heading {{ heading_preset }}{% if heading_preset == 'custom' %} custom-typography custom-font-size{% elsif heading_preset == 'rte' %} collection-carousel__heading--default{% endif %}"
+      style="{%- render 'typography-style', settings: section.settings, type: 'heading' -%}"
+    >{{ settings.heading }}</{{ heading_tag }}>
+  {%- endif -%}
+
+  {%- if section.blocks.size > 0 -%}
+    {%- render 'slideshow',
+      ref: 'collectionCarousel',
+      class: 'collection-carousel__carousel',
+      slides: slides,
+      slide_count: section.blocks.size,
+      show_arrows: show_arrows,
+      icon_style: settings.icons_style,
+      icon_shape: 'none',
+      arrows_position: 'center',
+      auto_hide_controls: true,
+      infinite: false,
+      initial_slide: 0
+    -%}
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .collection-carousel {
+    --slide-width: calc(100% / var(--collection-carousel-columns, 5));
+
+    /* Half on each side of a slide adds up to one gap between two of them. */
+    --collection-carousel-gutter: calc(var(--collection-carousel-gap, 32px) / 2);
+
+    padding-inline: var(--collection-carousel-padding-inline, var(--page-margin, 1rem));
+    background: var(--collection-carousel-background);
+    color: var(--collection-carousel-color);
+
+    @media screen and (max-width: 749px) {
+      --collection-carousel-gutter: calc(
+        var(--collection-carousel-gap-mobile, var(--collection-carousel-gap, 32px)) / 2
+      );
+
+      padding-inline: var(
+        --collection-carousel-padding-inline-mobile,
+        var(--collection-carousel-padding-inline, var(--page-margin, 1rem))
+      );
+    }
+  }
+
+  .collection-carousel__heading {
+    margin: 0 0 var(--gap-6xl, 4rem);
+    color: var(--collection-carousel-heading-color);
+    text-align: var(--collection-carousel-heading-align, center);
+
+    @media screen and (max-width: 749px) {
+      text-align: var(
+        --collection-carousel-heading-align-mobile,
+        var(--collection-carousel-heading-align, center)
+      );
+    }
+  }
+
+  /* Only the Default preset is dressed here. A named preset or Custom owns every typography
+     property through its own class, and a rule of ours would silently outrank it. */
+  .collection-carousel__heading--default {
+    font-family: var(--font-heading--family);
+
+    /* No fallback after the level: with the size left at 0 nothing is emitted, the declaration
+       is invalid and the heading keeps the size its level gives it. */
+    font-size: var(
+      --collection-carousel-heading-size-mobile,
+      var(--collection-carousel-heading-size, var(--font-size, var(--section-heading-level-size)))
+    );
+    font-weight: var(--font-heading--weight);
+    line-height: 1.1;
+
+    @media screen and (min-width: 750px) {
+      font-size: var(--collection-carousel-heading-size, var(--font-size, var(--section-heading-level-size)));
+    }
+  }
+
+  /* The theme's slideshow paints its own page-coloured background, which shows up as a band across
+     a section with a colour of its own. */
+  .collection-carousel__carousel slideshow-container {
+    background: transparent;
+  }
+
+  /* Arrows sit at the edges and stay visible, as in the design, instead of fading in on hover. */
+  .collection-carousel__carousel slideshow-arrows {
+    mix-blend-mode: normal;
+  }
+
+  .collection-carousel__carousel slideshow-arrows .slideshow-control {
+    opacity: 1;
+    color: currentcolor;
+
+    /* stylelint-disable-next-line declaration-no-important */
+    /* The hover-reveal animation in base.css is matched by a selector too specific to outrank
+       without an unreadable one of our own, and it starts from opacity 0 - which would make
+       always-visible arrows blink on hover. */
+    animation: none !important;
+  }
+
+  /* The track is pulled out by half a gap on each side so the first and last card sit flush with
+     the section's own padding: the half-gap that separates cards would otherwise show up as an
+     extra inset at the two ends, and the padding control would never quite mean what it says.
+     The arithmetic still lands exactly - each slide is (width + gap) / columns, so the cards and
+     the gaps between them add back up to the padded width. */
+  .collection-carousel__carousel slideshow-slides {
+    /* The theme pins the track at `width: 100%`, so pulling it out with a negative margin alone
+       just slides it left. The width has to grow by the same two half-gaps it is pulled out by. */
+    inline-size: calc(100% + var(--collection-carousel-gutter) * 2);
+    margin-inline: calc(var(--collection-carousel-gutter) * -1);
+  }
+
+  /* No width here on purpose: the theme sizes a slide with `slideshow-slide { width: var(--slide-width) }`,
+     and a class setting one of its own would outrank it and leave a single slide per view. */
+  .collection-carousel__slide {
+    padding-inline: var(--collection-carousel-gutter);
+  }
+
+  .collection-carousel__item {
+    display: grid;
+    gap: var(--gap-xl, 1.25rem);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .collection-carousel__media {
+    display: block;
+    overflow: hidden;
+    aspect-ratio: var(--collection-carousel-ratio, 1);
+  }
+
+  .collection-carousel__image {
+    inline-size: 100%;
+    block-size: 100%;
+
+    /* Collection images come in every shape, and the design wants one clean grid, so they fill the
+       frame rather than letterboxing inside it. */
+    object-fit: cover;
+  }
+
+  .collection-carousel__label {
+    font-size: var(--collection-carousel-label-size);
+    letter-spacing: 0.06em;
+    text-align: var(--collection-carousel-text-align, center);
+
+    @media screen and (max-width: 749px) {
+      text-align: var(--collection-carousel-text-align-mobile, var(--collection-carousel-text-align, center));
+    }
+  }
+
+  .collection-carousel--uppercase .collection-carousel__label {
+    text-transform: uppercase;
+  }
+
+  /* Both views share one set of arrows, so the view that does not overflow hides them. */
+  @media screen and (min-width: 750px) {
+    .collection-carousel--arrows-mobile-only slideshow-arrows {
+      display: none;
+    }
+  }
+
+  /* One or two at a time on a phone, where five would be unreadable. Same calculation as the
+     desktop track, so a slide is still an exact fraction of the width and the snap lands clean. */
+  @media screen and (max-width: 749px) {
+    .collection-carousel {
+      --slide-width: calc(100% / var(--collection-carousel-columns-mobile, 2));
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.collection_carousel",
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "t:names.collection",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "t:settings.collection"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:settings.image",
+          "info": "t:info.collection_carousel_image"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "t:settings.label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:settings.link"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "t:settings.heading_tag",
+      "info": "t:info.heading_tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        },
+        {
+          "value": "h5",
+          "label": "H5"
+        },
+        {
+          "value": "h6",
+          "label": "H6"
+        }
+      ],
+      "default": "h3"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "t:settings.heading",
+      "default": "Discover by <em>category</em>"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "t:settings.size",
+      "info": "t:info.zero_uses_heading_level",
+      "min": 0,
+      "max": 96,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "label": "t:settings.size_mobile",
+      "info": "t:info.zero_uses_desktop",
+      "min": 0,
+      "max": 96,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "t:settings.alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "center",
+          "label": "t:options.center"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment_mobile",
+      "label": "t:settings.alignment_mobile",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.same_as_desktop"
+        },
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "center",
+          "label": "t:options.center"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": ""
+    },
+    {
+      "type": "header",
+      "content": "t:content.typography"
+    },
+    {
+      "type": "select",
+      "id": "type_preset",
+      "label": "t:settings.preset",
+      "options": [
+        {
+          "value": "rte",
+          "label": "t:options.default"
+        },
+        {
+          "value": "paragraph",
+          "label": "t:options.paragraph"
+        },
+        {
+          "value": "h1",
+          "label": "t:options.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:options.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:options.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:options.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:options.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:options.h6"
+        },
+        {
+          "value": "custom",
+          "label": "t:options.custom"
+        }
+      ],
+      "default": "rte",
+      "info": "t:info.edit_presets_in_theme_settings"
+    },
+    {
+      "type": "select",
+      "id": "font",
+      "label": "t:settings.font",
+      "options": [
+        {
+          "value": "var(--font-body--family)",
+          "label": "t:options.body"
+        },
+        {
+          "value": "var(--font-subheading--family)",
+          "label": "t:options.subheading"
+        },
+        {
+          "value": "var(--font-heading--family)",
+          "label": "t:options.heading"
+        },
+        {
+          "value": "var(--font-accent--family)",
+          "label": "t:options.accent"
+        }
+      ],
+      "default": "var(--font-body--family)",
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "font_size",
+      "label": "t:settings.size",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.default"
+        },
+        {
+          "value": "0.625rem",
+          "label": "10px"
+        },
+        {
+          "value": "0.75rem",
+          "label": "12px"
+        },
+        {
+          "value": "0.875rem",
+          "label": "14px"
+        },
+        {
+          "value": "1rem",
+          "label": "16px"
+        },
+        {
+          "value": "1.125rem",
+          "label": "18px"
+        },
+        {
+          "value": "1.25rem",
+          "label": "20px"
+        },
+        {
+          "value": "1.5rem",
+          "label": "24px"
+        },
+        {
+          "value": "2rem",
+          "label": "32px"
+        },
+        {
+          "value": "2.5rem",
+          "label": "40px"
+        },
+        {
+          "value": "3rem",
+          "label": "48px"
+        },
+        {
+          "value": "3.5rem",
+          "label": "56px"
+        },
+        {
+          "value": "4.5rem",
+          "label": "72px"
+        },
+        {
+          "value": "5.5rem",
+          "label": "88px"
+        },
+        {
+          "value": "7.5rem",
+          "label": "120px"
+        },
+        {
+          "value": "9.5rem",
+          "label": "152px"
+        },
+        {
+          "value": "11.5rem",
+          "label": "184px"
+        }
+      ],
+      "default": "1rem",
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "line_height",
+      "label": "t:settings.line_height",
+      "options": [
+        {
+          "value": "tight",
+          "label": "t:options.tight"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "loose",
+          "label": "t:options.loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "letter_spacing",
+      "label": "t:settings.letter_spacing",
+      "options": [
+        {
+          "value": "tight",
+          "label": "t:options.tight"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "loose",
+          "label": "t:options.loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "case",
+      "label": "t:settings.case",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.default"
+        },
+        {
+          "value": "uppercase",
+          "label": "t:options.uppercase"
+        }
+      ],
+      "default": "none",
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "wrap",
+      "label": "t:settings.wrap",
+      "options": [
+        {
+          "value": "pretty",
+          "label": "t:options.pretty"
+        },
+        {
+          "value": "balance",
+          "label": "t:options.balance"
+        },
+        {
+          "value": "nowrap",
+          "label": "t:options.none"
+        }
+      ],
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "t:settings.columns",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "t:settings.columns_mobile",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "t:settings.aspect_ratio",
+      "options": [
+        {
+          "value": "0.75",
+          "label": "t:options.portrait"
+        },
+        {
+          "value": "1",
+          "label": "t:options.square"
+        },
+        {
+          "value": "1.33",
+          "label": "t:options.landscape"
+        }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "range",
+      "id": "column_gap",
+      "label": "t:settings.horizontal_gap",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "column_gap_mobile",
+      "label": "t:settings.horizontal_gap_mobile",
+      "info": "t:info.zero_uses_desktop",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "label_size",
+      "label": "t:settings.size",
+      "min": 10,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "checkbox",
+      "id": "uppercase_labels",
+      "label": "t:settings.uppercase",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "t:settings.alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "center",
+          "label": "t:options.center"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment_mobile",
+      "label": "t:settings.alignment_mobile",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.same_as_desktop"
+        },
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "center",
+          "label": "t:options.center"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": ""
+    },
+    {
+      "type": "header",
+      "content": "t:content.colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "default": "#F5F4EA"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "t:settings.heading_color",
+      "default": "#6B1235"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:settings.text_color",
+      "default": "#6B1235"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_inline",
+      "label": "t:settings.horizontal_padding",
+      "info": "t:info.zero_uses_page_margin",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_inline_mobile",
+      "label": "t:settings.horizontal_padding_mobile",
+      "info": "t:info.zero_uses_desktop",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.collection_carousel",
+      "blocks": [
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
