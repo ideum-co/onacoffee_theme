@@ -231,6 +231,7 @@
     "text_color": "Tekstkleur",
     "top_padding": "Padding boven",
     "uppercase": "Uppercase",
+    "vertical_gap_mobile": "Mobile vertical gap",
     "video": "Video",
     "video_alt_text": "Alt-tekst",
     "video_loop": "Video herhalen",
@@ -1087,6 +1088,7 @@
   "info": {
     "carousel_layout_on_mobile": "Op mobiel wordt altijd een carrousel gebruikt",
     "collection_carousel_image": "Replaces the collection's own image.",
+    "collection_carousel_media_gap": "Space between a collection image and its label.",
     "heading_tag": "Affects the page outline for search engines and screen readers, not the visible size.",
     "video_alt_text": "Beschrijf de video voor gebruikers van ondersteunende technologie",
     "video_autoplay": "Video's worden standaard gedempt",

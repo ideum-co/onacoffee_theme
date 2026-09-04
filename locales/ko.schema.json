@@ -231,6 +231,7 @@
     "text_color": "텍스트 색상",
     "top_padding": "위쪽 패딩",
     "uppercase": "Uppercase",
+    "vertical_gap_mobile": "Mobile vertical gap",
     "video": "동영상",
     "video_alt_text": "대체 텍스트",
     "video_loop": "동영상 반복",
@@ -1087,6 +1088,7 @@
   "info": {
     "carousel_layout_on_mobile": "모바일에서는 항상 캐러셀이 사용됩니다.",
     "collection_carousel_image": "Replaces the collection's own image.",
+    "collection_carousel_media_gap": "Space between a collection image and its label.",
     "heading_tag": "Affects the page outline for search engines and screen readers, not the visible size.",
     "video_alt_text": "보조 기술 사용자를 위해 비디오를 설명하세요",
     "video_autoplay": "비디오는 기본적으로 음소거됩니다",

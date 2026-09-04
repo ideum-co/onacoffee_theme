@@ -257,6 +257,7 @@
     "text_color": "文本颜色",
     "top_padding": "顶部内边距",
     "uppercase": "Uppercase",
+    "vertical_gap_mobile": "Mobile vertical gap",
     "video": "视频",
     "video_alt_text": "替代文本",
     "video_loop": "循环播放视频",
@@ -1086,6 +1087,7 @@
   },
   "info": {
     "collection_carousel_image": "Replaces the collection's own image.",
+    "collection_carousel_media_gap": "Space between a collection image and its label.",
     "heading_tag": "Affects the page outline for search engines and screen readers, not the visible size.",
     "video_alt_text": "为使用辅助技术的用户描述视频",
     "video_autoplay": "视频将默认静音",

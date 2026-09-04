@@ -257,6 +257,7 @@
     "text_color": "Tekstfarve",
     "top_padding": "Udfyldning i toppen",
     "uppercase": "Uppercase",
+    "vertical_gap_mobile": "Mobile vertical gap",
     "video": "Video",
     "video_alt_text": "Alternativ tekst",
     "video_loop": "Afspil video i løkke",
@@ -1087,6 +1088,7 @@
   "info": {
     "carousel_layout_on_mobile": "Karrusellen bruges altid på mobil",
     "collection_carousel_image": "Replaces the collection's own image.",
+    "collection_carousel_media_gap": "Space between a collection image and its label.",
     "heading_tag": "Affects the page outline for search engines and screen readers, not the visible size.",
     "video_alt_text": "Beskriv videoen for brugere af hjælpeteknologi",
     "video_autoplay": "Videoer vil som standard være uden lyd",

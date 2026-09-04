@@ -257,6 +257,7 @@
     "text_color": "Tekstfarge",
     "top_padding": "Utfylling øverst",
     "uppercase": "Uppercase",
+    "vertical_gap_mobile": "Mobile vertical gap",
     "video": "Video",
     "video_alt_text": "Alt. tekst",
     "video_loop": "Loop video",
@@ -1087,6 +1088,7 @@
   "info": {
     "carousel_layout_on_mobile": "Karusell brukes alltid på mobil",
     "collection_carousel_image": "Replaces the collection's own image.",
+    "collection_carousel_media_gap": "Space between a collection image and its label.",
     "heading_tag": "Affects the page outline for search engines and screen readers, not the visible size.",
     "video_alt_text": "Beskriv videoen for brukere av hjelpeteknologi",
     "video_autoplay": "Videoer dempes som standard",

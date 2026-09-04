@@ -257,6 +257,7 @@
     "text_color": "テキストの配色",
     "top_padding": "上の余白",
     "uppercase": "Uppercase",
+    "vertical_gap_mobile": "Mobile vertical gap",
     "video": "ビデオ",
     "video_alt_text": "代替テキスト",
     "video_loop": "ビデオをループ再生する",
@@ -1086,6 +1087,7 @@
   },
   "info": {
     "collection_carousel_image": "Replaces the collection's own image.",
+    "collection_carousel_media_gap": "Space between a collection image and its label.",
     "heading_tag": "Affects the page outline for search engines and screen readers, not the visible size.",
     "video_alt_text": "支援技術のユーザーのために動画の説明を記述します",
     "video_autoplay": "動画はデフォルトでミュートになります",

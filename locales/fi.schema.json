@@ -257,6 +257,7 @@
     "text_color": "Tekstin väri",
     "top_padding": "Yläreunatäyte",
     "uppercase": "Uppercase",
+    "vertical_gap_mobile": "Mobile vertical gap",
     "video": "Video",
     "video_alt_text": "Vaihtoehtoinen teksti",
     "video_loop": "Toista video silmukassa",
@@ -1087,6 +1088,7 @@
   "info": {
     "carousel_layout_on_mobile": "Mobiilissa käytetään aina karusellia.",
     "collection_carousel_image": "Replaces the collection's own image.",
+    "collection_carousel_media_gap": "Space between a collection image and its label.",
     "heading_tag": "Affects the page outline for search engines and screen readers, not the visible size.",
     "video_alt_text": "Kuvaile video avustavan teknologian käyttäjille",
     "video_autoplay": "Videot mykistetään oletusarvoisesti",

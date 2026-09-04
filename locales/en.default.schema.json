@@ -219,6 +219,7 @@
     "carousel_layout_on_mobile": "Carousel is always used on mobile",
     "checkout_buttons": "Allows buyers to check out faster and can improve conversion. [Learn more](https://help.shopify.com/manual/online-store/dynamic-checkout)",
     "collection_carousel_image": "Replaces the collection's own image.",
+    "collection_carousel_media_gap": "Space between a collection image and its label.",
     "custom_heading": "Custom heading",
     "custom_liquid": "Add app snippets or other code to create advanced customizations. [Learn more](https://shopify.dev/docs/api/liquid)",
     "edit_presets_in_theme_settings": "Edit presets in [theme settings](/editor?context=theme&category=typography)",
@@ -1159,6 +1160,7 @@
     "variant_per_page": "Variants per page",
     "vendor": "Vendor",
     "vertical_gap": "Vertical gap",
+    "vertical_gap_mobile": "Mobile vertical gap",
     "vertical_offset": "Shadow vertical offset",
     // Layout setting: stacks content vertically on mobile
     "vertical_on_mobile": "Vertical on mobile",

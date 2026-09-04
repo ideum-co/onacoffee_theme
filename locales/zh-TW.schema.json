@@ -257,6 +257,7 @@
     "text_color": "文字顏色",
     "top_padding": "上方內距",
     "uppercase": "Uppercase",
+    "vertical_gap_mobile": "Mobile vertical gap",
     "video": "影片",
     "video_alt_text": "替代文字",
     "video_loop": "重複播放影片",
@@ -1087,6 +1088,7 @@
   "info": {
     "carousel_layout_on_mobile": "在行動裝置上一律使用輪播",
     "collection_carousel_image": "Replaces the collection's own image.",
+    "collection_carousel_media_gap": "Space between a collection image and its label.",
     "heading_tag": "Affects the page outline for search engines and screen readers, not the visible size.",
     "video_alt_text": "為使用輔助技術的使用者描述影片",
     "video_autoplay": "影片預設為靜音播放",

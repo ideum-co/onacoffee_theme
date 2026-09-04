@@ -231,6 +231,7 @@
     "text_color": "Couleur du texte",
     "top_padding": "Espacement supérieur",
     "uppercase": "Uppercase",
+    "vertical_gap_mobile": "Mobile vertical gap",
     "video": "Vidéo",
     "video_alt_text": "Texte alternatif",
     "video_loop": "Vidéo en boucle",
@@ -1087,6 +1088,7 @@
   "info": {
     "carousel_layout_on_mobile": "Le carrousel est toujours utilisé sur mobile",
     "collection_carousel_image": "Replaces the collection's own image.",
+    "collection_carousel_media_gap": "Space between a collection image and its label.",
     "heading_tag": "Affects the page outline for search engines and screen readers, not the visible size.",
     "video_alt_text": "Décrivez la vidéo pour les utilisateurs de technologies d’assistance",
     "video_autoplay": "Les vidéos seront mises en sourdine par défaut",

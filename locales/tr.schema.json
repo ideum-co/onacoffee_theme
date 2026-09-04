@@ -231,6 +231,7 @@
     "text_color": "Metin rengi",
     "top_padding": "Üst iç boşluk",
     "uppercase": "Uppercase",
+    "vertical_gap_mobile": "Mobile vertical gap",
     "video": "Video",
     "video_alt_text": "Alternatif metin",
     "video_loop": "Videoyu döngüye al",
@@ -1086,6 +1087,7 @@
   },
   "info": {
     "collection_carousel_image": "Replaces the collection's own image.",
+    "collection_carousel_media_gap": "Space between a collection image and its label.",
     "heading_tag": "Affects the page outline for search engines and screen readers, not the visible size.",
     "video_alt_text": "Yardımcı teknoloji kullanıcıları için videoyu açıklayın",
     "video_autoplay": "Videolar varsayılan olarak sessize alınır",

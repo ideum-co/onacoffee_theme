@@ -231,6 +231,7 @@
     "text_color": "Kolor tekstu",
     "top_padding": "Wypełnienie górne",
     "uppercase": "Uppercase",
+    "vertical_gap_mobile": "Mobile vertical gap",
     "video": "Wideo",
     "video_alt_text": "Tekst alternatywny",
     "video_loop": "Odtwarzaj wideo w pętli",
@@ -1086,6 +1087,7 @@
   },
   "info": {
     "collection_carousel_image": "Replaces the collection's own image.",
+    "collection_carousel_media_gap": "Space between a collection image and its label.",
     "heading_tag": "Affects the page outline for search engines and screen readers, not the visible size.",
     "video_alt_text": "Opisz wideo dla użytkowników technologii wspomagających",
     "video_autoplay": "Domyślnie filmy będą wyciszone",

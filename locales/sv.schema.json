@@ -257,6 +257,7 @@
     "text_color": "Textfärg",
     "top_padding": "Utfyllnad i överkant",
     "uppercase": "Uppercase",
+    "vertical_gap_mobile": "Mobile vertical gap",
     "video": "Video",
     "video_alt_text": "Alternativtext",
     "video_loop": "Loopa video",
@@ -1086,6 +1087,7 @@
   },
   "info": {
     "collection_carousel_image": "Replaces the collection's own image.",
+    "collection_carousel_media_gap": "Space between a collection image and its label.",
     "heading_tag": "Affects the page outline for search engines and screen readers, not the visible size.",
     "video_alt_text": "Beskriv videon för användare av hjälpmedelsteknik",
     "video_autoplay": "Videor kommer att vara tystade som standard",
