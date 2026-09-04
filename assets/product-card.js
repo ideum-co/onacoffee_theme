@@ -264,7 +264,15 @@ export class ProductCard extends ProductCardLink {
    * @param {VariantUpdateEvent} event - The variant update event.
    */
   updatePrice(event) {
-    const priceContainer = this.querySelectorAll(`product-price [ref='priceContainer']`)[1];
+    const priceContainers = this.querySelectorAll(`product-price [ref='priceContainer']`);
+    // Cards with quick add (or another feature rendering a second <product-price>, e.g. a
+    // swatches overlay) carry two of these; index [1] is the one actually visible in the
+    // default card state. A card with only a single price block -- quick add disabled, or a
+    // custom card layout like this port's -- has nothing at [1], so this silently no-opped
+    // (and, worse, the caller had already called event.stopPropagation() before this ran,
+    // so no other listener downstream ever got a chance to update the price either). Fall
+    // back to the only element that exists rather than requiring exactly two.
+    const priceContainer = priceContainers[1] ?? priceContainers[0];
     const newPriceElement = event.detail.data.html.querySelector(`product-price [ref='priceContainer']`);
 
     if (newPriceElement && priceContainer) {
