@@ -40,6 +40,18 @@
         {%- content_for 'block', id: 'cart-page-title', type: '_cart-title' %}
       </div>
 
+      {%- comment -%}
+        Qikify order-goal / free-shipping progress bar (third-party app embed,
+        not theme code -- the app's own JS renders into this mount point).
+        Ported verbatim from ona-cart-template.liquid; only rendered when the
+        cart has items, matching that template's effective behavior (it
+        rendered unconditionally but the whole wrapper was display:none on an
+        empty cart).
+      {%- endcomment -%}
+      {%- unless cart.empty? -%}
+        {%- render 'qikify-reward-bar' -%}
+      {%- endunless -%}
+
       <div class="cart-page__items">
         {%- content_for 'block', id: 'cart-page-items', type: '_cart-products' %}
       </div>
@@ -49,6 +61,24 @@
           {%- content_for 'block', id: 'cart-page-summary', type: '_cart-summary' -%}
         </div>
       {%- endunless -%}
+
+      {%- comment -%}
+        US shipping/tariff notice, ported from ona-cart-template.liquid's
+        cart-note block. Native cart notes (settings.show_cart_note) are a
+        SEPARATE, already-shared feature used by the live cart drawer --
+        deliberately not touched here so this port doesn't change live drawer
+        behavior. This notice is self-contained to this section instead.
+      {%- endcomment -%}
+      {%- if localization.country.iso_code == 'US' and cart.empty? == false -%}
+        <div class="cart-page__us-shipping-notice rte" style="margin:16px 0;padding:12px;border:1px solid var(--color-border);">
+          <strong>Shipping to the USA:</strong>
+          US government tariffs or import restrictions may limit delivery or add extra charges at customs. These fees aren't included at checkout.
+        </div>
+        {%- comment -%} form="cart-form" associates these with cart-products.liquid's
+          shared form without editing that shared snippet. {%- endcomment -%}
+        <input type="hidden" name="attributes[Destination Country]" value="US" form="cart-form">
+        <input type="hidden" name="attributes[US Shipping Notice]" value="Customer saw customs/duties message" form="cart-form">
+      {%- endif -%}
 
       {{ cart_page_more_blocks_content }}
     </div>
