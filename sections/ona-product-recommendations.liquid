@@ -60,14 +60,14 @@
   {%- endif -%}
 </product-recommendations>
 {%- comment -%}
-  Rendered OUTSIDE <product-recommendations> deliberately: that element's
-  innerHTML gets replaced wholesale by the fetch below when recommendations
-  aren't already server-rendered, and a <script> assigned via innerHTML never
-  executes. Keeping the ATC handler in the normal (non-replaced) server
-  response guarantees it always runs once on page load, regardless of which
-  path (server-rendered vs. fetched) actually produced the cards.
+  Variant picker + AJAX Add to cart now handled by the shared global
+  assets/ona-product-card.js, which delegates from `document` rather than
+  binding to specific card elements — so it doesn't matter whether these
+  cards were server-rendered or spliced in later via the innerHTML fetch
+  below, unlike the old per-render inline <script> this section used to emit
+  (which only ever ran once, before the fetched cards existed, since a
+  <script> assigned via innerHTML never executes).
 {%- endcomment -%}
-{% render 'ona-product-card-atc' %}
 <script>
   (function(){
     var el = document.getElementById('product-recommendations-{{ section.id }}');

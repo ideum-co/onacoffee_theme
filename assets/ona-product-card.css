@@ -1,0 +1,41 @@
+/*
+ * Shared ONA product card — native radio-input variant picker.
+ *
+ * The visible pill styling (.ona-pc__pill / .ona-fc__pill and their
+ * --active / --sold-out states) is unchanged and still lives in main.css —
+ * those class names now target a <label> instead of a <button>, so every
+ * existing declaration keeps applying with zero visual change. This file
+ * only adds what's new: visually hiding the real <input type="radio">
+ * underneath each label (kept in the accessibility tree and keyboard-
+ * operable, just not painted), and a focus-visible ring on the label when
+ * its radio has keyboard focus, since a hidden input's own focus ring isn't
+ * visible.
+ */
+.ona-pc__opt-pills input[data-card-variant],
+.ona-fc__opt-pills input[data-card-variant] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.ona-pc__opt-pills,
+.ona-fc__opt-pills {
+  position: relative;
+}
+
+.ona-pc__opt-pills input[data-card-variant]:focus-visible + label,
+.ona-fc__opt-pills input[data-card-variant]:focus-visible + label {
+  outline: 2px solid #2b2c30;
+  outline-offset: 2px;
+}
+
+.ona-pc__opt-pills input[data-card-variant]:disabled + label,
+.ona-fc__opt-pills input[data-card-variant]:disabled + label {
+  cursor: not-allowed;
+}

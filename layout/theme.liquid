@@ -65,6 +65,7 @@
     {%- comment -%} Disable WOW / fadeInUp scroll animations site-wide — keep markup intact, just nullify the effect. {%- endcomment -%}
      {{ 'custom.css' | asset_url | stylesheet_tag }}
      {{ 'custom-filters.css' | asset_url | stylesheet_tag }}
+     {{ 'ona-product-card.css' | asset_url | stylesheet_tag }}
     <style>
       .wowo, .wowo.animated,
       .fadeIn, .fadeInUp, .fadeInup, .fadeInDown, .fadeInLeft, .zoomOut, .heartBeat,
@@ -85,6 +86,16 @@
     <script src="{{ 'jquery.matchHeight-min.js' | asset_url }}" defer></script>
     {%- comment -%} R38: terser-compressed script.js (82K → 48K, -41%, drop_console=true, NO mangle). The full-mangle version caused PC nav hover lag (2026-04-28). {%- endcomment -%}
     <script src="{{ 'script.min.js' | asset_url }}" defer></script>
+    {%- comment -%}
+      Shared variant picker + AJAX Add to cart for every ona-product-card
+      instance site-wide (search results, PDP recommendations, home featured
+      collections) — one implementation instead of the per-section copies
+      this used to be, each with its own independently-drifting bug fixes.
+      __onaAutoOpenCart must be set from the real setting before the module
+      script runs -- a plain JS asset file can't read Liquid settings itself.
+    {%- endcomment -%}
+    <script>window.__onaAutoOpenCart = {{ settings.auto_open_cart_drawer | json }};</script>
+    <script src="{{ 'ona-product-card.js' | asset_url }}" type="module" fetchpriority="low"></script>
 
     {% if request.design_mode %}
       {%- render 'theme-editor' -%}
