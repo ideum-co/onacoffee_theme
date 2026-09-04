@@ -5,8 +5,14 @@
 {%- endcomment -%}
 {%- if product.handle != 'ona-tote' -%}
 {%- assign v0 = product.selected_or_first_available_variant -%}
-<div class="list wowo fadeInUp" data-ona-card data-product-id="{{ product.id }}">
-  <a href="{{ product.url }}" class="list-box">
+{%- assign card_uid = section.id | append: '-' | append: product.id | append: '-' | append: index -%}
+{%- assign card_form_id = 'ona-card-form-' | append: card_uid -%}
+<div class="list wowo fadeInUp" data-ona-card data-product-id="{{ product.id }}"
+  data-add-label="{{ 'products.product.add_to_cart' | t | escape }}"
+  data-adding-label="Adding…"
+  data-sold-out-label="{{ 'products.product.sold_out' | t | escape }}"
+  data-error-label="Error">
+  <a href="{{ product.url }}" class="list-box" data-product-link data-product-url="{{ product.url }}">
     <div class="img">
       {%- assign _feat = product.featured_image -%}
       <img
@@ -62,34 +68,43 @@
       {%- assign opt_name = product.options.first -%}
       <div class="ona-pc__opt">
         <span class="ona-pc__opt-label">{{ opt_name }}: <strong data-card-opt-value>{{ v0.title }}</strong></span>
-        <div class="ona-pc__opt-pills" role="radiogroup" aria-label="{{ opt_name }}">
+        <div class="ona-pc__opt-pills">
           {%- for var in product.variants -%}
             {%- liquid
               assign var_on_sale = false
               if var.compare_at_price > var.price
                 assign var_on_sale = true
               endif
+              assign radio_id = card_uid | append: '-' | append: var.id
             -%}
-            <button type="button"
-                    class="ona-pc__pill{% if var.id == v0.id %} ona-pc__pill--active{% endif %}{% unless var.available %} ona-pc__pill--sold-out{% endunless %}"
-                    data-card-pill
-                    data-variant-id="{{ var.id }}"
-                    data-variant-title="{{ var.title | escape }}"
-                    data-variant-price="{{ var.price | money | strip_html | escape }}"
-                    data-variant-on-sale="{{ var_on_sale }}"
-                    data-variant-compare-price="{% if var_on_sale %}{{ var.compare_at_price | money | strip_html | escape }}{% endif %}"
-                    data-variant-available="{{ var.available }}"
-                    role="radio"
-                    aria-checked="{% if var.id == v0.id %}true{% else %}false{% endif %}">
-              {{- var.title -}}
-            </button>
+            <input
+              type="radio"
+              id="{{ radio_id }}"
+              name="id"
+              value="{{ var.id }}"
+              form="{{ card_form_id }}"
+              data-card-variant
+              data-variant-id="{{ var.id }}"
+              data-variant-title="{{ var.title | escape }}"
+              data-variant-price="{{ var.price | money | strip_html | escape }}"
+              data-variant-on-sale="{{ var_on_sale }}"
+              data-variant-compare-price="{% if var_on_sale %}{{ var.compare_at_price | money | strip_html | escape }}{% endif %}"
+              data-variant-available="{{ var.available }}"
+              {% if var.id == v0.id %}checked{% endif %}
+              {% unless var.available %}disabled{% endunless %}>
+            <label
+              class="ona-pc__pill{% if var.id == v0.id %} ona-pc__pill--active{% endif %}{% unless var.available %} ona-pc__pill--sold-out{% endunless %}"
+              data-card-pill
+              for="{{ radio_id }}">{{- var.title -}}</label>
           {%- endfor -%}
         </div>
       </div>
     {%- endif -%}
 
-    <form action="{{ routes.cart_add_url }}" method="post" data-card-form>
-      <input type="hidden" name="id" value="{{ v0.id }}" data-card-variant-input>
+    <form id="{{ card_form_id }}" action="{{ routes.cart_add_url }}" method="post" data-card-form>
+      {%- unless product.variants.size > 1 and product.options.size == 1 -%}
+        <input type="hidden" name="id" value="{{ v0.id }}">
+      {%- endunless -%}
       <input type="hidden" name="quantity" value="1">
       <button type="submit" class="ona-pc__atc"{% unless v0.available %} disabled{% endunless %} data-card-atc>
         {%- if v0.available -%}Add to cart{%- else -%}Sold out{%- endif -%}
