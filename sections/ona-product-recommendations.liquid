@@ -2,6 +2,11 @@
   assign show = section.settings.show_product_recommendations
   assign heading = section.settings.heading
   assign limit = 4
+  # ona-product-card.liquid renders nothing at all for this handle. Requesting
+  # more than `limit` candidates (rather than exactly `limit`) means a tote
+  # landing in the recommended set still leaves room to backfill with a real
+  # product instead of silently shrinking the row to 3.
+  assign fetch_limit = 8
 
   # Mirror Horizon's fallback: use recommendations when available, else pull from
   # the catalog so the block never renders empty on first paint.
@@ -15,7 +20,7 @@
 {%- if show -%}
 <product-recommendations
   id="product-recommendations-{{ section.id }}"
-  data-url="{{ routes.product_recommendations_url }}?limit={{ limit }}"
+  data-url="{{ routes.product_recommendations_url }}?limit={{ fetch_limit }}"
   data-section-id="{{ section.id }}"
   data-product-id="{{ product.id }}"
   data-intent="related"
@@ -31,9 +36,24 @@
           </div>
         {%- endif -%}
         <div class="shop-list">
-          {%- for p in products limit: limit -%}
-            {% render 'ona-product-card', product: p, index: forloop.index %}
-          {%- endfor -%}
+          {%- liquid
+            assign rendered_count = 0
+            for p in products limit: fetch_limit
+              if rendered_count >= limit
+                break
+              endif
+              if p.handle == 'ona-tote'
+                continue
+              endif
+              # Recommendations render below the fold, populated async -- never
+              # pass an index here, so ona-product-card.liquid's image loading
+              # always falls through to its lazy branch (an index <= 4 would
+              # mark these eager/high-priority, competing with real above-the-
+              # fold resources for a section the shopper hasn't scrolled to yet).
+              render 'ona-product-card', product: p
+              assign rendered_count = rendered_count | plus: 1
+            endfor
+          -%}
         </div>
       </div>
     </section>
