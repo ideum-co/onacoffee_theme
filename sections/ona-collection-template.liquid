@@ -176,7 +176,23 @@
   });
 </script>
 
-{% render 'ona-product-card-atc' %}
+{%- comment -%}
+  Variant picker + AJAX Add to cart is handled by the shared global
+  assets/ona-product-card.js (loaded unconditionally in layout/theme.liquid),
+  not by rendering ona-product-card-atc.liquid here. That snippet's inline
+  script predates the native-radio-input card markup ona-product-card.liquid
+  now uses ([data-card-variant] radio + [data-card-pill] <label for="...">)
+  -- its click handler on [data-card-pill] called e.preventDefault(), which
+  suppressed the label's native "check the associated radio" behavior, so
+  the radio's checked state never changed and ona-product-card.js's
+  change-event listener never fired. The stale script then set the Add to
+  cart button to "Sold out" itself, reading data-variant-* attributes off
+  the label that don't exist there anymore (they live on the sibling radio
+  input) -- so every variant selection showed the button as sold out
+  regardless of real availability. ona-product-recommendations.liquid was
+  already migrated off this render call for the same reason; this was the
+  one remaining call site.
+{%- endcomment -%}
 
 {% schema %}
 {
