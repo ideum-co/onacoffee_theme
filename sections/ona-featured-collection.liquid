@@ -54,7 +54,7 @@
                         data-card-pill
                         data-variant-id="{{ var.id }}"
                         data-variant-title="{{ var.title | escape }}"
-                        data-variant-price="{{ var.price | money }}"
+                        data-variant-price="{{ var.price | money | strip_html | escape }}"
                         data-variant-available="{{ var.available }}"
                         role="radio"
                         aria-checked="{% if var.id == v0.id %}true{% else %}false{% endif %}">
@@ -225,7 +225,13 @@
           pill.classList.add('ona-fc__pill--active');
           pill.setAttribute('aria-checked', 'true');
           variantInput.value = pill.dataset.variantId;
-          // Price intentionally NOT changed here — card shows "from $X" (min price).
+          // Was: "Price intentionally NOT changed here — card shows 'from $X' (min
+          // price)." That read as misleading once the same class of bug was fixed
+          // on the collection/search cards (PR #4) — the Add to cart button here
+          // acts on the specific variant just picked, so showing the collection's
+          // min price next to it doesn't match what actually gets added. Swap in
+          // the pill's own pre-formatted, already money-filtered price instead.
+          if (priceEl && pill.dataset.variantPrice) priceEl.textContent = pill.dataset.variantPrice;
           if (optVal) optVal.textContent = pill.dataset.variantTitle;
           var available = pill.dataset.variantAvailable === 'true';
           atc.disabled = !available;
