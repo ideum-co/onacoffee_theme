@@ -1,7 +1,21 @@
 
 
+{%- comment -%} Preloaded unconditionally, not just inside each product-card render: if the
+  grid starts empty (e.g. an active filter excludes everything) and a later filter update
+  repopulates it via the Section Rendering API, newly-added cards can arrive without this
+  section's own <style> injection, per snippets/text-block-styles.liquid's own doc note that
+  dynamic entry points like empty product grids need to preload it. Same reasoning applies to
+  product-metafield-text-styles.liquid (roast/tastes lines on cards). {%- endcomment -%}
+{% render 'text-block-styles' %}
+{% render 'product-metafield-text-styles' %}
 <script
   src="{{ 'results-list.js' | asset_url }}"
+  type="module"
+  fetchpriority="low"
+></script>
+
+<script
+  src="{{ 'product-card-price-sync.js' | asset_url }}"
   type="module"
   fetchpriority="low"
 ></script>
@@ -42,6 +56,16 @@
       results_size: collection.products_count
     %}
 
+    {%- comment -%} Ported from ona_theme2026's current main-collection.liquid: replaces
+      the old ona-collection-template.liquid's editor-configurable category_tile_1..10
+      collection pickers with a fixed curated handle list (see blocks/category-pills.liquid).
+      Note: the new list has 9 handles (no "gift-cards"/"merch") vs. the old page's 10
+      configurable slots -- carried over as-authored in the new theme, not reconciled. {%- endcomment -%}
+    {% content_for 'block',
+      type: 'category-pills',
+      id: 'category-pills'
+    %}
+
     {% assign products_per_page = 24 %}
 
     {% if section.settings.enable_infinite_scroll == false %}
@@ -51,17 +75,22 @@
     {% paginate collection.products by products_per_page %}
       {% capture children %}
         {% for product in collection.products %}
-          <li
-            id="{{ section.id }}-{{ product.id }}"
-            class="product-grid__item product-grid__item--{{ forloop.index0 }}"
-            data-page="{{ paginate.current_page }}"
-            data-product-id="{{ product.id }}"
-            ref="cards[]"
-          >
-            {% # theme-check-disable %}
-            {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: product %}
-            {% # theme-check-enable %}
-          </li>
+          {%- comment -%} Preserves the old page's snippets/ona-product-card.liquid L6
+            `product.handle != 'ona-tote'` exclusion: ona-tote is intentionally kept out of
+            collection grids and has no equivalent skip in ona_theme2026's stock component. {%- endcomment -%}
+          {% unless product.handle == 'ona-tote' %}
+            <li
+              id="{{ section.id }}-{{ product.id }}"
+              class="product-grid__item product-grid__item--{{ forloop.index0 }}"
+              data-page="{{ paginate.current_page }}"
+              data-product-id="{{ product.id }}"
+              ref="cards[]"
+            >
+              {% # theme-check-disable %}
+              {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: product %}
+              {% # theme-check-enable %}
+            </li>
+          {% endunless %}
         {% endfor %}
       {% endcapture %}
 

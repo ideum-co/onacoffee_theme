@@ -178,7 +178,7 @@
           %}
 
           <div class="variant-option variant-option--dropdowns">
-            <label for="Option-{{ block.id }}-{{ forloop.index0 }}">{{ product_option.name | escape }}</label>
+            <label for="Option-{{ block.id }}-{{ product_resource.id }}-{{ forloop.index0 }}">{{ product_option.name | escape }}</label>
             <div
               class="variant-option__select-wrapper"
               style="
@@ -188,7 +188,7 @@
               "
             >
               <select
-                id="Option-{{ block.id }}-{{ forloop.index0 }}"
+                id="Option-{{ block.id }}-{{ product_resource.id }}-{{ forloop.index0 }}"
                 name="options[{{ product_option.name | escape }}]"
                 class="variant-option__select"
               >

@@ -1,0 +1,23 @@
+{%- doc -%}
+  Shared styles for `blocks/product-metafield-text.liquid`.
+
+  Files that render that block should render this snippet unless they already render it for
+  them. Dynamic entry points that can inject product-metafield-text content without injecting
+  response stylesheets, like Quick Add and empty product grids, should preload it too -- same
+  pattern as `snippets/text-block-styles.liquid`.
+
+  @example
+  {% render 'product-metafield-text-styles' %}
+{%- enddoc -%}
+
+{% stylesheet %}
+  .product-metafield-text--empty {
+    display: none;
+  }
+
+  .product-metafield-text__label {
+    margin-inline-end: var(--gap-2xs);
+    letter-spacing: var(--letter-spacing-sm);
+    text-transform: uppercase;
+  }
+{% endstylesheet %}

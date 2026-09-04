@@ -3,6 +3,10 @@
 
   @param {object} product - The product object.
   @param {object} form - The product form object.
+  @param {string} form_id - The enclosing add-to-cart form's HTML id (product.id-scoped for
+    per-card uniqueness on collection grids); used to scope cart:error events to this instance.
+    NOTE: not the same as `form.id`, which is Shopify's own internal form identifier and does
+    not reflect the `id:` param passed to the `{% form %}` tag.
   @param {object} section - The section object to which this snippet belongs.
   @param {block} block - The block object, used for element IDs and editor attributes.
 {% enddoc %}
@@ -17,6 +21,7 @@
   class="recipient-form"
   data-section-id="{{ section.id }}"
   data-product-variant-id="{{ product.selected_or_first_available_variant.id }}"
+  data-form-id="{{ form_id }}"
 >
   <fieldset
     class="gift-card-form-option"
@@ -27,8 +32,8 @@
     <label class="gift-card-form-option__button-label">
       <input
         type="radio"
-        id="My-email-button-{{ block.id }}"
-        name="gift-card-delivery-{{ block.id }}"
+        id="My-email-button-{{ block.id }}-{{ product.id }}"
+        name="gift-card-delivery-{{ block.id }}-{{ product.id }}"
         ref="myEmailButton"
         on:change="/toggleRecipientForm/self"
         value="self"
@@ -40,8 +45,8 @@
     <label class="gift-card-form-option__button-label">
       <input
         type="radio"
-        id="Recipient-email-button-{{ block.id }}"
-        name="gift-card-delivery-{{ block.id }}"
+        id="Recipient-email-button-{{ block.id }}-{{ product.id }}"
+        name="gift-card-delivery-{{ block.id }}-{{ product.id }}"
         ref="recipientEmailButton"
         on:change="/toggleRecipientForm/recipient_form"
         value="recipient_form"
@@ -60,7 +65,7 @@
         <input
           ref="recipientEmail"
           class="recipient-fields__input"
-          id="Recipient-email-{{ block.id }}"
+          id="Recipient-email-{{ block.id }}-{{ product.id }}"
           type="email"
           placeholder="{{ 'content.recipient_form_email_address' | t }}"
           name="properties[Recipient email]"
@@ -71,7 +76,7 @@
           value="{{ form.email }}"
           {% if form.errors contains 'email' %}
             aria-invalid="true"
-            aria-describedby="RecipientForm-email-error-{{ block.id }}"
+            aria-describedby="RecipientForm-email-error-{{ block.id }}-{{ product.id }}"
           {% endif %}
         >
       </div>
@@ -96,14 +101,14 @@
           class="recipient-fields__input"
           autocomplete="name"
           type="text"
-          id="Recipient-name-{{ block.id }}"
+          id="Recipient-name-{{ block.id }}-{{ product.id }}"
           name="properties[Recipient name]"
           placeholder="{{ 'content.recipient_form_name_label' | t }}"
           value="{{ form.name }}"
           maxlength="100"
           {% if form.errors contains 'name' %}
             aria-invalid="true"
-            aria-describedby="RecipientForm-name-error-{{ block.id }}"
+            aria-describedby="RecipientForm-name-error-{{ block.id }}-{{ product.id }}"
           {% endif %}
         >
       </div>
@@ -132,7 +137,7 @@
         <textarea
           ref="recipientMessage"
           rows="10"
-          id="Recipient-message-{{ block.id }}"
+          id="Recipient-message-{{ block.id }}-{{ product.id }}"
           class="recipient-fields__input recipient-fields__textarea"
           name="properties[Message]"
           maxlength="{{ max_chars_message }}"
@@ -140,12 +145,12 @@
           aria-label="{{ message_label_rendered }} {{ max_chars_message_rendered }}"
           {% if form.errors contains 'message' %}
             aria-invalid="true"
-            aria-describedby="RecipientForm-message-error-{{ block.id }}"
+            aria-describedby="RecipientForm-message-error-{{ block.id }}-{{ product.id }}"
           {% endif %}
         >{{ form.message }}</textarea>
 
         <label
-          for="Recipient-message-{{ block.id }}"
+          for="Recipient-message-{{ block.id }}-{{ product.id }}"
           class="recipient-form-field-label"
         >
           <span
@@ -173,7 +178,7 @@
 
     <div>
       <div class="field field--send-on">
-        <div for="Recipient-send-on-{{ block.id }}">
+        <div for="Recipient-send-on-{{ block.id }}-{{ product.id }}">
           {{ 'content.recipient_form_send_on_label' | t }}
         </div>
         <input
@@ -181,14 +186,14 @@
           class="recipient-fields__input"
           autocomplete="send_on"
           type="date"
-          id="Recipient-send-on-{{ block.id }}"
+          id="Recipient-send-on-{{ block.id }}-{{ product.id }}"
           name="properties[Send on]"
           placeholder="{{ 'content.recipient_form_send_on_label' | t }}"
           pattern="\d{4}-\d{2}-\d{2}"
           value="{{ form.send_on }}"
           {% if form.errors contains 'send_on' %}
             aria-invalid="true"
-            aria-describedby="RecipientForm-send_on-error-{{ block.id }}"
+            aria-describedby="RecipientForm-send_on-error-{{ block.id }}-{{ product.id }}"
           {% endif %}
         >
       </div>
@@ -210,7 +215,7 @@
     type="hidden"
     name="properties[__shopify_offset]"
     value=""
-    id="Recipient-timezone-offset-{{ block.id }}"
+    id="Recipient-timezone-offset-{{ block.id }}-{{ product.id }}"
     disabled
   >
   <div
