@@ -219,6 +219,8 @@
     "heading": "제목",
     "heading_color": "Heading color",
     "heading_tag": "Heading level",
+    "horizontal_gap_mobile": "Mobile horizontal gap",
+    "horizontal_padding_mobile": "Mobile horizontal padding",
     "icon": "아이콘",
     "image_icon": "이미지 아이콘",
     "make_section_full_width": "섹션을 전체 너비로 만들기",
@@ -647,6 +649,7 @@
     "recycle": "재활용",
     "return": "반품",
     "ruler": "자",
+    "same_as_desktop": "Same as desktop",
     "serving_dish": "서빙 접시",
     "shirt": "셔츠",
     "shoe": "신발",
@@ -1108,7 +1111,8 @@
     "logo_height": "머리글 로고에만 적용됩니다.",
     "actions_display_style": "모바일에서는 항상 아이콘이 사용됩니다.",
     "zero_uses_desktop": "Set to 0 to use the desktop value.",
-    "zero_uses_heading_level": "Set to 0 to use the size that comes with the heading level."
+    "zero_uses_heading_level": "Set to 0 to use the size that comes with the heading level.",
+    "zero_uses_page_margin": "Set to 0 to use the theme's page margin."
   },
   "categories": {
     "basic": "기본",

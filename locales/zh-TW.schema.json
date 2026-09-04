@@ -227,6 +227,8 @@
     "heading": "標題",
     "heading_color": "Heading color",
     "heading_tag": "Heading level",
+    "horizontal_gap_mobile": "Mobile horizontal gap",
+    "horizontal_padding_mobile": "Mobile horizontal padding",
     "icon": "圖示",
     "image": "圖片",
     "image_icon": "圖片圖示",
@@ -663,6 +665,7 @@
     "return": "返回",
     "ruler": "直尺",
     "s": "S",
+    "same_as_desktop": "Same as desktop",
     "sentence": "句首大寫",
     "serving_dish": "餐盤",
     "shirt": "襯衫",
@@ -1108,7 +1111,8 @@
     "logo_height": "僅影響頁首標誌",
     "actions_display_style": "在行動裝置上一律使用圖示",
     "zero_uses_desktop": "Set to 0 to use the desktop value.",
-    "zero_uses_heading_level": "Set to 0 to use the size that comes with the heading level."
+    "zero_uses_heading_level": "Set to 0 to use the size that comes with the heading level.",
+    "zero_uses_page_margin": "Set to 0 to use the theme's page margin."
   },
   "categories": {
     "basic": "基本",

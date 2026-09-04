@@ -227,6 +227,8 @@
     "heading": "หัวเรื่อง",
     "heading_color": "Heading color",
     "heading_tag": "Heading level",
+    "horizontal_gap_mobile": "Mobile horizontal gap",
+    "horizontal_padding_mobile": "Mobile horizontal padding",
     "icon": "ไอคอน",
     "image": "รูปภาพ",
     "image_icon": "ไอคอนรูปภาพ",
@@ -663,6 +665,7 @@
     "return": "การคืนสินค้า",
     "ruler": "ไม้บรรทัด",
     "s": "S",
+    "same_as_desktop": "Same as desktop",
     "sentence": "ประโยค",
     "serving_dish": "จานเสิร์ฟ",
     "shirt": "เสื้อเชิ้ต",
@@ -1108,7 +1111,8 @@
     "logo_height": "มีผลกับโลโก้ส่วนหัวเท่านั้น",
     "actions_display_style": "ใช้ไอคอนเสมอบนมือถือ",
     "zero_uses_desktop": "Set to 0 to use the desktop value.",
-    "zero_uses_heading_level": "Set to 0 to use the size that comes with the heading level."
+    "zero_uses_heading_level": "Set to 0 to use the size that comes with the heading level.",
+    "zero_uses_page_margin": "Set to 0 to use the theme's page margin."
   },
   "categories": {
     "basic": "พื้นฐาน",
