@@ -158,29 +158,30 @@ window.__onaAutoOpenCart = window.__onaAutoOpenCart ?? false;
           .then(function (cart) {
             // Dispatch a real CartAddEvent (not a plain CustomEvent) so
             // listeners that check `event instanceof CartAddEvent` (the
-            // native theme class from @theme/events) actually see this add.
+            // native theme class from @theme/events, same one
+            // product-form-component uses) actually see this add.
             //
-            // This theme's actual header (sections/ona-header.liquid) does
-            // NOT load the native assets/cart-icon.js component -- only
-            // Shopify's unused stock snippets/header-actions.liquid does.
-            // ona-header.liquid instead registers its own inline
-            // `cart:update` listener that always treats `itemCount` as the
-            // new ABSOLUTE badge total and ignores `source` entirely
-            // (confirmed live: dispatching a delta of 1 with
-            // source: 'product-form-component' replaced a correct "8" with
-            // a wrong "1" instead of advancing it to "9"). Send the real
-            // fetched absolute total instead, and omit `source`, so this
-            // is correct against the listener that's actually active here
-            // -- and would still be correct if assets/cart-icon.js ever
-            // does get wired in later, since its own logic only adds
-            // itemCount to the current count when `source` identifies a
-            // product-form-component add; otherwise it just sets the count
-            // to itemCount directly, which is exactly right for an
-            // absolute value.
+            // The badge is actually kept correct by cart-items-component's
+            // #handleCartUpdate (assets/component-cart-items.js), which is
+            // registered on `document` for this same event and morphs the
+            // ENTIRE ona_header section back in from the fresh, real
+            // server-rendered HTML in `sections['ona_header']` -- so badge
+            // correctness comes from Liquid re-rendering `cart.item_count`
+            // server-side, not from any client-side math. That's why
+            // `itemCount` here is the quantity just added (a delta), matching
+            // the same contract product-form.js and the proven-correct
+            // ona-product-card-atc.liquid both use: `source:
+            // 'product-form-component'` only matters to assets/cart-icon.js,
+            // which this theme's header never actually loads.
+            // `sections: resp.sections || {}` must be forwarded from the
+            // real /cart/add.js response for that morph to fire; without it,
+            // cart-items-component falls back to an async section refetch,
+            // which is slower but still eventually correct.
             document.dispatchEvent(
               new CartAddEvent(cart, variantId || '', {
+                source: 'product-form-component',
                 sections: resp.sections || {},
-                itemCount: typeof cart.item_count === 'number' ? cart.item_count : undefined,
+                itemCount: quantityAdded,
               })
             );
           });
