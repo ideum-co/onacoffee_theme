@@ -73,6 +73,17 @@
             pill.classList.add('ona-pc__pill--active');
             pill.setAttribute('aria-checked', 'true');
             if (variantInput) variantInput.value = pill.dataset.variantId;
+            // The card's own product link never reflected the selected variant --
+            // clicking through after picking a size always landed on the default
+            // variant instead of the one just chosen. Rebuild the link's query
+            // string (not just append) so repeated selections replace the
+            // `variant` param instead of accumulating duplicates.
+            if (cardLink && productUrl) {
+              var linkParts = productUrl.split('?');
+              var linkParams = new URLSearchParams(linkParts[1] || '');
+              linkParams.set('variant', pill.dataset.variantId);
+              cardLink.href = linkParts[0] + '?' + linkParams.toString();
+            }
             // Unlike ona-featured-collection.liquid's carousel cards (which
             // intentionally keep showing the collection-wide "from $X" price),
             // this card's Add to cart button acts on a specific variant the
