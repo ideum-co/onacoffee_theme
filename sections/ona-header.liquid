@@ -5,8 +5,25 @@
 {%- render 'slideshow-styles' -%}
 
 {%- assign s = section.settings -%}
-{%- assign main_linklist = linklists[s.main_linklist] -%}
-{%- assign main_linklist2 = linklists[s.main_linklist2] -%}
+{%- comment -%}
+  Menus are native `menu` blocks (matching sections/footer.liquid's block
+  pattern) instead of hardcoded link_list settings -- makes the header
+  block-editable/reorderable like the rest of the native sections, with zero
+  change to the menu CONTENT (same "main-menu" / "enquire" handles) or to
+  ona-site-nav.liquid's rendered markup, so the existing dropdown/hamburger/
+  sticky JS in assets/script.js keeps working against the identical DOM.
+{%- endcomment -%}
+{%- assign main_linklist = blank -%}
+{%- assign main_linklist2 = blank -%}
+{%- for block in section.blocks -%}
+  {%- if block.type == 'menu' -%}
+    {%- if main_linklist == blank -%}
+      {%- assign main_linklist = linklists[block.settings.menu] -%}
+    {%- elsif main_linklist2 == blank -%}
+      {%- assign main_linklist2 = linklists[block.settings.menu] -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
 
 {%- comment -%} R53: align with live/sections/header.liquid:3-16. Use full `template` string
   (with alternate suffix) instead of `template.name` (base) so that alternate product
@@ -605,15 +622,28 @@
   "settings": [
     { "type": "image_picker", "id": "logo_red", "label": "Logo (dark / default)" },
     { "type": "image_picker", "id": "logo_white", "label": "Logo (white / transparent-header)" },
-    { "type": "link_list", "id": "main_linklist", "label": "Main menu", "default": "main-menu" },
-    { "type": "link_list", "id": "main_linklist2", "label": "Secondary menu (mobile only)", "default": "footer" },
     { "type": "header", "content": "Social links (shown in mobile drawer)" },
     { "type": "url", "id": "social_instagram_link", "label": "Instagram URL" },
     { "type": "url", "id": "social_youtube_link", "label": "YouTube URL" },
     { "type": "url", "id": "social_facebook_link", "label": "Facebook URL" }
   ],
+  "blocks": [
+    {
+      "type": "menu",
+      "name": "Menu",
+      "settings": [
+        { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" }
+      ]
+    }
+  ],
   "presets": [
-    { "name": "ONA header" }
+    {
+      "name": "ONA header",
+      "blocks": [
+        { "type": "menu", "settings": { "menu": "main-menu" } },
+        { "type": "menu", "settings": { "menu": "enquire" } }
+      ]
+    }
   ]
 }
 {% endschema %}

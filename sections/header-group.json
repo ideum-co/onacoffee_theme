@@ -13,11 +13,27 @@
   "sections": {
     "ona_header": {
       "type": "ona-header",
+      "blocks": {
+        "menu_main": {
+          "type": "menu",
+          "settings": {
+            "menu": "main-menu"
+          }
+        },
+        "menu_secondary": {
+          "type": "menu",
+          "settings": {
+            "menu": "enquire"
+          }
+        }
+      },
+      "block_order": [
+        "menu_main",
+        "menu_secondary"
+      ],
       "settings": {
         "logo_red": "shopify://shop_images/logo.png",
         "logo_white": "shopify://shop_images/logo-white.png",
-        "main_linklist": "main-menu",
-        "main_linklist2": "enquire",
         "social_instagram_link": "https://www.instagram.com/onacoffee/",
         "social_youtube_link": "https://www.youtube.com/channel/UCvwLJ4owqt_I2QqqC2OE0_A",
         "social_facebook_link": "https://www.facebook.com/onacoffee/"
