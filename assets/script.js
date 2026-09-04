@@ -2016,6 +2016,58 @@ jQuery(document).ready(function(jQuery) {
   hide_single_dots();
   
 });
+// ona-product-recommendations.liquid's own recommendations often aren't
+// server-rendered on first paint (recommendations.performed is frequently
+// false), landing instead via an async fetch that injects innerHTML after
+// this document.ready handler has already run once -- .recommendations-list
+// .shop-list doesn't exist yet at that point, so the length check below is
+// false and .slick() never fires for that instance, leaving the fallback
+// plain-flex layout (untested as a standalone presentation, no arrows, no
+// per-breakpoint slide count) as what mobile shoppers actually see. Extract
+// the init into a named function and re-run it on 'shopify:section:load',
+// the same event ona-product-recommendations.liquid's fetch handler already
+// dispatches once the async cards land (matching the pattern used elsewhere
+// in this file, e.g. the sticky-header apply() rebind above). The
+// :not(".slick-initialized") guard makes this idempotent if it ever fires
+// more than once for the same element.
+function initRecommendationsSlick() {
+  var $list = jQuery('.recommendations-list .shop-list:not(".slick-initialized")');
+  if ($list.length === 0) return;
+  onaEnsureJqStubs();
+  $list.slick({
+    slidesToShow: 4,
+    slidesToScroll: 1,
+    autoplay: false,
+    autoplaySpeed: 2000,
+    infinite: false,
+    arrows: false,
+    focusOnSelect: true,
+    responsive: [
+      {
+        breakpoint: 991.9,
+        settings: {
+          slidesToShow: 3,
+        }
+      },
+      {
+        breakpoint: 767.9,
+        settings: {
+          slidesToShow: 2,
+        }
+      },
+      {
+        breakpoint: 575.9,
+        settings: {
+          slidesToShow: 1,
+          arrows: true,
+        }
+      }
+    ]
+  });
+}
+document.removeEventListener('shopify:section:load', initRecommendationsSlick);
+document.addEventListener('shopify:section:load', initRecommendationsSlick);
+
 //jQuery(window).on('load', function () {
 jQuery(document).ready(function (jQuery) {
     // Ensure stubs before the .slick() call on .recommendations-list .shop-list below.
@@ -2035,39 +2087,8 @@ jQuery(document).ready(function (jQuery) {
      });
   }
 
-  if(jQuery(document.body).find('.recommendations-list .shop-list').length > 0){
-	jQuery('.recommendations-list .shop-list').slick({
-		slidesToShow: 4,
-		slidesToScroll: 1,
-		autoplay: false,
-		autoplaySpeed: 2000,
-		infinite: false,
-		arrows: false,
-		focusOnSelect: true,
-		responsive: [
-			{
-				breakpoint: 991.9,
-				settings: {
-					slidesToShow: 3,
-				}
-			},
-			{
-				breakpoint: 767.9,
-				settings: {
-					slidesToShow: 2,
-				}
-			},
-			{
-				breakpoint: 575.9,
-				settings: {
-					slidesToShow: 1,
-					arrows: true,
-				}
-			}
-		]
-    });
-  }
-	
+  initRecommendationsSlick();
+
 });
 
 jQuery(window).scroll(function() {

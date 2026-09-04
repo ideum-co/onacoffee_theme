@@ -48,8 +48,18 @@
 
 {% stylesheet %}
   .footer-content {
-    contain: content;
-    content-visibility: auto;
+    /* `content-visibility: auto` here (with no `contain-intrinsic-size`) is a
+       known Chromium footgun: the element starts at 0x0 intrinsic size until
+       the browser has rendered it once, so the page's scrollable height is
+       computed as if the footer's first row took no space at all. On a
+       normal user scroll there's then no room to ever bring it "near the
+       viewport" and trigger the un-skip -- the page's scroll range simply
+       ends short of it, permanently, and the row never paints. Reproduced
+       with a real mouse-wheel scroll on both live and a draft theme:
+       Explore/Enquire silently unreachable while Acknowledgement/Newsletter
+       (later in the grid, past the skip boundary) rendered fine. A footer
+       is rendered once per page load -- the perf upside of skipping it
+       isn't worth this failure mode, so render it normally instead. */
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--footer-gap);
