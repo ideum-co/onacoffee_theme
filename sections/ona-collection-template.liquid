@@ -1,0 +1,304 @@
+<section class="page-title">
+    <div class="container">
+        <h1 class="collection-title">
+          {% if collection.metafields.custom.alternative_collection_title %}
+            {{ collection.metafields.custom.alternative_collection_title }}
+          {% else %}
+            {{ collection.title }}
+          {% endif %}
+        </h1>
+    </div>
+    {% assign collectionDescription = collection.description | split:"<!-- split -->"%}
+
+    <div class="topdescription container"> {{ collectionDescription | first }}</div>
+</section>
+<section class="shop-content" data-section-type="collection-template">
+  <div class="container">
+    {%- assign limit = 24 -%}
+    {% paginate collection.products by limit %}
+    <div class="shop-top {% if section.settings.showbanner == 'yes' %} has-banner{% endif %}">
+
+      {% render 'ona-filter-drawer-skin' %}
+      {% content_for 'block', type: 'filters', id: 'filters', results: collection, results_size: collection.products_count %}
+      {% if section.settings.showbanner == 'yes' %}
+        
+      <div class="archive-page-banner">
+        <div class="bg-box">
+          {% if section.settings.bgtype == 'image' %}
+          <div class="image-box" style="background-image:url('{{ section.settings.image | img_url: '1270x'  }}');"></div>
+          {% else %}
+          <div class="video-box">
+            <video class="video-pc" muted="muted" autoplay="autoplay" loop="loop">
+              <source src="{{section.settings.video.sources[1].url}}" type="video/mp4" >
+            </video>
+          </div>
+          {% endif %}
+          <div class="text-box">
+            <h2>{{ section.settings.banner_text }}</h2>
+          </div>
+        </div>
+      </div>
+
+      {% endif %}
+      {% if limit < collection.products_count %}
+        {% if paginate.current_page == paginate.pages %}
+          <p class="results">SHOWING {{ collection.products_count | modulo: limit }} OF {{ collection.products_count }} RESULTS</p>
+        {% else %}
+          <p class="results">SHOWING {{limit}} OF {{ collection.products_count }} RESULTS</p>
+        {% endif %}
+      {% else %}
+        <p class="results">SHOWING ALL {{ collection.products_count }} RESULTS</p>
+      {% endif %}
+      
+      <div class="sort-by">
+
+        <div class="filters-toolbar__item-child">
+          {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
+          <label class="filters-toolbar__label select-label" for="SortBy">{{ 'collections.sorting.title' | t }}</label>
+          <div class="filters-toolbar__input-wrapper select-group">
+            <select name="sort_by" id="SortBy"
+                    class="filters-toolbar__input"
+                    aria-describedby="a11y-refresh-page-message a11y-selection-message"
+                    data-default-sortby="{{ collection.default_sort_by }}"
+                    data-select-input
+                    >
+              {%- for option in collection.sort_options -%}
+              <option value="{{ option.value }}" {% if option.value == sort_by %}selected="selected"{% endif %}>{{ option.name }}</option>
+              {%- endfor -%}
+            </select>
+            {% include 'icon-chevron-down' %}
+          </div>
+        </div>
+
+      </div>
+      <script>
+        (function(){
+          var sel = document.getElementById('SortBy');
+          if (!sel) return;
+          sel.addEventListener('change', function(){
+            var url = new URL(window.location.href);
+            url.searchParams.set('sort_by', sel.value);
+            url.searchParams.delete('page');
+            window.location.href = url.toString();
+          });
+        })();
+      </script>
+    </div>
+    {%- comment -%}
+      Category tile row ("Discover by category"). Replaces the old plain-text
+      .tab-filter list + section.blocks-driven featured_collection blocks --
+      section.blocks can't coexist with the native `content_for 'block', type:
+      'filters'` hook used above, so this reads from fixed collection-picker
+      settings instead (category_tile_1..10). Same 10 curated collections
+      carried over 1:1 from the old blocks config, just a different mechanism.
+      Text-only links (no images), matching production's original tab style.
+    {%- endcomment -%}
+    {%- assign current_title = collection.title -%}
+    <div class="category-tiles">
+      <div class="category-tiles__track">
+        <a
+          href="{{ collections.all.url }}"
+          class="category-tile{% if current_title == collections.all.title %} category-tile--active{% endif %}"
+        >
+          <span class="category-tile__label">All Coffee</span>
+        </a>
+        {%- for i in (1..10) -%}
+          {%- assign setting_key = 'category_tile_' | append: i -%}
+          {%- assign tile_collection = section.settings[setting_key] -%}
+          {%- if tile_collection != blank -%}
+            <a
+              href="{{ tile_collection.url }}"
+              class="category-tile{% if tile_collection.title == current_title %} category-tile--active{% endif %}"
+            >
+              <span class="category-tile__label">{{ tile_collection.title }}</span>
+            </a>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </div>
+    <div class="shop-list test" data-count="{{ collection.products_count }}">
+      {% for product in collection.products %}
+        {% render 'ona-product-card', product: product, index: forloop.index %}
+      {% endfor %}
+    </div>
+
+      <div class="bottomdescription container">{{ collectionDescription | last}}</div>
+
+
+    {%- if paginate.pages > 1 -%}
+    {% include 'pagination', paginate: paginate %}
+    {%- endif -%}
+
+      
+    {% endpaginate %}
+    
+    
+
+  
+    
+  </div>
+</section>
+
+
+{% comment %} Custom .filters-wrapper panel removed 2026-08 -- replaced by the native
+   filters block hooked in above (content_for 'block', type: 'filters'). See
+   PR for migration details. {% endcomment %}
+
+{% if collection.handle == "milk-based" %}
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What does milk-based coffee mean?","acceptedAnswer":{"@type":"Answer","text":"Milk-based coffee refers to espresso-based drinks that include steamed or textured milk. Classics like lattes, flat whites and cappuccinos balance the boldness of espresso with the creaminess of milk, creating a smooth and flavourful cup."}},{"@type":"Question","name":"What are milk-based coffee beans?","acceptedAnswer":{"@type":"Answer","text":"Milk-based coffee beans are blends roasted to complement milk’s natural sweetness and texture. At ONA Coffee, our milk-based blends are masterfully crafted to enhance chocolate, caramel, nut and berry notes, ensuring a rich, well-balanced cup with milk."}},{"@type":"Question","name":"Is Unwind a good coffee blend for milk-based coffee?","acceptedAnswer":{"@type":"Answer","text":"Absolutely! Unwind is a decaf blend designed to deliver a specialty coffee experience without caffeine, making it an excellent coffee base for milky coffee types. Its smooth chocolate and soft orange notes blend beautifully with milk, creating a rich, well-balanced cup. Whether you prefer a latte, flat white, or cappuccino, Unwind offers the best coffee with milk for those looking to enjoy a full-flavoured experience without the buzz."}}]}</script>
+{% endif %}
+{% if collection.handle == "filter" %}
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the difference between ground coffee and filtered coffee?","acceptedAnswer":{"@type":"Answer","text":"Ground coffee refers to any coffee that has been ground from whole beans, while filtered coffee specifically refers to coffee that is brewed using a filter method, such as pour-overs, drips or batch brews.\n\nFilter coffee beans are typically roasted and ground to suit slower extraction methods, bringing out clarity, sweetness and nuanced flavours that shine in filtered brewing."}},{"@type":"Question","name":"How do I make perfect filtered coffee?","acceptedAnswer":{"@type":"Answer","text":"Brewing the perfect filtered coffee is all about precision, freshness and making small adjustments. To bring out the best flavour from your drip filter coffee, we recommend:\n\n1. Using freshly roasted, high-quality filter coffee beans for optimal flavour.\n2. Grinding just before brewing to preserve aroma and complexity.\n3. Maintaining water temperature between 88–90°C for balanced extraction.\n4. Experimenting with grind size, water-to-coffee ratio and brew time to fine-tune your filtered coffee experience.\n\nFor coffee-bean-specific methods, view our brew guides."}}]}</script>
+{% endif %}
+
+<script>
+  /* Bottomdescription "Read More" toggle. Inline <script> runs synchronously during
+     HTML parsing — but theme.liquid loads jQuery with `defer`, so `jQuery` is not yet
+     defined here. Wrap in DOMContentLoaded (defer scripts finish before DCL fires)
+     so jQuery is guaranteed loaded by the time we run.
+     Scoped to .bottomdescription so any other .readmore-text on the page is not affected.
+     Idempotent: short-circuits if a .readMore is already next-sibling (defends against
+     shopify:section:load re-runs and double-bind). */
+  document.addEventListener('DOMContentLoaded', function () {
+    if (typeof jQuery === 'undefined') return;
+    var $ = jQuery;
+    var $rmText = $('.bottomdescription .readmore-text');
+    if (!$rmText.length || $rmText.next('.readMore').length) return;
+    $rmText.hide();
+    $rmText.after('<a class="readMore" style="cursor:pointer;margin-top:12px;margin-bottom:12px;display:inline-block;background:#5b1129;color:#ffffff;padding:5px 15px;">Read More</a>');
+    $('.bottomdescription').off('click.readmore').on('click.readmore', '.readMore', function () {
+      var $btn = $(this);
+      $btn.prev('.readmore-text').slideToggle(200, function () {
+        $btn.text($btn.text() === 'Read More' ? 'Close' : 'Read More');
+      });
+      return false;
+    });
+  });
+</script>
+
+{% render 'ona-product-card-atc' %}
+
+{% schema %}
+{
+  "name": {
+    "cs": "Stránky s kolekcemi",
+    "da": "Kollektionssider",
+    "de": "Kategorie-Seiten",
+    "en": "Collection pages",
+    "es": "Páginas de colección",
+    "fi": "Kokoelman sivut",
+    "fr": "Pages de collections",
+    "it": "Pagine di collezioni",
+    "ja": "コレクションページ",
+    "ko": "컬렉션 페이지",
+    "nb": "Samlingssider",
+    "nl": "Collectiepagina's",
+    "pl": "Strony kolekcji",
+    "pt-BR": "Páginas de coleções",
+    "pt-PT": "Páginas de coleções",
+    "sv": "Produktseriesidor",
+    "th": "หน้าคอลเลกชัน",
+    "tr": "Koleksiyon sayfaları",
+    "vi": "Trang bộ sưu tập",
+    "zh-CN": "产品系列页面",
+    "zh-TW": "商品系列頁面"
+  },
+  "settings": [
+      {
+        "type": "header",
+        "content": "Discover by category"
+      },
+      {
+        "type": "paragraph",
+        "content": "Up to 10 collections shown as text links above the product grid. Leave a slot blank to skip it. Same 10 collections carried over from the old block-based tab list (2026-08 migration off section.blocks, required to use native filters)."
+      },
+      {
+        "type": "collection",
+        "id": "category_tile_1",
+        "label": "Category tile 1"
+      },
+      {
+        "type": "collection",
+        "id": "category_tile_2",
+        "label": "Category tile 2"
+      },
+      {
+        "type": "collection",
+        "id": "category_tile_3",
+        "label": "Category tile 3"
+      },
+      {
+        "type": "collection",
+        "id": "category_tile_4",
+        "label": "Category tile 4"
+      },
+      {
+        "type": "collection",
+        "id": "category_tile_5",
+        "label": "Category tile 5"
+      },
+      {
+        "type": "collection",
+        "id": "category_tile_6",
+        "label": "Category tile 6"
+      },
+      {
+        "type": "collection",
+        "id": "category_tile_7",
+        "label": "Category tile 7"
+      },
+      {
+        "type": "collection",
+        "id": "category_tile_8",
+        "label": "Category tile 8"
+      },
+      {
+        "type": "collection",
+        "id": "category_tile_9",
+        "label": "Category tile 9"
+      },
+      {
+        "type": "collection",
+        "id": "category_tile_10",
+        "label": "Category tile 10"
+      },
+      {
+        "type": "radio",
+        "id": "bgtype",
+        "label": {
+          "en": "Background type"
+        },
+        "options":[
+          {"value":"image", "label":"Image"},
+          {"value":"video", "label":"Video"}
+        ]
+      },
+      {
+        "type": "image_picker",
+        "id": "image",
+        "label": "Banner image"
+      },
+      {
+        "type": "video",
+        "id": "video",
+        "label": "Banner video"
+      },
+      {
+        "type": "text",
+        "id": "banner_text",
+        "label": "Banner text"
+      },
+      {
+        "type": "radio",
+        "id": "showbanner",
+        "label": {
+          "en": "Show banner?"
+        },
+        "options":[
+          {"value":"yes", "label":"Yes"},
+          {"value":"no", "label":"No"}
+        ]
+      }
+  ]
+}
+{% endschema %}
