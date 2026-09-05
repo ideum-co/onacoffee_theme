@@ -12,14 +12,23 @@
   change to the menu CONTENT (same "main-menu" / "enquire" handles) or to
   ona-site-nav.liquid's rendered markup, so the existing dropdown/hamburger/
   sticky JS in assets/script.js keeps working against the identical DOM.
+
+  Which menu becomes the primary desktop nav (full hover-dropdown treatment,
+  wrapper_class 'menu-list') vs. the secondary/mobile-only one (CSS-hidden
+  outside mobile, wrapper_class 'another-menu-list') is read from each
+  block's own `nav_position` setting -- NOT from block order. An earlier
+  version inferred this from "first menu block found = primary, second =
+  secondary", which meant reordering blocks in the theme customizer (an
+  ordinary editing action) could silently swap which menu gets desktop nav
+  and which gets hidden, with no warning since both blocks just say "Menu".
 {%- endcomment -%}
 {%- assign main_linklist = blank -%}
 {%- assign main_linklist2 = blank -%}
 {%- for block in section.blocks -%}
   {%- if block.type == 'menu' -%}
-    {%- if main_linklist == blank -%}
+    {%- if block.settings.nav_position == 'primary' and main_linklist == blank -%}
       {%- assign main_linklist = linklists[block.settings.menu] -%}
-    {%- elsif main_linklist2 == blank -%}
+    {%- elsif block.settings.nav_position == 'secondary' and main_linklist2 == blank -%}
       {%- assign main_linklist2 = linklists[block.settings.menu] -%}
     {%- endif -%}
   {%- endif -%}
@@ -386,12 +395,25 @@
   }
 
   .cart-drawer__content {
-    height: calc(100% - var(--header-height));
+    /* Was `height: calc(100% - var(--header-height))` -- a fixed calc that only
+       ever accounted for .cart-drawer__header's height. Third-party app embeds
+       (e.g. Qikify's free-shipping progress bar, .qbk-relative-teleport) inject
+       their own markup as an ADDITIONAL sibling between the header and this
+       element, inside the same flex column (cart-items-component). The calc had
+       no way to know about that extra sibling's height, so this element's
+       reserved space didn't match what was actually left -- the surplus/deficit
+       then showed up as the cart items list getting squeezed and a stray gap
+       above the sticky summary (.cart-drawer__summary's `margin-top: auto`
+       absorbing the miscalculated leftover space). `flex: 1 1 auto` + explicit
+       `min-height: 0` lets flexbox compute the real remaining space after ALL
+       siblings (present or future) take their natural height, with no
+       assumption baked in about what else might be injected above it. */
+    flex: 1 1 auto;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     padding: 0;
     background-color: var(--color-background);
-    flex-grow: 1;
     overflow-y: auto;
   }
 
@@ -438,6 +460,13 @@
   .cart-drawer__summary {
     --cart-drawer-summary-padding: var(--padding-lg);
 
+    /* flex-shrink: 0 makes explicit what was previously just an accident of
+       having no overflow set (an unconstrained flex item's automatic min
+       size is its own content size, so it was already never shrinking) --
+       pairs with .cart-drawer__items' new flex: 1 1 auto so space is always
+       divided the same, deliberate way: summary keeps its full natural size,
+       items gets the rest (down to its own min-height floor). */
+    flex-shrink: 0;
     position: sticky;
     bottom: 0;
     z-index: 1;
@@ -488,6 +517,22 @@
   }
 
   .cart-drawer__items {
+    /* Without an explicit flex-basis/min-height, this competed for space
+       against .cart-drawer__summary (which has no shrink override, so it
+       always keeps its full natural size -- totals, discount field, checkout
+       button, payment icons) and lost: flex-shrink defaults to 1 for both,
+       but this element's automatic minimum size resolves to 0 (overflow-y:auto
+       makes it eligible to shrink all the way down per the flexbox spec),
+       while .cart-drawer__summary's resolves to its full content height. The
+       result was the product list getting crushed to a sliver whenever the
+       summary + any app-embed content above it (e.g. Qikify's shipping bar)
+       left little room, even though .cart-drawer__content itself was sized
+       correctly. `flex: 1 1 auto` plus a real min-height floor means the
+       product list always gets a fair, usable share of the drawer -- and
+       still scrolls on its own beyond that, via the overflow-y:auto already
+       set here -- rather than being squeezed to near-nothing first. */
+    flex: 1 1 auto;
+    min-height: 30vh;
     display: flex;
     flex-direction: column;
     padding-inline: var(--cart-drawer-padding);
@@ -632,7 +677,18 @@
       "type": "menu",
       "name": "Menu",
       "settings": [
-        { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" }
+        { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
+        {
+          "type": "select",
+          "id": "nav_position",
+          "label": "Navigation position",
+          "info": "Primary gets the full desktop dropdown menu bar. Secondary is hidden outside the mobile menu. Determined by this setting, not by block order, so reordering blocks never changes which menu is shown where.",
+          "options": [
+            { "value": "primary", "label": "Primary (desktop menu bar)" },
+            { "value": "secondary", "label": "Secondary (mobile menu only)" }
+          ],
+          "default": "primary"
+        }
       ]
     }
   ],
@@ -640,8 +696,8 @@
     {
       "name": "ONA header",
       "blocks": [
-        { "type": "menu", "settings": { "menu": "main-menu" } },
-        { "type": "menu", "settings": { "menu": "enquire" } }
+        { "type": "menu", "settings": { "menu": "main-menu", "nav_position": "primary" } },
+        { "type": "menu", "settings": { "menu": "enquire", "nav_position": "secondary" } }
       ]
     }
   ]
