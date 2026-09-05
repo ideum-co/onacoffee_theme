@@ -460,6 +460,13 @@
   .cart-drawer__summary {
     --cart-drawer-summary-padding: var(--padding-lg);
 
+    /* flex-shrink: 0 makes explicit what was previously just an accident of
+       having no overflow set (an unconstrained flex item's automatic min
+       size is its own content size, so it was already never shrinking) --
+       pairs with .cart-drawer__items' new flex: 1 1 auto so space is always
+       divided the same, deliberate way: summary keeps its full natural size,
+       items gets the rest (down to its own min-height floor). */
+    flex-shrink: 0;
     position: sticky;
     bottom: 0;
     z-index: 1;
@@ -510,6 +517,22 @@
   }
 
   .cart-drawer__items {
+    /* Without an explicit flex-basis/min-height, this competed for space
+       against .cart-drawer__summary (which has no shrink override, so it
+       always keeps its full natural size -- totals, discount field, checkout
+       button, payment icons) and lost: flex-shrink defaults to 1 for both,
+       but this element's automatic minimum size resolves to 0 (overflow-y:auto
+       makes it eligible to shrink all the way down per the flexbox spec),
+       while .cart-drawer__summary's resolves to its full content height. The
+       result was the product list getting crushed to a sliver whenever the
+       summary + any app-embed content above it (e.g. Qikify's shipping bar)
+       left little room, even though .cart-drawer__content itself was sized
+       correctly. `flex: 1 1 auto` plus a real min-height floor means the
+       product list always gets a fair, usable share of the drawer -- and
+       still scrolls on its own beyond that, via the overflow-y:auto already
+       set here -- rather than being squeezed to near-nothing first. */
+    flex: 1 1 auto;
+    min-height: 30vh;
     display: flex;
     flex-direction: column;
     padding-inline: var(--cart-drawer-padding);
