@@ -63,6 +63,78 @@
       {%- endunless -%}
 
       {%- comment -%}
+        Mixed-cart preorder detection, ported from ona-cart-template.liquid.
+        Fix 2026-08-10 (already applied here, not re-introducing the pre-fix bug):
+        a line's underscore-prefixed properties (e.g. Qikify's free-gift markers
+        _qbk-trigger-id/_qbk-offer-id/_qbk-offer-type) are app-internal and must
+        NOT count as "preorder" -- only a genuine, customer-visible property
+        counts. Scoped to disable/warn on THIS page's own checkout button only
+        (queried by container class, not id, since the shared cart-drawer
+        renders the same #checkout id when the drawer's DOM is present but
+        closed) -- the live cart drawer's own checkout flow is intentionally
+        untouched by this port, matching the bespoke page's original scope.
+      {%- endcomment -%}
+      {%- unless cart.empty? -%}
+        {%- liquid
+          assign normal_count = 0
+          assign preorder_count = 0
+          for item in cart.items
+            assign has_pp = false
+            for p in item.properties
+              assign first_char = p.first | slice: 0
+              if p.last != blank and first_char != '_'
+                assign has_pp = true
+              endif
+            endfor
+            if has_pp
+              assign preorder_count = preorder_count | plus: 1
+            else
+              assign normal_count = normal_count | plus: 1
+            endif
+          endfor
+        -%}
+        {%- if normal_count > 0 and preorder_count > 0 -%}
+          {%- comment -%} Reuses the existing global .preorder-tips-popup CSS
+            (assets/main.css) verbatim -- same class name as the bespoke page
+            used, so no new styling needed here. {%- endcomment -%}
+          <div class="preorder-tips-popup show-popup">
+            <div class="popup-box">
+              <button class="close-btn" type="button" onclick="this.closest('.preorder-tips-popup').classList.remove('show-popup')">&times;</button>
+              <div class="popup-text">
+                <h2>{{ settings.ppc_title | default: 'Pre-order items detected' }}</h2>
+                {{ settings.ppc_content | default: '<p>Your cart contains both regular and pre-order items. Please check out separately.</p>' }}
+              </div>
+            </div>
+          </div>
+          <script>
+            (function () {
+              var btn = document.querySelector('.cart-page .cart__checkout-button');
+              if (btn) { btn.setAttribute('disabled', 'disabled'); }
+            })();
+          </script>
+        {%- endif -%}
+      {%- endunless -%}
+
+      {%- comment -%}
+        Gift-item remove-button suppression, ported from ona-cart-template.liquid.
+        Verified 2026-09-05: variant 40126200709311 (ONA Anniversary Tote Bag,
+        product handle ona-tote, DRAFT status -- only ever added via Qikify's
+        free-gift-with-purchase app, never directly by a shopper) is still the
+        correct, active gift-item id. Native cart-products.liquid already
+        checks `item.instructions.can_remove` (a real Shopify cart-line field,
+        typically set by cart transform/validation functions) -- if Qikify's
+        app already sets that, this CSS is redundant and harmless; if it
+        doesn't (Qikify is a JS-only app, not a Shopify Function, so this is
+        the more likely case), this CSS is what actually hides the button.
+        Scoped to .cart-page so the live cart drawer's own rendering of this
+        same line item (if the drawer's remove button is otherwise correct or
+        incorrect) is intentionally untouched by this port.
+      {%- endcomment -%}
+      <style>
+        .cart-page [data-key^="40126200709311:"] .cart-items__remove { display: none; }
+      </style>
+
+      {%- comment -%}
         US shipping/tariff notice, ported from ona-cart-template.liquid's
         cart-note block. Native cart notes (settings.show_cart_note) are a
         SEPARATE, already-shared feature used by the live cart drawer --
