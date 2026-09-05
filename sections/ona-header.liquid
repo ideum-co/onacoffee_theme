@@ -16,11 +16,18 @@
   Which menu becomes the primary desktop nav (full hover-dropdown treatment,
   wrapper_class 'menu-list') vs. the secondary/mobile-only one (CSS-hidden
   outside mobile, wrapper_class 'another-menu-list') is read from each
-  block's own `nav_position` setting -- NOT from block order. An earlier
-  version inferred this from "first menu block found = primary, second =
-  secondary", which meant reordering blocks in the theme customizer (an
-  ordinary editing action) could silently swap which menu gets desktop nav
-  and which gets hidden, with no warning since both blocks just say "Menu".
+  block's own `nav_position` setting -- NOT from block order, for the normal
+  one-primary-one-secondary configuration the schema's `max_blocks: 2` and
+  preset both assume. An earlier version inferred role purely from "first
+  menu block found = primary, second = secondary", which meant reordering
+  blocks in the theme customizer (an ordinary editing action) could silently
+  swap which menu gets desktop nav and which gets hidden, with no warning
+  since both blocks just say "Menu". This version isn't a full guarantee
+  against merchant misconfiguration -- Liquid can't validate cross-block
+  state -- so if both blocks are ever set to the same `nav_position`, the
+  first one found (in block order) wins for that slot and the other block
+  renders nothing; that fallback is documented in the setting's own `info`
+  text rather than left silent.
 {%- endcomment -%}
 {%- assign main_linklist = blank -%}
 {%- assign main_linklist2 = blank -%}
@@ -530,9 +537,26 @@
        correctly. `flex: 1 1 auto` plus a real min-height floor means the
        product list always gets a fair, usable share of the drawer -- and
        still scrolls on its own beyond that, via the overflow-y:auto already
-       set here -- rather than being squeezed to near-nothing first. */
+       set here -- rather than being squeezed to near-nothing first.
+
+       The floor is a small FIXED px value, not a vh-based one: a cart line's
+       real height comes from its thumbnail (--cart-item-media-width-max:
+       7.5rem in cart-products.liquid) and text, not from viewport height, so
+       scaling it with vh only adds risk with no benefit. A vh floor combines
+       with .cart-drawer__summary's non-shrinking real content height in a way
+       that's unbounded on short viewports (landscape phones, ~350-400px
+       tall) -- 30vh alone plus summary's ~310px can together exceed the
+       whole dialog, pushing checkout below the fold on first open. 140px
+       comfortably fits one full item row (enough to prove the list isn't
+       being crushed) while adding far less to that worst case; the two
+       overflow-y:auto layers (.cart-drawer__content wrapping this) remain
+       the real safety net for anything that still doesn't fit -- checkout
+       stays reachable by scrolling, it just isn't guaranteed to fit
+       above-the-fold on the shortest viewports, which no CSS floor on this
+       element alone can fix once .cart-drawer__summary's own real content
+       height is already close to the viewport height. */
     flex: 1 1 auto;
-    min-height: 30vh;
+    min-height: 140px;
     display: flex;
     flex-direction: column;
     padding-inline: var(--cart-drawer-padding);
@@ -676,13 +700,14 @@
     {
       "type": "menu",
       "name": "Menu",
+      "max_blocks": 2,
       "settings": [
         { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
         {
           "type": "select",
           "id": "nav_position",
           "label": "Navigation position",
-          "info": "Primary gets the full desktop dropdown menu bar. Secondary is hidden outside the mobile menu. Determined by this setting, not by block order, so reordering blocks never changes which menu is shown where.",
+          "info": "Primary gets the full desktop dropdown menu bar. Secondary is hidden outside the mobile menu. Reordering blocks never changes which menu is shown where. Use one of each -- if both blocks are set to the same position, the first one (in block order) wins and the other is not shown at all.",
           "options": [
             { "value": "primary", "label": "Primary (desktop menu bar)" },
             { "value": "secondary", "label": "Secondary (mobile menu only)" }

@@ -1831,15 +1831,6 @@ jQuery(document).ready(function(jQuery) {
         jQuery('.filters-footer .see-all').attr('href',url);
     });
 
-    jQuery('header .header-right .icon-list .icon-search').on('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        jQuery('#SearchDrawer').addClass('is-show');
-        jQuery('#SearchDrawer .search-bar__form input[type="text"]').focus();
-    });
-    jQuery('#SearchDrawer').on('click', function (e) {
-        e.stopPropagation();
-    });
     jQuery('.shop-top .filter').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -1854,14 +1845,8 @@ jQuery(document).ready(function(jQuery) {
         jQuery(this).addClass('is-show');
     });
     jQuery('body').on('click', function () {
-        jQuery('#SearchDrawer .search-bar__form input[type="text"]').val('');
-        jQuery('#SearchDrawer').removeClass('is-show');
         jQuery('.filters-wrapper').removeClass('is-show');
     });
-    jQuery("#SearchDrawer .search-bar__actions .search-bar__close").on('click', function () {
-        jQuery('#SearchDrawer .search-bar__form input[type="text"]').val('');
-        jQuery('#SearchDrawer').removeClass('is-show');
-    })
     //shop hover
     jQuery('.blog-detail-top .go-to-next-modules a').on('click', function (e) {
         e.preventDefault();
