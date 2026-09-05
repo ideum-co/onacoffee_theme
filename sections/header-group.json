@@ -17,13 +17,15 @@
         "menu_main": {
           "type": "menu",
           "settings": {
-            "menu": "main-menu"
+            "menu": "main-menu",
+            "nav_position": "primary"
           }
         },
         "menu_secondary": {
           "type": "menu",
           "settings": {
-            "menu": "enquire"
+            "menu": "enquire",
+            "nav_position": "secondary"
           }
         }
       },
