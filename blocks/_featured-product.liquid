@@ -23,6 +23,25 @@
       {%- content_for 'block', type: 'swatches', id: 'featured-product-swatches' -%}
     </div>
   {% endif %}
+  {%- comment -%}
+    Stock Horizon's _featured-product block ships as a title/price/gallery/
+    swatches-only showcase card with no way to add a variant-picker or buy
+    button -- it has no {% content_for 'blocks' %} slot, so a merchant can't
+    add those from the theme editor either. The bespoke ona-featured-product.liquid
+    this replaces lets a shopper pick a variant and add to cart right on the
+    home page; dropping that here would be a real functionality regression,
+    not just a visual one. Extending this vendored block with description +
+    variant-picker + buy-buttons (the same block types the PDP's own native
+    buy box already uses) keeps that capability using real Horizon components
+    instead of reintroducing a bespoke hand-rolled cart form.
+  {%- endcomment -%}
+  <div class="featured-product-content-description">
+    {% content_for 'block', type: 'product-description', id: 'featured-product-description' %}
+  </div>
+  <div class="featured-product-content-buy">
+    {% content_for 'block', type: 'variant-picker', id: 'featured-product-variant-picker' %}
+    {% content_for 'block', type: 'buy-buttons', id: 'featured-product-buy-buttons' %}
+  </div>
 {% endcapture %}
 
 {% render 'product-card', children: product_card_children, product: closest.product, product_card_gap: 8 %}
