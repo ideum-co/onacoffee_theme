@@ -1611,13 +1611,10 @@ jQuery(document).ready(function(jQuery) {
     var tag = jQuery('.filter-form .current-value').attr('data-current-tag');
     if(tag == 'all'){
       var baseUrl = '/blogs/news?page=1';
-      jQuery('.ajax-load-more-news-btn').attr('data-post-type','/blogs/news?page=');
     }else{
       var baseUrl = '/blogs/news/tagged/'+tag+'?page=1';
-      jQuery('.ajax-load-more-news-btn').attr('data-post-type','/blogs/news/tagged/'+tag+'?page=');
     }
     // R71/P0.4 cleanup: console.log(baseUrl);
-    jQuery('.ajax-load-more-news-btn').attr('data-current-page','1');
     jQuery('.news-list').addClass('loading');
     jQuery.ajax({
       url: baseUrl,
@@ -1626,23 +1623,25 @@ jQuery(document).ready(function(jQuery) {
       success: function(responseHTML){
         jQuery('.news-list').html(jQuery(responseHTML).find('.news-list').html());
         jQuery('.news-list').removeClass('loading');
-        if(jQuery(responseHTML).find('.ajax-load-more-news-btn').length){
-          var max = jQuery(responseHTML).find('.ajax-load-more-news-btn').attr('data-max-page');
-        }else{
-          var max = 1;
-        }
-        if(max<2){
-          jQuery('.ajax-load-more-news-btn').hide();
-        }else{
-          jQuery('.ajax-load-more-news-btn').show();
+        // Swap the pagination block too, not just .news-list -- otherwise the
+        // Next/Prev links keep pointing at the unfiltered /blogs/news archive
+        // after a tag is applied, and clicking Next silently drops the filter.
+        // The AJAX response is a full server-rendered page, so its own
+        // .news-pagination already has the correctly tag-scoped links (or is
+        // absent entirely when the filtered set fits on one page).
+        var newPagination = jQuery(responseHTML).find('.news-pagination');
+        if (newPagination.length) {
+          jQuery('.news-pagination').replaceWith(newPagination);
+        } else {
+          jQuery('.news-pagination').empty();
         }
       },
       complete: function() {
-      
+
       }
     });
 
-    
+
   });
 
 
