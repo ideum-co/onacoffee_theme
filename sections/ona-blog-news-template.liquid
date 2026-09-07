@@ -45,7 +45,14 @@
       {% endfor %}
     </div>
     {%- if paginate.pages > 1 -%}
-      <butto class="ajax-load-more-news-btn" data-post-type="/blogs/news?page=" data-current-page="1" data-max-page="{{ paginate.pages }}"><span>Load more</span></butto>
+      {%- comment -%}
+        Real prev/next links (paginate.next.url / paginate.previous.url), not the old
+        AJAX "Load more" button. That button only appended fetched HTML into .news-list
+        without ever touching window.location -- no crawlable URL ever existed for page
+        2+, so Google could only ever index the first 12 articles. This snippet is the
+        same one main-collection-style templates already use elsewhere on this theme.
+      {%- endcomment -%}
+      {% include 'pagination', paginate: paginate %}
     {%- endif -%}
   </div>
 </section>
