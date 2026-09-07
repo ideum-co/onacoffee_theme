@@ -52,7 +52,14 @@
         2+, so Google could only ever index the first 12 articles. This snippet is the
         same one main-collection-style templates already use elsewhere on this theme.
       {%- endcomment -%}
-      {% include 'pagination', paginate: paginate %}
+      {%- comment -%}
+        Wrapped so the tag-filter AJAX handler (assets/script.js) can swap this block
+        along with .news-list -- without it, pagination links keep pointing at the
+        unfiltered archive after a tag is applied client-side.
+      {%- endcomment -%}
+      <div class="news-pagination">
+        {% include 'pagination', paginate: paginate %}
+      </div>
     {%- endif -%}
   </div>
 </section>
