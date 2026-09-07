@@ -44,16 +44,24 @@
         </div>
       {% endfor %}
     </div>
-    {%- if paginate.pages > 1 -%}
-      {%- comment -%}
-        Real prev/next links (paginate.next.url / paginate.previous.url), not the old
-        AJAX "Load more" button. That button only appended fetched HTML into .news-list
-        without ever touching window.location -- no crawlable URL ever existed for page
-        2+, so Google could only ever index the first 12 articles. This snippet is the
-        same one main-collection-style templates already use elsewhere on this theme.
-      {%- endcomment -%}
-      {% include 'pagination', paginate: paginate %}
-    {%- endif -%}
+    {%- comment -%}
+      Real prev/next links (paginate.next.url / paginate.previous.url), not the old
+      AJAX "Load more" button. That button only appended fetched HTML into .news-list
+      without ever touching window.location -- no crawlable URL ever existed for page
+      2+, so Google could only ever index the first 12 articles. This snippet is the
+      same one main-collection-style templates already use elsewhere on this theme.
+
+      The wrapper itself renders unconditionally (only the include inside is gated on
+      paginate.pages > 1) so there's always a stable .news-pagination anchor in the
+      DOM for the tag-filter AJAX handler (assets/script.js) to swap -- if the initial
+      page happens to have only one page of results, there'd otherwise be no element
+      for a later filtered/multi-page response's pagination to replace.
+    {%- endcomment -%}
+    <div class="news-pagination">
+      {%- if paginate.pages > 1 -%}
+        {% include 'pagination', paginate: paginate %}
+      {%- endif -%}
+    </div>
   </div>
 </section>
 {% endpaginate %}
