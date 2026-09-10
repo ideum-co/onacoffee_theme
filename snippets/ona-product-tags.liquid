@@ -27,6 +27,8 @@
 
 {% assign low_stock_found = false %}
 {% assign product_sold_out = false %}
+{% comment %} Tracks whether a labelled sold-out badge actually rendered, so a blank label falls through to the generic fallback below instead of leaving the product with no sold-out indicator at all. {% endcomment %}
+{% assign sold_out_badge_rendered = false %}
 
 {% assign lowstock_index = '' %}
 {% assign lowstock_status = '' %}
@@ -88,10 +90,11 @@
       <span class="custom_product_tags">{% if custom_tag_icon[i] %}<img src="{{ custom_tag_icon[i] }}" alt="">{% endif %}<h5{% if custom_tag_color[i] %} style="color:{{ custom_tag_color[i] }}"{% endif %}>{{ custom_tag_name[i] }}</h5></span>
     {% elsif custom_tag_name[i] != blank and custom_tag_type[i] != 'blank' and custom_tag_type[i] == 'Sold Out' and product.available == false and product_sold_out == true %}
       <span class="custom_product_tags">{% if custom_tag_icon[i] %}<img src="{{ custom_tag_icon[i] }}" alt="">{% endif %}<h5{% if custom_tag_color[i] %} style="color:{{ custom_tag_color[i] }}"{% endif %}>{{ custom_tag_name[i] }}</h5></span>
+      {% assign sold_out_badge_rendered = true %}
     {% endif %}
   {% endif %}
 {% endfor %}
-{% if total_instances == 0 or product_sold_out == false %}
+{% if total_instances == 0 or product_sold_out == false or sold_out_badge_rendered == false %}
   {% if product.metafields.custom.sold_out.value == true or product.available == false %}
     <span class="custom_product_tags"><img src="https://cdn.shopify.com/s/files/1/0464/4824/6934/files/sold-out.png?v=1720094140" alt="sold out"><h5 style="color:#999999;">Sold Out - Online</h5></span>
   {% endif %}
