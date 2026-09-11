@@ -8,17 +8,34 @@
   Outputs zero or more <span class="custom_product_tags">…</span> siblings —
   no wrapping element, so the caller controls the container.
 {%- endcomment -%}
+{%- comment -%}
+  ACF writes these as legacy `json_string`, where `metafield[i]` indexes fine.
+  A field that was ever converted to a native list type returns nil from that
+  same indexing and only yields an array via `.value` — so read it both ways.
+  Getting this wrong fails silently: blank dates are treated as "no expiry", so
+  expired badges never disappear, and status / colour / icon are just ignored.
+{%- endcomment -%}
 {% assign custom_tag_status = product.metafields.custom_product.tag_status %}
-{% assign custom_tag_name = product.metafields.custom_product.tag_name.value %}
+{% if custom_tag_status[0] == nil %}{% assign custom_tag_status = product.metafields.custom_product.tag_status.value %}{% endif %}
+{% assign custom_tag_name = product.metafields.custom_product.tag_name %}
+{% if custom_tag_name[0] == nil %}{% assign custom_tag_name = product.metafields.custom_product.tag_name.value %}{% endif %}
 {% assign custom_tag_color = product.metafields.custom_product.tag_color %}
+{% if custom_tag_color[0] == nil %}{% assign custom_tag_color = product.metafields.custom_product.tag_color.value %}{% endif %}
 {% assign custom_tag_icon = product.metafields.custom_product.tag_icon %}
+{% if custom_tag_icon[0] == nil %}{% assign custom_tag_icon = product.metafields.custom_product.tag_icon.value %}{% endif %}
 {% assign custom_tag_low_stock_qty = product.metafields.custom_product.lowstock_inventory %}
+{% if custom_tag_low_stock_qty[0] == nil %}{% assign custom_tag_low_stock_qty = product.metafields.custom_product.lowstock_inventory.value %}{% endif %}
 {% assign custom_tag_from_date = product.metafields.custom_product.from_date %}
+{% if custom_tag_from_date[0] == nil %}{% assign custom_tag_from_date = product.metafields.custom_product.from_date.value %}{% endif %}
 {% assign custom_tag_from_time = product.metafields.custom_product.from_time %}
+{% if custom_tag_from_time[0] == nil %}{% assign custom_tag_from_time = product.metafields.custom_product.from_time.value %}{% endif %}
 {% assign custom_tag_to_date = product.metafields.custom_product.to_date %}
+{% if custom_tag_to_date[0] == nil %}{% assign custom_tag_to_date = product.metafields.custom_product.to_date.value %}{% endif %}
 {% assign custom_tag_to_time = product.metafields.custom_product.to_time %}
+{% if custom_tag_to_time[0] == nil %}{% assign custom_tag_to_time = product.metafields.custom_product.to_time.value %}{% endif %}
 {% assign currentDatetime = "now" | date: "%Y-%m-%d %H:%M:%S" %}
 {% assign custom_tag_type = product.metafields.custom_product.tag_type %}
+{% if custom_tag_type[0] == nil %}{% assign custom_tag_type = product.metafields.custom_product.tag_type.value %}{% endif %}
 {% if custom_tag_status != blank %}
   {% assign total_instances = custom_tag_status.size %}
 {% else %}
