@@ -78,7 +78,14 @@
 {% endif %}
 
 {% for i in (0..total_instances) %}
-  {% if custom_tag_status[i] != 'Disable' %}
+  {%- comment -%}
+    tag_status is the controlling array: an index only describes a real badge if it has a
+    status. Requiring one skips both the loop's final out-of-range index and any index past
+    the end of a shorter parallel array, which otherwise renders a label with no schedule
+    attached (blank dates read as "always on") — e.g. a product with 2 tag_name entries but
+    1 of everything else would show its second label permanently.
+  {%- endcomment -%}
+  {% if custom_tag_status[i] != blank and custom_tag_status[i] != 'Disable' %}
     {% if custom_tag_low_stock_qty[i] != '' %}
       {% assign lowstock_inventory_limit = custom_tag_low_stock_qty[i] | plus: 0 %}
     {% endif %}
