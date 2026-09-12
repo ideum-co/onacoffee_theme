@@ -43,7 +43,12 @@
     "@type": "SearchAction",
     "target": {
       "@type": "EntryPoint",
-      "urlTemplate": {{ request.origin | append: '/search?q={search_term_string}' | json }}
+      {%- comment -%}
+        Built by interpolation rather than `| append: '...{search_term_string}'` — the
+        brace inside that string literal breaks Liquid's tokenizer and the file is
+        rejected at upload. request.origin needs no escaping here.
+      {%- endcomment -%}
+      "urlTemplate": "{{ request.origin }}/search?q={search_term_string}"
     },
     "query-input": "required name=search_term_string"
   }
