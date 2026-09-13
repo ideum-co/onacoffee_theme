@@ -1,0 +1,74 @@
+{% doc %}
+  Site-wide JSON-LD: WebSite (+ SearchAction) and Organization. Rendered once from
+  layout/theme.liquid so every page carries it.
+
+  Scope — what this does NOT emit, because Shopify already does:
+    Product / ProductGroup  -> `{{ product | structured_data }}` in ona-product-information.liquid
+    BlogPosting             -> `{{ article | structured_data }}` in main-blog-post.liquid
+  Do not hand-roll either of those; the built-in filter tracks Shopify's schema changes.
+
+  Why this snippet exists at all: an Organization block lives in sections/header.liquid,
+  but that is the generic Horizon fallback header. This store's live header is the custom
+  sections/ona-header.liquid (wired via sections/header-group.json), so the block never
+  renders and the storefront shipped with no Organization or WebSite markup.
+
+  MIGRATION WARNING (ona_theme2026 / Horizon): Horizon's own sections/header.liquid DOES
+  render its Organization block. Porting this snippet there as-is would emit Organization
+  twice. Remove one — prefer keeping this one, since Horizon's sets
+  "url": request.origin | append: page.url, which wrongly makes Organization.url the
+  current page rather than the site root, and uses http:// for @context.
+{% enddoc %}
+
+{%- liquid
+  # This theme has no settings.logo (its header uses section-level logo_red/logo_white,
+  # which a layout-level snippet cannot reach). Fall back to Shopify's brand settings.
+  # ona_theme2026 does define settings.logo, so the first branch covers the migration.
+  assign org_logo = settings.logo
+  if org_logo == blank
+    assign org_logo = shop.brand.logo
+  endif
+  assign org_id = request.origin | append: '/#organization'
+  assign site_id = request.origin | append: '/#website'
+-%}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": {{ site_id | json }},
+  "name": {{ shop.name | json }},
+  "url": {{ request.origin | json }},
+  "publisher": { "@id": {{ org_id | json }} },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      {%- comment -%}
+        Built by interpolation rather than `| append: '...{search_term_string}'` — the
+        brace inside that string literal breaks Liquid's tokenizer and the file is
+        rejected at upload. request.origin needs no escaping here.
+      {%- endcomment -%}
+      "urlTemplate": "{{ request.origin }}/search?q={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": {{ org_id | json }},
+  "name": {{ shop.name | json }},
+  "url": {{ request.origin | json }}
+  {%- if org_logo != blank -%}
+    ,"logo": {{ org_logo | image_url: width: 500 | prepend: "https:" | json }}
+  {%- endif -%}
+  ,"sameAs": [
+    "https://www.instagram.com/onacoffee/",
+    "https://www.youtube.com/channel/UCvwLJ4owqt_I2QqqC2OE0_A",
+    "https://www.facebook.com/onacoffee/"
+  ]
+}
+</script>
