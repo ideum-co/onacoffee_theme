@@ -84,7 +84,37 @@
     <script src="{{ 'slick.min.js' | asset_url }}" defer></script>
     {%- comment -%} R50: slick.js (87K) -> slick.min.js (47K, terser --compress drop_console=true, NO mangle per R38 lesson #46). slick.js kept as cold backup in assets/. {%- endcomment -%}
     {%- comment -%} R44 / Phase A2: WOW.js CDN removed. Replaced by IntersectionObserver IIFE at top of script.js + @keyframes in main.css R44 block. 1 fewer CDN request, ~10K transfer saved, plus removes a top-level new WOW() failure mode (#12). {%- endcomment -%}
-    <script src="https://www.youtube.com/iframe_api" defer></script>
+    {%- comment -%}
+      Perf: the YouTube iframe API used to load on EVERY page (3 requests to
+      www.youtube.com) even though most templates contain no video at all -- the home
+      page has zero YouTube markup. Inject it only once a player is actually present.
+
+      Safe by design: assets/script.js already degrades without the API --
+      OnaonYouTubeIframeAPIReady() falls back to a plain autoplay embed iframe when
+      `YT` is undefined -- so a player injected later than DOMContentLoaded still
+      plays, it just takes the fallback path instead of the JS API.
+      Call window.onaLoadYouTubeApi() to force-load it for dynamically added players.
+    {%- endcomment -%}
+    <script>
+      (function () {
+        var SEL = '.js-youtube,[data-video-id],[data-youtube],iframe[src*="youtube"]';
+        var loaded = false;
+        function load() {
+          if (loaded || !document.querySelector(SEL)) return;
+          loaded = true;
+          var s = document.createElement('script');
+          s.src = 'https://www.youtube.com/iframe_api';
+          s.defer = true;
+          document.head.appendChild(s);
+        }
+        window.onaLoadYouTubeApi = function () { loaded = false; load(); };
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', load);
+        } else {
+          load();
+        }
+      })();
+    </script>
     <script src="{{ 'jquery.matchHeight-min.js' | asset_url }}" defer></script>
     {%- comment -%} R38: terser-compressed script.js (82K → 48K, -41%, drop_console=true, NO mangle). The full-mangle version caused PC nav hover lag (2026-04-28). {%- endcomment -%}
     <script src="{{ 'script.min.js' | asset_url }}" defer></script>
