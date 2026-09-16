@@ -75,14 +75,19 @@ migrations means four slots spent on sections nobody sees.
 
 ## Removals made on 2026-09-16
 
-Approved to free capacity for the Learn with ONA / Club / Press quotes port. Removed on
-the **draft theme only** at time of writing — the live theme still has all 25.
+Four blank spacer dividers, removed to free capacity for the section port. **None carried
+a label, a line, or any content** — they were pure vertical space, and the sections that
+replaced them bring their own padding. Removed on the **draft theme only** at time of
+writing; the live theme still has all 25.
+
+Two were approved first (`divider_qMTmqi`, `divider_exKiyW`), then two more
+(`divider_nQ4pGx`, `divider_CyDYrj`) once it was clear the port needed four slots, not two.
 
 ### `divider_qMTmqi` — was position 19, enabled
 
 Removed because it was the second of **two identical blank spacers back to back**
 (`divider_CyDYrj` at 18, `divider_qMTmqi` at 19), i.e. 120px of empty space in a row.
-`divider_CyDYrj` remains and keeps the spacing.
+`divider_CyDYrj` was later removed too, in the second pass below.
 
 ```json
 "divider_qMTmqi": {
@@ -112,6 +117,83 @@ Removed because it was already switched off and `native_divider_test` had replac
   "disabled": true
 }
 ```
+
+### `divider_nQ4pGx` — was position 14, enabled
+
+Sat between the Filter product grid and the slideshow. The slideshow is full-bleed, so it
+now meets the grid's own bottom padding directly.
+
+```json
+"divider_nQ4pGx": {
+  "type": "ona-divider",
+  "settings": {
+    "label": "", "label_size": 1.5, "label_color": "#000000",
+    "show_line": false, "line_color": "#000000",
+    "line_thickness": 2, "line_width": 100,
+    "padding_top": 30, "padding_bottom": 30
+  }
+}
+```
+
+### `divider_CyDYrj` — was position 18, enabled
+
+Sat between the Espresso grid and the wholesale media block. Identical settings to
+`divider_nQ4pGx` above.
+
+```json
+"divider_CyDYrj": {
+  "type": "ona-divider",
+  "settings": {
+    "label": "", "label_size": 1.5, "label_color": "#000000",
+    "show_line": false, "line_color": "#000000",
+    "line_thickness": 2, "line_width": 100,
+    "padding_top": 30, "padding_bottom": 30
+  }
+}
+```
+
+## What went onto the home page in exchange
+
+**Learn with ONA** and **Press quotes**, ported from `ona_theme2026`. Net result: 25 → 23
+sections, so there are now **two spare slots** against the ceiling.
+
+Two links in the Learn tiles were broken in the source and were fixed during the port:
+
+| Tile | Was | Now |
+|---|---|---|
+| Barista Courses | `shopify://blogs/news-1` — the empty News blog, 0 articles | `shopify://pages/barista-courses` |
+| Brewing Guides | `/pages/brewing-guides` — **404** | `shopify://blogs/brewguides` |
+
+### Club invite / Club benefits were deliberately NOT placed
+
+Both sections are ported and present in the theme (`sections/club-invite.liquid`,
+`sections/club-benefits.liquid`, plus `snippets/club-invite-typography-style.liquid` and
+19 editor labels), but they are not on the home page. Three reasons:
+
+1. The copy says **"ONA Coffee Club"** in three places — body, button label, and a
+   testimonial byline. The club has since been rebranded **ONA Brew Club**.
+2. `club-invite`'s three feature bullets are all the same placeholder string,
+   "Freshly roasted" — unfinished content carried over from the 2026 draft.
+3. The `brew-club-single-origin-subscription` collection currently has **0 products**, so
+   there is nothing to link to under the new brand.
+
+When the Brew Club copy and products are ready this is a theme-editor job — add the two
+sections and fill in the settings. No re-porting needed.
+
+## Other fixes made in the same draft theme
+
+- **`snippets/media.liquid`** — guarded the aspect-ratio divide. The live home page renders
+  `padding-top: Liquid error (snippets/media line 74): divided by 0%;` into the HTML today.
+  Four divide sites were vulnerable, not just the one named in the error. Note the trap:
+  defaulting the ratio to `1` *looks* correct but turns the empty media box into a
+  full-width square — roughly 1,400px of blank page. The fix emits **no** `padding-top`
+  when the ratio is unusable, so the box collapses.
+- **`layout/theme.liquid`** — the YouTube iframe API was loading on every page even though
+  the home page contains no video. Now injected only when a player is present.
+- **Locations copy** — "With 4 ONA flagship cafés" corrected to **5**. There are six
+  flagships including ONA Dubai, but the sentence is scoped "all across Australia" and
+  Dubai is not; five is the accurate figure for that sentence. If the copy should mention
+  Dubai, the sentence needs rewriting rather than just renumbering.
 
 ## How to roll back
 
