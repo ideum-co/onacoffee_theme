@@ -1,0 +1,68 @@
+{% doc %}
+  Emits <meta name="robots" content="noindex, follow"> on OUT-OF-RANGE paginated
+  URLs — /blogs/news?page=99, /collections/all?page=999, /search?q=x&page=50.
+
+  Why: Shopify serves those with HTTP 200, a full layout, an empty result list and
+  a self-referencing canonical. That is an unbounded set of thin, indexable URLs
+  (anything can link ?page=<n> and Google will crawl and index it). Shopify gives
+  the theme no way to return a real 404, so noindex is the available lever.
+
+  This does NOT touch valid pages. Page 1 and every real paginated page stay fully
+  indexable — including every page of the Journal and Brew Guides.
+
+  Must render inside <head> — Google ignores a robots meta tag placed in <body>,
+  which is why this cannot live in the paginated section itself where `paginate`
+  is in scope. Since `paginate` is unreachable from the layout, the page count is
+  recomputed here from the item total and the per-page size.
+
+  The per-page size comes from snippets/paginate-page-size.liquid, which is the
+  same snippet the paginated sections themselves read, so the two can never drift
+  apart. Do not hardcode a page size here.
+
+  SAFETY PROPERTY: the counts used here (blog.articles_count, collection.products_count,
+  search.results_count) are always >= the number of items the section actually paginates
+  — on a tag-filtered blog view, articles_count stays the blog total. So the computed
+  page count can only ever be too HIGH, never too low. A wrong answer therefore means
+  "failed to noindex a thin page" (harmless), never "noindexed a real page" (harmful).
+  Preserve that direction if you change this.
+{% enddoc %}
+
+{%- liquid
+  assign robots_total = nil
+
+  case template.name
+    when 'blog'
+      assign robots_total = blog.articles_count
+    when 'collection'
+      assign robots_total = collection.products_count
+    when 'search'
+      assign robots_total = search.results_count
+  endcase
+-%}
+
+{%- if robots_total != nil and current_page > 1 -%}
+  {%- capture robots_per_page -%}{%- render 'paginate-page-size' -%}{%- endcapture -%}
+  {%- liquid
+    assign robots_per_page = robots_per_page | strip | plus: 0
+    comment
+      A zero page size would make every page look out of range and noindex the whole
+      template. Bail out rather than risk that.
+    endcomment
+    if robots_per_page > 0
+      assign robots_max_page = robots_total | divided_by: robots_per_page
+      assign robots_remainder = robots_total | modulo: robots_per_page
+      if robots_remainder > 0
+        assign robots_max_page = robots_max_page | plus: 1
+      endif
+      comment
+        An empty blog/collection/search still has a legitimate page 1.
+      endcomment
+      if robots_max_page < 1
+        assign robots_max_page = 1
+      endif
+      if current_page > robots_max_page
+        echo '<meta name="robots" content="noindex, follow">'
+      endif
+    endif
+  -%}
+{%- endif -%}
