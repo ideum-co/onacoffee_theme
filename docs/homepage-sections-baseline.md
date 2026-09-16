@@ -31,9 +31,23 @@ change. `themeFilesCopy` reports the same failure properly. If a template write 
 to succeed but the checksum never changes, this is why — verify the checksum after every
 template write rather than trusting the mutation response.
 
-## Baseline: the 25 sections as they were live on 2026-09-16
+## Baseline: the 25 sections as they were live before the port
 
-Committed verbatim in `templates/index.json`, md5 `88734d13fea3f51027830cfb7483ad75`.
+**Published 2026-09-16.** `templates/index.json` in this repo now holds the **live,
+post-port state: 23 sections.** The 25-section baseline below is the state immediately
+*before* the port and is preserved in git at commit `3a886b6`:
+
+```bash
+git show 3a886b6:templates/index.json > templates/index.json
+```
+
+That file is byte-identical to what live served before publishing, md5
+`88734d13fea3f51027830cfb7483ad75`.
+
+A caveat on verifying template writes: the Admin API's reported `size` and `checksumMd5`
+for a JSON template do **not** match the md5 of the `body.content` text it hands back —
+Shopify stores a different serialisation. Compare parsed content, not checksums, for
+`templates/*.json`. (For `.liquid` files the checksum does match and is reliable.)
 
 | # | Section key | Type | State |
 |---|---|---|---|
@@ -77,8 +91,8 @@ migrations means four slots spent on sections nobody sees.
 
 Four blank spacer dividers, removed to free capacity for the section port. **None carried
 a label, a line, or any content** — they were pure vertical space, and the sections that
-replaced them bring their own padding. Removed on the **draft theme only** at time of
-writing; the live theme still has all 25.
+replaced them bring their own padding. These were removed on a draft theme and **published to
+live on 2026-09-16**, so the live home page now runs 23 sections.
 
 Two were approved first (`divider_qMTmqi`, `divider_exKiyW`), then two more
 (`divider_nQ4pGx`, `divider_CyDYrj`) once it was clear the port needed four slots, not two.
@@ -201,15 +215,15 @@ sections and fill in the settings. No re-porting needed.
 copy the settings from the JSON blocks. Nothing else is needed; these sections hold no
 content, only spacing.
 
-**Exact — git.** `templates/index.json` on `main` is the byte-exact 25-section baseline.
-Restore the whole home page with:
+**Exact — git.** The 25-section baseline lives at commit `3a886b6`:
 
 ```bash
-git show <commit-that-added-this-file>:templates/index.json > templates/index.json
+git show 3a886b6:templates/index.json > templates/index.json
 ```
 
-then push that file to the target theme and **verify the checksum came back as
-`88734d13fea3f51027830cfb7483ad75`** — do not trust the mutation's response alone.
+Push that to the target theme, then **read the template back and compare the parsed
+sections** — do not trust the mutation's response, and do not rely on the reported
+checksum for JSON templates (see the caveat above).
 
 **Careful:** restoring the full baseline also restores all 25 sections, which puts the
 template back at the ceiling. If new sections have been added since, the write will fail
