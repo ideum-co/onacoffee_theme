@@ -33,10 +33,14 @@
       spacing-style
       {% if has_isolated_grid_item_desktop %}footer-content--isolated-grid-item-desktop{% endif %}
       {% if has_isolated_grid_item_tablet %}footer-content--isolated-grid-item-tablet{% endif %}
+      {% if section.settings.heading_dividers %}footer-content--heading-dividers{% endif %}
     "
     style="
       {%  render 'spacing-style', settings: section.settings %}
       --footer-gap: {{ section.settings.gap }}px;
+      {% if section.settings.column_ratios != blank %}
+        --footer-column-ratios: {{ section.settings.column_ratios }};
+      {% endif %}
       --grid-columns: {{ grid_columns }};
       --last-row-count: {{ last_row_count }};
       --tablet-last-row-count: {{ tablet_last_row_count }};
@@ -85,9 +89,19 @@
     }
   }
 
+  /* A rule under the first thing in each column, as in the ONA footer design. Covers both the
+     menu block, whose heading is a <summary>, and a group block led by a text block. */
+  .footer-content--heading-dividers .menu__heading,
+  .footer-content--heading-dividers .group-block-content > *:first-child {
+    padding-block-end: var(--padding-sm);
+    margin-block-end: var(--padding-md);
+    border-block-end: 1px solid currentcolor;
+  }
+
   @media screen and (min-width: 990px) {
     .footer-content {
-      grid-template-columns: repeat(var(--grid-columns), 1fr);
+      /* Columns are equal unless the section names its own track sizes. */
+      grid-template-columns: var(--footer-column-ratios, repeat(var(--grid-columns), 1fr));
     }
 
     /* Single item centered */
@@ -169,7 +183,9 @@
     }
   ],
   "enabled_on": {
-    "groups": ["footer"]
+    "groups": [
+      "footer"
+    ]
   },
   "settings": [
     {
@@ -197,6 +213,18 @@
       "step": 1,
       "unit": "px",
       "default": 0
+    },
+    {
+      "type": "text",
+      "id": "column_ratios",
+      "label": "t:settings.column_ratios",
+      "info": "t:info.footer_column_ratios"
+    },
+    {
+      "type": "checkbox",
+      "id": "heading_dividers",
+      "label": "t:settings.heading_dividers",
+      "default": false
     },
     {
       "type": "color_scheme",
@@ -271,7 +299,10 @@
               }
             }
           },
-          "block_order": ["newsletter-heading", "newsletter-text"]
+          "block_order": [
+            "newsletter-heading",
+            "newsletter-text"
+          ]
         },
         "newsletter-form": {
           "type": "email-signup",
@@ -280,7 +311,10 @@
           }
         }
       },
-      "block_order": ["newsletter-group", "newsletter-form"]
+      "block_order": [
+        "newsletter-group",
+        "newsletter-form"
+      ]
     }
   ]
 }
