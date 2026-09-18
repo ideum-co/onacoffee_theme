@@ -13,7 +13,7 @@
   {% endif %}
   {%- form 'customer', class: 'email-signup__form spacing-style' %}
     <div
-      class="email-signup__input-group {% if block_settings.integrated_button and block_settings.border_style != 'underline' %}email-signup__input-group--integrated{% endif %} {% if block_settings.border_style == 'underline' %}email-signup__input-group--underline{% endif %} {% if block_settings.border_style == 'none' %}email-signup__input-group--no-border{% endif %} {% if block_settings.display_type == 'arrow' %}email-signup__input-group--arrow{% endif %} {% if block_settings.inherit_color_scheme == false %}color-{{ block_settings.color_scheme }}{% endif %}"
+      class="email-signup__input-group {% if block_settings.integrated_button and block_settings.border_style != 'underline' %}email-signup__input-group--integrated{% endif %} {% if block_settings.border_style == 'underline' %}email-signup__input-group--underline{% endif %} {% if block_settings.border_style == 'none' %}email-signup__input-group--no-border{% endif %} {% if block_settings.display_type == 'arrow' %}email-signup__input-group--arrow{% endif %} {% if block_settings.button_placement == 'below' %}email-signup__input-group--stacked{% endif %} {% if block_settings.inherit_color_scheme == false %}color-{{ block_settings.color_scheme }}{% endif %}"
       style="--border-width: {{ block_settings.border_width }}px; --border-radius: {{ block_settings.border_radius }}px;"
     >
       <label
@@ -139,6 +139,17 @@
     @media screen and (max-width: 749px) {
       flex-direction: column;
     }
+  }
+
+  /* Button below a full-width input. Mirrors the specificity of the row rules above so it wins,
+     and only applies where a row is what would otherwise be drawn - an integrated or underlined
+     button is by definition inside the field. */
+  .email-signup__input-group--stacked:not(.email-signup__input-group--integrated):not(
+      .email-signup__input-group--underline
+    ) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--gap-sm);
   }
 
   .email-signup__input-group--integrated {
@@ -604,6 +615,23 @@
       "label": "t:settings.integrated_button",
       "default": false,
       "visible_if": "{{ block.settings.border_style != \"underline\" }}"
+    },
+    {
+      "type": "select",
+      "id": "button_placement",
+      "label": "t:settings.button_placement",
+      "options": [
+        {
+          "value": "inline",
+          "label": "t:options.inline"
+        },
+        {
+          "value": "below",
+          "label": "t:options.below"
+        }
+      ],
+      "default": "inline",
+      "visible_if": "{{ block.settings.integrated_button == false and block.settings.border_style != 'underline' }}"
     },
     {
       "type": "select",
