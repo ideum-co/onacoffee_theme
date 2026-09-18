@@ -33,10 +33,14 @@
       spacing-style
       {% if has_isolated_grid_item_desktop %}footer-content--isolated-grid-item-desktop{% endif %}
       {% if has_isolated_grid_item_tablet %}footer-content--isolated-grid-item-tablet{% endif %}
+      {% if section.settings.heading_dividers %}footer-content--heading-dividers{% endif %}
     "
     style="
       {%  render 'spacing-style', settings: section.settings %}
       --footer-gap: {{ section.settings.gap }}px;
+      {% if section.settings.column_ratios != blank %}
+        --footer-column-ratios: {{ section.settings.column_ratios }};
+      {% endif %}
       --grid-columns: {{ grid_columns }};
       --last-row-count: {{ last_row_count }};
       --tablet-last-row-count: {{ tablet_last_row_count }};
@@ -48,8 +52,18 @@
 
 {% stylesheet %}
   .footer-content {
-    contain: content;
-    content-visibility: auto;
+    /* `content-visibility: auto` here (with no `contain-intrinsic-size`) is a
+       known Chromium footgun: the element starts at 0x0 intrinsic size until
+       the browser has rendered it once, so the page's scrollable height is
+       computed as if the footer's first row took no space at all. On a
+       normal user scroll there's then no room to ever bring it "near the
+       viewport" and trigger the un-skip -- the page's scroll range simply
+       ends short of it, permanently, and the row never paints. Reproduced
+       with a real mouse-wheel scroll on both live and a draft theme:
+       Explore/Enquire silently unreachable while Acknowledgement/Newsletter
+       (later in the grid, past the skip boundary) rendered fine. A footer
+       is rendered once per page load -- the perf upside of skipping it
+       isn't worth this failure mode, so render it normally instead. */
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--footer-gap);
@@ -75,9 +89,19 @@
     }
   }
 
+  /* A rule under the first thing in each column, as in the ONA footer design. Covers both the
+     menu block, whose heading is a <summary>, and a group block led by a text block. */
+  .footer-content--heading-dividers .menu__heading,
+  .footer-content--heading-dividers .group-block-content > *:first-child {
+    padding-block-end: var(--padding-sm);
+    margin-block-end: var(--padding-md);
+    border-block-end: 1px solid currentcolor;
+  }
+
   @media screen and (min-width: 990px) {
     .footer-content {
-      grid-template-columns: repeat(var(--grid-columns), 1fr);
+      /* Columns are equal unless the section names its own track sizes. */
+      grid-template-columns: var(--footer-column-ratios, repeat(var(--grid-columns), 1fr));
     }
 
     /* Single item centered */
@@ -88,6 +112,25 @@
     .footer-content--isolated-grid-item-desktop > :last-child {
       grid-column: 1 / -1;
     }
+  }
+
+  /* Rich-text links (e.g. a phone number) are nested one level below the block's own
+     scheme-scoped wrapper, so they fall outside the `.paragraph > *` rule that gives
+     menu links their color and pick up the theme's global brand-color link style
+     instead — invisible against a dark color scheme. Force them to match the
+     surrounding text color instead. */
+  .footer-content .rte a {
+    color: inherit;
+  }
+
+  /* `.shopify-section` wrappers in a footer group don't establish their own stacking
+     context (position: relative with z-index: auto), so `.section-background`'s
+     z-index: -2 (set globally in base.css) falls back to competing in the page's
+     shared root stacking context instead of staying local to this section — normal
+     in-flow content elsewhere on the page ends up painting over it, hiding the panel
+     entirely. Raise it back to the local "auto" layer, scoped to just this section. */
+  .shopify-section:has(> .section > .footer-content) > .section-background {
+    z-index: 0;
   }
 {% endstylesheet %}
 
@@ -140,7 +183,9 @@
     }
   ],
   "enabled_on": {
-    "groups": ["footer"]
+    "groups": [
+      "footer"
+    ]
   },
   "settings": [
     {
@@ -168,6 +213,18 @@
       "step": 1,
       "unit": "px",
       "default": 0
+    },
+    {
+      "type": "text",
+      "id": "column_ratios",
+      "label": "t:settings.column_ratios",
+      "info": "t:info.footer_column_ratios"
+    },
+    {
+      "type": "checkbox",
+      "id": "heading_dividers",
+      "label": "t:settings.heading_dividers",
+      "default": false
     },
     {
       "type": "color_scheme",
@@ -242,7 +299,10 @@
               }
             }
           },
-          "block_order": ["newsletter-heading", "newsletter-text"]
+          "block_order": [
+            "newsletter-heading",
+            "newsletter-text"
+          ]
         },
         "newsletter-form": {
           "type": "email-signup",
@@ -251,7 +311,10 @@
           }
         }
       },
-      "block_order": ["newsletter-group", "newsletter-form"]
+      "block_order": [
+        "newsletter-group",
+        "newsletter-form"
+      ]
     }
   ]
 }
