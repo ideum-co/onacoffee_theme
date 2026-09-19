@@ -1,0 +1,30 @@
+{% doc %}
+  SINGLE SOURCE OF TRUTH for how many items each paginated template shows per page.
+  Outputs a bare integer. Consumed by:
+
+    sections/ona-blog-news-template.liquid   (Journal)
+    sections/ona-blog-template.liquid        (Brew Guides + any other blog)
+    sections/ona-collection-template.liquid
+    sections/ona-search-results.liquid
+    snippets/meta-robots-pagination.liquid   (layout/<head>)
+
+  Why it exists: the robots snippet runs in the layout, where `paginate` is not in
+  scope, so it has to recompute the page count from the item total and the page
+  size. When that page size was duplicated by hand, lowering a section's limit
+  without updating the snippet would have made the snippet compute FEWER pages
+  than really exist and noindex real, populated pages. Reading both numbers from
+  here makes that drift impossible.
+
+  To change a page size, change it HERE and nowhere else.
+
+  Usage in a section (capture yields a string, so coerce it back to a number):
+    {%- capture limit -%}{%- render 'paginate-page-size' -%}{%- endcapture -%}
+    {%- assign limit = limit | strip | plus: 0 -%}
+{% enddoc %}
+{%- liquid
+  assign page_size = 24
+  if template.name == 'blog' and blog.handle == 'news'
+    assign page_size = 12
+  endif
+  echo page_size
+-%}
