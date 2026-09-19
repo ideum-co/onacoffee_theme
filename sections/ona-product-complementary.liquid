@@ -29,7 +29,20 @@
     assign products = recommendations.products
     assign source = 'complementary'
   else
-    assign fallback_collection = collections[section.settings.fallback_collection]
+    # A `collection` setting has no schema default, and product-template-2/-3
+    # pull this section in with a bare `section` tag -- no JSON settings at
+    # all. Without the 'merch' floor below the row silently vanished on those
+    # two templates (26 + 20 products) while working fine on the JSON ones.
+    # The setting yields a collection object when set in the theme editor and a
+    # plain handle when written into a JSON template, so accept either.
+    assign fb_handle = section.settings.fallback_collection.handle
+    if fb_handle == blank
+      assign fb_handle = section.settings.fallback_collection
+    endif
+    if fb_handle == blank
+      assign fb_handle = 'merch'
+    endif
+    assign fallback_collection = collections[fb_handle]
     if fallback_collection != blank
       assign products = fallback_collection.products
     endif
