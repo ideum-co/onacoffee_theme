@@ -42,6 +42,8 @@ header {
           {% include 'product-price', variant: current_variant, show_vendor: section.settings.show_vendor %}
         </div>
 
+        {% render 'ona-product-tags-pdp', product: product %}
+
         <div class="product-content">{{ product.description }}</div>
 
         {% capture form_classes %}

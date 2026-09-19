@@ -65,6 +65,16 @@ header{
           <div class="product__price">
             {% include 'product-price', variant: current_variant, show_vendor: section.settings.show_vendor %}
           </div>
+
+          {%- comment -%}
+            Replaces ~80 lines of inline badge logic, frozen before the ACF metafield fix:
+            it read tag_name via `.value` but tag_type/tag_status without it, so the label
+            came back nil and it rendered an empty wrapper on every product page.
+
+            Sits under the price, not after the form as the old copy did -- otherwise the
+            add-to-cart button comes before the discount is ever disclosed.
+          {%- endcomment -%}
+          {% render 'ona-product-tags-pdp', product: product %}
           <div class="product-content">{{ product.description }}</div>
           {%- if cart.taxes_included or shop.shipping_policy.body != blank -%}
           <div class="product-content" data-product-policies>
@@ -174,87 +184,6 @@ header{
         {% endif %}
 
 
-        <div class="product_single_custom_tag_black">
-            {% assign custom_tag_status = product.metafields.custom_product.tag_status %}
-            {% assign custom_tag_name = product.metafields.custom_product.tag_name.value %}
-            {% assign custom_tag_color = product.metafields.custom_product.tag_color %}
-            {% assign custom_tag_icon = product.metafields.custom_product.tag_icon %}
-            {% assign custom_tag_low_stock_qty = product.metafields.custom_product.lowstock_inventory %}
-            {% assign custom_tag_from_date = product.metafields.custom_product.from_date %}
-            {% assign custom_tag_from_time = product.metafields.custom_product.from_time %}
-            {% assign custom_tag_to_date = product.metafields.custom_product.to_date %}
-            {% assign custom_tag_to_time = product.metafields.custom_product.to_time %}
-            {% assign currentDatetime = "now" | date: "%Y-%m-%d %H:%M:%S" %}
-            {% assign first_match_found = false %}
-            {% assign first_match_to_date = '' %}
-            {% assign custom_tag_type = product.metafields.custom_product.tag_type %}
-            {% if custom_tag_status != blank %}
-              {% assign total_instances = custom_tag_status.size %}
-            {% else %}
-              {% assign total_instances = 0 %}
-            {% endif %}
-           
-            {% assign low_stock_found = false %}
-            {% assign product_sold_out = false %}
-            {% assign product_sale_tag = false %}
-            
-            {% if custom_tag_type contains 'Sale' %}
-                {% assign product_sale_tag = false %}
-            {% endif %}
-
-
-            {% assign lowstock_index = '' %}
-            {% assign lowstock_status = '' %}
-            {% assign is_lowstock_and_active = false %}
-            {% for tagtype in custom_tag_type %}
-              {% if tagtype == 'Low Stock' %}
-                {% assign lowstock_index = forloop.index0 %}
-              {% endif %}
-            {% endfor %}
-            {% if lowstock_index != '' %}
-              {% for tagstatus in custom_tag_status %}
-                {% if forloop.index0 == lowstock_index %}
-                  {% assign lowstock_status = tagstatus %}
-                {% endif %}
-                {% if lowstock_status == 'Active' %}
-                  {% assign is_lowstock_and_active = true %}
-                {% endif %}
-              {% endfor %}
-
-              {% for taglowstock in custom_tag_low_stock_qty %}
-                {% if forloop.index0 == lowstock_index %}
-                  {% assign lowstock_inventqty = taglowstock | plus: 0 %}
-                {% endif %}
-              {% endfor %}
-            {% endif %}
-           
-            {% if custom_tag_type contains 'Low Stock' and product.first_available_variant.inventory_quantity <= lowstock_inventqty and is_lowstock_and_active == true %}
-                {% assign low_stock_found = true %}  
-            {% endif %}
-          
-            {% for i in (0..total_instances) %}
-             
-              {% if custom_tag_status[i] != 'Disable' %}
-                   {% assign custommetafield_index = i | plus: 1 %}
-                   {% if custom_tag_low_stock_qty[i] != '' %}
-                     {% assign lowstock_inventory_limit = custom_tag_low_stock_qty[i] | plus: 0 %}
-                   {% endif %}
-                   
-                   {% assign customtagfromDatetime = custom_tag_from_date[i] | append: " " | append: custom_tag_from_time[i] | date: "%Y-%m-%d %H:%M:%S" %}
-                   {% assign customtagtoDatetime = custom_tag_to_date[i] | append: " " | append: custom_tag_to_time[i] | date: "%Y-%m-%d %H:%M:%S" %}
-                   {% unless product_sold_out %}
-                     {% if customtagfromDatetime <= currentDatetime and customtagtoDatetime >= currentDatetime and custom_tag_type[i] != 'blank' and product.available == true and custom_tag_type[i] != 'Sold Out' and custom_tag_type[i] != 'Low Stock' and custom_tag_type[i] != 'Sale'  %}
-                       
-                         <span class="custom_product_tags">{% if custom_tag_icon[i] %} <img src="{{ custom_tag_icon[i] }}" alt=""> {% endif %}<h5>{{ custom_tag_name[i] }} </h5></span> 
-                        
-                     {% endif %}
-                   {% endunless %}
-                   {% if custom_tag_type[i] != 'blank' and custom_tag_type[i] == 'Low Stock' and lowstock_inventory_limit != '' and product.available == true and product.first_available_variant.inventory_quantity <= lowstock_inventory_limit and low_stock_found == true %}
-                     <span class="custom_product_tags"> {% if custom_tag_icon[i] %} <img src="{{ custom_tag_icon[i] }}" alt=""> {% endif %} <h5>{{ custom_tag_name[i] }} </h5></span> 
-                   {% endif %}
-             {% endif %}
-            {% endfor %}
-          </div>
           
           
 
