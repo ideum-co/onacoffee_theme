@@ -14,9 +14,21 @@
       "settings": {
         "cart_notes_enable": true
       }
+    },
+    "complementary": {
+      "type": "ona-product-complementary",
+      "settings": {
+        "show_complementary": true,
+        "heading": "Explore our merch",
+        "fallback_collection": "merch",
+        "max_products": 4,
+        "link_url": "\/collections\/merch",
+        "link_label": "SHOP MERCH"
+      }
     }
   },
   "order": [
-    "main"
+    "main",
+    "complementary"
   ]
 }
