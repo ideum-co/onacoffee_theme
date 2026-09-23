@@ -1,0 +1,200 @@
+{%- comment -%}
+  Second product-page row, for cross-selling merch against coffee.
+
+  Deliberately NOT curation-dependent. `intent=complementary` returns nothing on
+  every product in the catalogue right now (nothing is set up in Search &
+  Discovery), and the New Harvest promo runs to 25 Sep -- so a row that only
+  rendered curated results would show nothing for the entire promo.
+
+  Two sources, in priority order:
+    1. Shopify's `complementary` recommendations, once someone curates them.
+    2. Otherwise a collection (the merch collection by default).
+
+  The fallback renders server-side on first paint, so the row is never empty.
+  The async fetch below asks for `complementary` and only swaps the contents in
+  when Shopify actually returned curated products -- so this upgrades itself the
+  day curation lands, with no further theme change.
+{%- endcomment -%}
+{%- liquid
+  assign show = section.settings.show_complementary
+  assign heading = section.settings.heading
+  assign limit = section.settings.max_products | default: 4
+  # Over-fetch: the tote and any sold-out or duplicate product get skipped
+  # below, so asking for exactly `limit` would silently render a short row.
+  assign fetch_limit = 12
+
+  assign source = 'fallback'
+  assign products = null
+
+  # On the cart page there is no `product`, and recommending something the
+  # shopper has already added is worse than showing nothing. Build a delimited
+  # id list to test against -- wrapped in commas at both ends so that id 123
+  # cannot match inside 45123.
+  assign cart_ids = ','
+  for item in cart.items
+    assign cart_ids = cart_ids | append: item.product_id | append: ','
+  endfor
+  if recommendations.performed and recommendations.products_count > 0
+    assign products = recommendations.products
+    assign source = 'complementary'
+  else
+    # A `collection` setting has no schema default, and product-template-2/-3
+    # pull this section in with a bare `section` tag -- no JSON settings at
+    # all. Without the 'merch' floor below the row silently vanished on those
+    # two templates (26 + 20 products) while working fine on the JSON ones.
+    # The setting yields a collection object when set in the theme editor and a
+    # plain handle when written into a JSON template, so accept either.
+    assign fb_handle = section.settings.fallback_collection.handle
+    if fb_handle == blank
+      assign fb_handle = section.settings.fallback_collection
+    endif
+    if fb_handle == blank
+      assign fb_handle = 'merch'
+    endif
+    assign fallback_collection = collections[fb_handle]
+    if fallback_collection != blank
+      assign products = fallback_collection.products
+    endif
+  endif
+-%}
+
+{%- if show and products != blank -%}
+<product-complementary
+  id="product-complementary-{{ section.id }}"
+  data-url="{{ routes.product_recommendations_url }}?limit={{ fetch_limit }}"
+  data-section-id="{{ section.id }}"
+  data-product-id="{{ product.id }}"
+  data-has-product="{% if product != blank %}true{% else %}false{% endif %}"
+  data-intent="complementary"
+>
+  {%- capture cards -%}
+    {%- liquid
+      assign rendered_count = 0
+      for p in products limit: fetch_limit
+        if rendered_count >= limit
+          break
+        endif
+        # ona-tote is a DRAFT gift SKU added only by Qikify's free-gift app --
+        # ona-product-card renders nothing for it, so it would leave a hole.
+        if p.handle == 'ona-tote'
+          continue
+        endif
+        # Never cross-sell the product the shopper is already looking at.
+        if product != blank and p.id == product.id
+          continue
+        endif
+        # ...nor anything already in their cart.
+        assign id_token = ',' | append: p.id | append: ','
+        if cart_ids contains id_token
+          continue
+        endif
+        # Several merch items sit at zero stock (both coffee-named candles, for
+        # one). Recommending them is a dead end for the shopper.
+        unless p.available
+          continue
+        endunless
+        # No index passed: keeps ona-product-card on its lazy image branch, as
+        # this row sits below the fold.
+        render 'ona-product-card', product: p
+        assign rendered_count = rendered_count | plus: 1
+      endfor
+    -%}
+  {%- endcapture -%}
+
+  {%- assign cards_trimmed = cards | strip -%}
+  {%- if cards_trimmed != blank -%}
+    <section class="recommendations-list also-shop" data-source="{{ source }}">
+      <div class="container">
+        {%- if heading != blank -%}
+          <div class="top">
+            <h2>{{ heading | escape }}</h2>
+            {%- if section.settings.link_url != blank -%}
+              <a href="{{ section.settings.link_url }}">{{ section.settings.link_label | default: 'SEE ALL' | escape }}</a>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+        <div class="shop-list">{{ cards }}</div>
+      </div>
+    </section>
+  {%- endif -%}
+</product-complementary>
+
+<script>
+  (function(){
+    var el = document.getElementById('product-complementary-{{ section.id }}');
+    if (!el) return;
+    // The recommendations endpoint needs a product_id. There isn't one on the
+    // cart page, so there is nothing to upgrade to -- leave the fallback alone.
+    if (el.getAttribute('data-has-product') !== 'true') return;
+    var url = el.getAttribute('data-url') +
+              '&product_id=' + el.getAttribute('data-product-id') +
+              '&section_id=' + el.getAttribute('data-section-id') +
+              '&intent=' + el.getAttribute('data-intent');
+    fetch(url).then(function(r){ return r.text(); }).then(function(html){
+      var doc = new DOMParser().parseFromString(html, 'text/html');
+      var inner = doc.querySelector('#product-complementary-{{ section.id }}');
+      if (!inner) return;
+      var fetched = inner.querySelector('section.recommendations-list');
+      // Only replace the server-rendered fallback when Shopify actually
+      // returned curated complementary products. Without this the fetch would
+      // swap the fallback for an identical fallback on every page view --
+      // a pointless repaint, and a visible flicker on slower connections.
+      if (!fetched || fetched.getAttribute('data-source') !== 'complementary') return;
+      el.innerHTML = inner.innerHTML;
+      // Cards arrived via innerHTML, so ona-product-card's delegated init never
+      // saw them. Same hook the recommendations row uses.
+      document.dispatchEvent(new Event('shopify:section:load'));
+    }).catch(function(e){ console.warn('[ONA complementary]', e); });
+  })();
+</script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "ONA complementary",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Shows curated complementary products when they are set up in Search & Discovery. Until then it falls back to the collection below, so the row is never empty."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_complementary",
+      "label": "Show this row",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Explore our merch"
+    },
+    {
+      "type": "collection",
+      "id": "fallback_collection",
+      "label": "Fallback collection",
+      "info": "Used when no complementary products are curated for the product. Sold-out items are skipped automatically; reorder the collection to control what shows first."
+    },
+    {
+      "type": "range",
+      "id": "max_products",
+      "label": "Products to show",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "url",
+      "id": "link_url",
+      "label": "Heading link"
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Heading link label",
+      "default": "SEE ALL"
+    }
+  ]
+}
+{% endschema %}
