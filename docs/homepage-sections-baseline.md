@@ -211,9 +211,21 @@ sections and fill in the settings. No re-porting needed.
 
 ## How to roll back
 
-**Easiest — theme editor.** Add a Divider section at the position in the table above and
-copy the settings from the JSON blocks. Nothing else is needed; these sections hold no
-content, only spacing.
+**Easiest — theme editor, but read the two traps first.** Add a Divider section at the
+position in the table above and copy the settings from the JSON blocks.
+
+1. **Six sections in the 25-section baseline carry `"disabled": true`** —
+   `donation_counter_DVC8Fr`, `logo_and_text_bjicP3`, `divider_exKiyW`, `slideshow_tPXjmj`,
+   `image_and_text_hmdyWz` and `7044f586-0700-4d42-9edf-a2954f4dc2fe`. A section added in
+   the theme editor is **enabled**. Restoring these through the editor therefore makes six
+   hidden sections visible on the home page. Add each one, then explicitly hide it.
+2. **Not every divider is pure spacing.** `divider_exKiyW` has `show_line: true` and
+   `line_thickness: 2`, so it draws a visible rule; `divider_37TUkT` carries the label
+   "Our bestseller". Copying settings blindly can reintroduce a visible line next to
+   `native_divider_test`, which already draws one.
+
+If either matters, use the git route below — it restores the disabled flags exactly and is
+the only method that reproduces the baseline byte for byte.
 
 **Exact — git.** The 25-section baseline lives at commit `3a886b6`:
 
@@ -231,11 +243,23 @@ with the `maximum of 25` error above.
 
 ## Freeing more capacity
 
-The home page has **eight divider sections, and only one carries a label** ("Our
-bestseller"). The other seven are pure spacing. Native sections control their own spacing
-through `padding-block-start` / `padding-block-end`, so converting those seven to section
-padding would release up to **seven slots** without deleting any content — enough for the
-collection carousel, story video and coffee quiz.
+Measured against the committed 23-section `templates/index.json` (an earlier draft of this
+note counted the 25-section baseline and said eight dividers / seven free slots — that was
+the pre-port template, not this one):
+
+| divider | type | renders | convertible |
+|---|---|---|---|
+| `divider_gNYWcT` | `ona-divider` | nothing (`show_line: false`, no label) | yes |
+| `divider_RcKHRW` | `ona-divider` | nothing | yes |
+| `divider_Edm3tb` | `ona-divider` | nothing | yes |
+| `divider_37TUkT` | `ona-divider` | label "Our bestseller" | no — visible content |
+| `native_divider_test` | `divider` | a 2px rule | no — visible content |
+
+So **five divider sections, of which three are pure spacing**. Native sections control their
+own spacing through `padding-block-start` / `padding-block-end`, so converting those three
+releases **three slots** without deleting anything visible — not seven. That is enough for
+one or two of the collection carousel, story video and coffee quiz, not all three; the rest
+of the capacity has to come from somewhere else.
 
 That is the cheapest capacity available and it should happen before any further section
 ports.
