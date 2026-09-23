@@ -1,0 +1,82 @@
+{% doc %}
+  Emits <meta name="robots" content="noindex, follow"> on OUT-OF-RANGE paginated
+  URLs — /blogs/news?page=99, /collections/all?page=999, /search?q=x&page=50.
+
+  Why: Shopify serves those with HTTP 200, a full layout, an empty result list and
+  a self-referencing canonical. That is an unbounded set of thin, indexable URLs
+  (anything can link ?page=<n> and Google will crawl and index it). Shopify gives
+  the theme no way to return a real 404, so noindex is the available lever.
+
+  This does NOT touch valid pages. Page 1 and every real paginated page stay fully
+  indexable — including every page of the Journal and Brew Guides.
+
+  Must render inside <head> — Google ignores a robots meta tag placed in <body>,
+  which is why this cannot live in the paginated section itself where `paginate`
+  is in scope. Since `paginate` is unreachable from the layout, the page count is
+  recomputed here from the item total and the per-page size.
+
+  The per-page size comes from snippets/paginate-page-size.liquid, which is the
+  same snippet the paginated sections themselves read, so the two can never drift
+  apart. Do not hardcode a page size here.
+
+  CORRECTNESS DEPENDS ON: the counts used here (blog.articles_count,
+  collection.products_count, search.results_count) being scoped exactly the way the
+  section's own `paginate` is scoped. They are — each one already reflects the active
+  tag, filter or query, so the page count computed here matches the real one.
+
+  That is a real dependency, not a free safety margin. If a count were ever scoped
+  more NARROWLY than the section paginates, the computed page count would be too LOW
+  and this snippet would noindex a legitimate page. Re-verify before changing it.
+
+  How to re-verify (takes a minute, needs a tag that exists):
+    /blogs/news?page=N            -> indexable up to the last real page, noindex after
+    /blogs/news/tagged/<tag>?page=2 -> noindex when the tag has one page of articles
+  If articles_count were the blog total instead of the tag total, that second URL
+  would come back indexable. Measured 2026-09-23 on live: it is noindexed, i.e.
+  tag-scoped. Note the storefront returns a 403 "Verifying your connection" challenge
+  to plain curl — send full browser headers or the result is meaningless.
+
+  An earlier version of this comment claimed articles_count stays the blog total on a
+  tag-filtered view, and therefore that errors could only ever be harmless. That was
+  wrong. The behaviour of the code has not changed; only this description of it.
+{% enddoc %}
+
+{%- liquid
+  assign robots_total = nil
+
+  case template.name
+    when 'blog'
+      assign robots_total = blog.articles_count
+    when 'collection'
+      assign robots_total = collection.products_count
+    when 'search'
+      assign robots_total = search.results_count
+  endcase
+-%}
+
+{%- if robots_total != nil and current_page > 1 -%}
+  {%- capture robots_per_page -%}{%- render 'paginate-page-size' -%}{%- endcapture -%}
+  {%- liquid
+    assign robots_per_page = robots_per_page | strip | plus: 0
+    comment
+      A zero page size would make every page look out of range and noindex the whole
+      template. Bail out rather than risk that.
+    endcomment
+    if robots_per_page > 0
+      assign robots_max_page = robots_total | divided_by: robots_per_page
+      assign robots_remainder = robots_total | modulo: robots_per_page
+      if robots_remainder > 0
+        assign robots_max_page = robots_max_page | plus: 1
+      endif
+      comment
+        An empty blog/collection/search still has a legitimate page 1.
+      endcomment
+      if robots_max_page < 1
+        assign robots_max_page = 1
+      endif
+      if current_page > robots_max_page
+        echo '<meta name="robots" content="noindex, follow">'
+      endif
+    endif
+  -%}
+{%- endif -%}
