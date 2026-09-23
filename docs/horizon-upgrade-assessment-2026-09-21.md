@@ -243,8 +243,39 @@ Checking that also surfaced something the coverage summary had glossed over.
 `sections/ona-collections-redirect.liquid` (`572e0167`) and `templates/page.location.json`
 (`691a08ee`). Both paths exist in `onacoffee_theme` git at commit `621b9ae`, but **no git
 blob in either repo matches those checksums** -- so "it is in git" is false of these
-versions. That is the same condition that holds back `154587398335`, so it is now held back
-too, pending the same backup. Fabric's 231 and Horizon's 70 uncovered files are a different
+versions. That is the same condition that holds back `154587398335`, so it was held back
+too, pending the same backup. **Both backups are now done and verified** --
+`~/ona-backups/theme-154587398335-unique-2026-09-23/` and
+`.../theme-152420909247-unique-2026-09-23/` -- so both are released. The deletion script
+re-checks the backups at run time and aborts if any file is missing (tested).
+
+Two things that came out of doing the backups properly:
+
+**The reference set should have been all 48 themes, not 6.** Uniqueness was re-checked
+against every theme in the store: `572e0167` and `691a08ee` each appear in exactly one.
+The conclusion held, but "unique across the 6 kept themes" was the wrong question --
+a file present in some *other* stale theme is still a file we would have been about to
+delete twice over.
+
+**Shopify JSON checksums can be verified after all.** Theme JSON is stored minified and
+returned pretty-printed, so `md5(returned text)` never matches `checksumMd5`. Re-minifying
+with `json.dumps(obj, separators=(',',':'), ensure_ascii=False)` **and escaping `/` as
+`\/`** reproduces the stored bytes exactly -- confirmed on all six backed-up JSON files.
+This is a stronger check than comparing checksums, because it proves nothing was truncated
+in transit. Note it applies to `config/settings_data.json` too, not just `templates/*.json`.
+
+### The stockist flags: a content question that turned out to be moot
+
+`152420909247`'s `page.location.json` disables four stockists -- Black Sugar, KIKU, Mountain
+Creek Bakery, Ugly Coffee -- and two of those (KIKU, Mountain Creek) are disabled there and
+nowhere else. That looked like deletion would silently un-hide two stockists, which would
+be a content decision rather than an engineering one.
+
+It is not. **The live theme does not use this template.** Live's own `page.location.json` is
+4,242 B, and the store finder renders from 301 `store_location` metaobjects. Checked against
+the live site on 2026-09-23: `/pages/locations` already lists KIKU, Mountain Creek Bakery
+and Ugly Coffee. They are visible today. The flags are dead state in a template nothing
+reads, and deleting the theme changes nothing a customer sees. Fabric's 231 and Horizon's 70 uncovered files are a different
 matter: those are stock files of a different theme family, and the case for deleting those
 two rests on `themeStoreId` and re-downloadability, never on coverage.
 
