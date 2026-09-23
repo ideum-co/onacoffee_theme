@@ -174,13 +174,47 @@ produced both false positives and false negatives -- themes called "byte-identic
 duplicates" that held unique `ona-product-card` / `ona-collection-template` builds, and one
 theme flagged as risky that was in fact a clean duplicate.
 
-What worked: probe ~15 ONA-authored files per theme
+The first correction was to probe ~15 ONA-authored files per theme
 (`assets/ona-*`, `sections/ona-*`, `snippets/ona-product-*`, `sections/product-template-2`)
 and compare every checksum against *all* themes being kept at once. An incomplete reference
 set is as misleading as too few files -- two of the corrections in this work were caused by
 comparing against a partial set of kept themes rather than by sampling too few files.
 
-Of 18 candidates checked that way, **4** had no ONA content of their own.
+That gave **4 of 18** candidates as clean. **That answer was also wrong**, and a review
+caught it: a fixed list of filenames cannot see a customisation in any file it does not
+name. The probe is only a faster way to be confident about the files you thought to check.
+
+### What actually works: compare every file
+
+Measured 2026-09-23. Page the complete file list of each candidate and of every kept theme,
+and treat a candidate file as covered only when a file with the **same path and the same
+`checksumMd5`** exists in at least one kept theme. That is 6,016 files across 10 themes --
+tedious, but it is the only method that can support a destructive decision.
+
+Doing that changed the answer again:
+
+| candidate | 15-file probe | full comparison |
+|---|---|---|
+| `151371677887` Horizon | safe | safe -- `themeStoreId 2481`, and `updatedAt` is 12 seconds after `createdAt`, so it was provably never edited |
+| `148713013439` Fabric | safe | safe -- `themeStoreId 3622`, re-downloadable (its editor *settings* would be lost; its code would not) |
+| `152420909247` ona_theme/main (stale) | safe | safe -- 681 of 683 files byte-identical to a kept theme |
+| `154587398335` ONA Redesign - Horizon base | safe, "zero ONA files" | **NOT SAFE** |
+
+`154587398335` holds four files that exist in no kept theme and in no git commit on any
+branch -- `templates/index.json`, `templates/collection.json`, `templates/search.json` and
+`config/settings_data.json`. They are theme-editor layout work, which git never sees. The
+probe missed them because it looked for `ona-*` filenames and these are stock paths holding
+non-stock content. Its `themeStoreId` is null and it was created two days before
+`ona_theme2026/main`: it is the redesign's precursor, not a stock theme.
+
+The probe also missed both files that actually differ in `152420909247`, and described it as
+having "all 12 ONA files identical" when it has 99 ONA-authored files. It reached the right
+verdict there without having established it.
+
+**The lesson worth keeping:** every method here that sampled a subset of files gave a
+confident wrong answer, and each wrong answer looked exactly as convincing as the right one.
+For a decision that destroys data, compare everything, and record the manifests so the next
+person can audit the reasoning instead of re-running it.
 
 ## What would change the upgrade decision
 
