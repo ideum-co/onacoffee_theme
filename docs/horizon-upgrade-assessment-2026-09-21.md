@@ -26,6 +26,7 @@ Relevant commits: `45c7db5` = v3.5.1 (2026-05-22), `f9aef27` = v4.2.0 (2026-09-1
 
 ```sh
 git clone --filter=blob:none https://github.com/Shopify/horizon.git
+rm -rf /tmp/h351 /tmp/h420          # must be empty, not merely present
 mkdir -p /tmp/h351 /tmp/h420
 git -C horizon archive 45c7db5 | tar -x -C /tmp/h351   # 3.5.1
 git -C horizon archive f9aef27 | tar -x -C /tmp/h420   # 4.2.0
@@ -34,6 +35,11 @@ git -C horizon archive f9aef27 | tar -x -C /tmp/h420   # 4.2.0
 `git -C horizon` matters: without it the `archive` calls run against whatever repo you are
 standing in, where those commits do not exist. The `mkdir` matters because `tar -C` will
 not create the target directories.
+
+The `rm -rf` matters when you reuse this for a later Horizon release. `tar -x` overwrites
+the paths present in the new revision but never removes files that the new revision
+deleted or renamed, so a leftover extraction silently inflates both the diff and every
+file count computed from it. Extract each revision into an empty directory.
 
 For each file Shopify changed, the first test is: does our copy still md5-match pristine
 3.5.1? If yes, we have not modified it. **That is necessary but not sufficient** -- see
@@ -80,10 +86,20 @@ Example from `snippets/price-filter.liquid`:
 The other 109 do not, and are individually assessable -- an earlier draft of this document
 claimed all 124 were blocked, which was wrong.
 
-**2. New snippets.** 4.2 adds 65 files. A 4.2 file that renders one of them cannot run on
-3.5.1. Of the 59 palette-free *liquid* files among the 124, **21 render a snippet that does
-not exist in 3.5.1** (`price-styles`, `text-block-styles`, `variant-picker-styles`,
-`checkbox-styles`, `dialog-styles`, and others).
+**2. New snippets.** 4.2 adds 65 files. Of the 59 palette-free *liquid* files among the
+124, **21 render a snippet that does not exist in 3.5.1** (`price-styles`,
+`text-block-styles`, `variant-picker-styles`, `checkbox-styles`, `dialog-styles`, and
+others).
+
+These 21 are **not automatically blocked**, and an earlier draft of this note was too
+strong in implying they were. A missing snippet can simply be copied across with its
+caller. What makes them expensive is that the copied snippet has its own dependencies,
+which have to be resolved recursively — and the style snippets above are exactly the ones
+that tend to reach back into the 4.x colour system, at which point test 1 applies to them
+instead. Treat the 21 as "carries an unresolved dependency, cost unknown until traced",
+not as "impossible". Tracing them was out of scope here because the conclusion below does
+not turn on it; if someone wants a specific cherry-pick from this set, trace that one
+file's snippet tree rather than trusting this count.
 
 Net of both tests:
 
