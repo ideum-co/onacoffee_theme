@@ -1,0 +1,277 @@
+{%- liquid
+  assign settings = section.settings
+
+  assign show_arrows = false
+  if settings.icons_style != 'none' and section.blocks.size > settings.columns
+    assign show_arrows = true
+  endif
+-%}
+
+{%- capture slides -%}
+  {%- for block in section.blocks -%}
+    {%- capture slide_content -%}
+      <figure
+        class="press-quotes__item"
+        {{ block.shopify_attributes }}
+      >
+        {%- comment -%}
+          SVG first: Shopify's image picker cannot select an SVG, and pasted markup also lets the
+          logo pick up the section's colour through currentColor, which is how the design treats
+          these one-colour press logos.
+        {%- endcomment -%}
+        {%- if block.settings.logo_svg != blank -%}
+          <span class="press-quotes__logo--svg">{%- render 'svg-without-styles', svg: block.settings.logo_svg -%}</span>
+        {%- elsif block.settings.logo != blank -%}
+          {{
+            block.settings.logo
+            | image_url: width: 600
+            | image_tag: widths: '150, 300, 450, 600', sizes: '(min-width: 750px) 20vw, 60vw', loading: 'lazy', class: 'press-quotes__logo'
+          }}
+        {%- elsif block.settings.source != blank -%}
+          <p class="press-quotes__source">{{ block.settings.source }}</p>
+        {%- endif -%}
+
+        {%- if block.settings.quote != blank -%}
+          <blockquote class="press-quotes__quote">{{ block.settings.quote }}</blockquote>
+        {%- endif -%}
+      </figure>
+    {%- endcapture -%}
+    {%- render 'slideshow-slide',
+      index: forloop.index0,
+      children: slide_content,
+      class: 'press-quotes__slide'
+    -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+<div
+  class="press-quotes spacing-style"
+  style="
+    --press-quotes-background: {{ settings.background_color }};
+    --press-quotes-color: {{ settings.text_color }};
+    --press-quotes-columns: {{ settings.columns }};
+    {%- render 'spacing-style', settings: settings %}
+  "
+  {{ section.shopify_attributes }}
+>
+  {%- if section.blocks.size > 0 -%}
+    {%- render 'slideshow',
+      ref: 'pressQuotes',
+      class: 'press-quotes__carousel',
+      slides: slides,
+      slide_count: section.blocks.size,
+      show_arrows: show_arrows,
+      icon_style: settings.icons_style,
+      icon_shape: 'none',
+      arrows_position: 'center',
+      auto_hide_controls: true,
+      infinite: false,
+      initial_slide: 0
+    -%}
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .press-quotes {
+    --slide-width: calc(100% / var(--press-quotes-columns, 3));
+
+    padding-inline: var(--page-margin, 1rem);
+    background: var(--press-quotes-background);
+    color: var(--press-quotes-color);
+
+    @media screen and (max-width: 749px) {
+      --slide-width: 100%;
+    }
+  }
+
+  .press-quotes__carousel {
+    inline-size: 100%;
+  }
+
+  /* The theme's slideshow paints its own page-coloured background, which showed up as a pale
+     band across this section. */
+  .press-quotes__carousel slideshow-container {
+    background: transparent;
+  }
+
+  /* Arrows sit at the edges and stay visible, as in the design, instead of fading in on hover
+     and blending against the background. */
+  .press-quotes__carousel slideshow-arrows {
+    mix-blend-mode: normal;
+  }
+
+  .press-quotes__carousel slideshow-arrows .slideshow-control {
+    opacity: 1;
+    color: currentcolor;
+
+    /* stylelint-disable-next-line declaration-no-important */
+    /* The hover-reveal animation in base.css is matched by a selector too specific to outrank
+       without an unreadable one of our own, and it starts from opacity 0 - which would make
+       always-visible arrows blink on hover. */
+    animation: none !important;
+  }
+
+  .press-quotes__item {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: var(--gap-xl);
+    margin: 0;
+
+    /* Room for the arrows, which are absolutely positioned at the edges of the carousel and
+       would otherwise sit on top of the first and last quote. */
+    padding-inline: var(--press-quotes-item-inline, 3rem);
+    text-align: center;
+  }
+
+  /* Height-driven so logos of different proportions line up as one band, which is how the
+     design reads. Width follows each logo's own ratio. */
+  .press-quotes__logo,
+  .press-quotes__logo--svg svg {
+    block-size: var(--press-quotes-logo-height, 6rem);
+    inline-size: auto;
+    max-inline-size: 100%;
+    object-fit: contain;
+  }
+
+  .press-quotes__logo--svg {
+    display: block;
+    line-height: 0;
+  }
+
+  .press-quotes__source {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: var(--font-h5--size, var(--font-size--xl));
+  }
+
+  .press-quotes__quote {
+    margin: 0;
+    font-size: var(--font-size--sm);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.press_quotes",
+  "tag": "section",
+  "blocks": [
+    {
+      "type": "quote",
+      "name": "t:names.press_quote",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "logo_svg",
+          "label": "t:settings.logo_svg",
+          "info": "t:info.press_quotes_logo_svg"
+        },
+        {
+          "type": "image_picker",
+          "id": "logo",
+          "label": "t:settings.logo"
+        },
+        {
+          "type": "text",
+          "id": "source",
+          "label": "t:settings.title"
+        },
+        {
+          "type": "textarea",
+          "id": "quote",
+          "label": "t:settings.text"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "t:settings.columns",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "icons_style",
+      "label": "t:settings.icon",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.none"
+        },
+        {
+          "value": "arrow",
+          "label": "t:options.arrow"
+        },
+        {
+          "value": "chevron",
+          "label": "t:options.chevron"
+        }
+      ],
+      "default": "arrow"
+    },
+    {
+      "type": "header",
+      "content": "t:content.colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "default": "#751132"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:settings.text_color",
+      "default": "#f5f4ea"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.press_quotes",
+      "blocks": [
+        {
+          "type": "quote"
+        },
+        {
+          "type": "quote"
+        },
+        {
+          "type": "quote"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
