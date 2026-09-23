@@ -150,8 +150,16 @@ filter bug fix.
 1. **Live stays on 3.5.1.** The upgrade is gated on a colour-system migration across 197
    modified files, to buy RTL support we do not need, with no fix reachable for free.
 2. **Bump `ona_theme2026` 4.1.4 -> 4.2.0 instead.** It is already past the 4.0 colour
-   migration, so for that theme this is a genuine version bump, and it is where 4.2's fixes
-   land at no cost. Victor's call.
+   migration, so for that theme this is a genuine version bump rather than a rewrite, and it
+   is where 4.2's fixes can realistically land. Victor's call.
+
+   **Not "free", and an earlier draft overstated this.** Being past the colour migration
+   establishes API compatibility, nothing more. That theme has **79 of 482 stock files
+   modified**, and any overlap between those 79 and the set Shopify changed between 4.1.4
+   and 4.2.0 is a manual conflict to resolve and test. The cost is a reviewable merge
+   instead of a rewrite -- which is the whole argument for that theme -- but it is not zero,
+   and it has not been measured. Measure it the same way as above: diff `f63ddf8` (its base)
+   against `f9aef27` (4.2.0) and intersect with our 79.
 3. **Do NOT delete the two `Updated copy of ...` themes yet.** An earlier draft recommended
    deleting them on the strength of their names. Checked properly on 2026-09-22, both carry
    ONA code found in no kept theme:
@@ -211,10 +219,46 @@ The probe also missed both files that actually differ in `152420909247`, and des
 having "all 12 ONA files identical" when it has 99 ONA-authored files. It reached the right
 verdict there without having established it.
 
+### The criterion has a weakness. It does not bite here, and that was checked.
+
+"Covered if the same path+checksum exists in **any** kept theme" proves every individual
+file survives somewhere. It does **not** prove any single kept theme reproduces the
+candidate's coherent combination of templates and settings -- 681 files could match one
+theme and 2 match another, leaving no theme that actually reproduces the candidate.
+
+Measured, rather than assumed:
+
+| candidate | covered by the union | covered by the best single theme |
+|---|---|---|
+| `152420909247` ona_theme/main (stale) | 681/683 | **681**/683 (`ona_theme/staging`) |
+| `148713013439` Fabric | 180/411 | **180**/411 |
+| `151371677887` Horizon | 348/418 | **348**/418 |
+
+Union equals best-single in every case, so no verdict here rests on stitching themes
+together. Where a future candidate's two numbers differ, treat the single-theme number as
+the real one, or back the candidate up.
+
+Checking that also surfaced something the coverage summary had glossed over.
+`152420909247`'s two uncovered files are covered by *nothing*:
+`sections/ona-collections-redirect.liquid` (`572e0167`) and `templates/page.location.json`
+(`691a08ee`). Both paths exist in `onacoffee_theme` git at commit `621b9ae`, but **no git
+blob in either repo matches those checksums** -- so "it is in git" is false of these
+versions. That is the same condition that holds back `154587398335`, so it is now held back
+too, pending the same backup. Fabric's 231 and Horizon's 70 uncovered files are a different
+matter: those are stock files of a different theme family, and the case for deleting those
+two rests on `themeStoreId` and re-downloadability, never on coverage.
+
+### The evidence is checked in
+
+The complete manifests are at `docs/theme-manifests-2026-09-23/` -- one TSV per theme,
+`checksumMd5<TAB>filename`. Once a theme is deleted the Admin API can no longer answer the
+question and the kept themes drift, so the numbers above would become unverifiable. They
+are committed so the next person can audit the reasoning rather than re-run it.
+
 **The lesson worth keeping:** every method here that sampled a subset of files gave a
 confident wrong answer, and each wrong answer looked exactly as convincing as the right one.
-For a decision that destroys data, compare everything, and record the manifests so the next
-person can audit the reasoning instead of re-running it.
+For a decision that destroys data, compare everything, record the evidence, and state the
+criterion precisely enough that its weaknesses can be checked.
 
 ## What would change the upgrade decision
 
