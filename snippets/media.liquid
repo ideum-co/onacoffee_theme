@@ -29,6 +29,34 @@
 {%- endcomment -%}
 {% capture image_size %}{{ height }}x{{ height }}{% endcapture %}
 
+{%- liquid
+  # Two separate faults showed up here.
+  #
+  # 1. Dividing 1 by the media aspect ratio raised "divided by 0" whenever an item
+  #    reported no usable ratio, and Shopify printed that error INTO the style attribute.
+  # 2. This snippet also runs when there is no media at all -- the home page
+  #    media-with-content block reaches it with an empty media object -- so the
+  #    intrinsic-ratio box reserved space for an image that never arrives.
+  #
+  # Defaulting the ratio to 1 fixes (1) but makes (2) far worse: an empty box with
+  # padding-top:100% becomes a full-width square of blank page. So when the ratio is
+  # unusable we emit NO padding-top at all and let the box collapse around whatever it
+  # actually contains -- nothing, when there is no media. Real galleries are unaffected:
+  # a valid ratio still gets its padding-top exactly as before.
+  assign media_ratio = media.aspect_ratio
+  assign preview_ratio = media.preview_image.aspect_ratio
+
+  assign media_pt = ''
+  if media_ratio != blank and media_ratio > 0
+    assign media_pt = 1 | divided_by: media_ratio | times: 100
+  endif
+
+  assign preview_pt = ''
+  if preview_ratio != blank and preview_ratio > 0
+    assign preview_pt = 1 | divided_by: preview_ratio | times: 100
+  endif
+-%}
+
 <div id="{{ media_wrapper_id }}"
     class="product-single__media-wrapper js{% unless featured_media == media %} hide{% endunless %}"
     {% if media.media_type == 'video' or media.media_type == 'external_video' %} data-product-media-type-video data-enable-video-looping="{{ section.settings.enable_video_looping }}"{% endif %}
@@ -44,7 +72,7 @@
       {% include 'image-style', height: height, wrapper_id: media_wrapper_id, img_id: media_id, image: media.preview_image %}
       <div
         id="{{ zoom_media_id }}"
-        style="padding-top:{{ 1 | divided_by: media.preview_image.aspect_ratio | times: 100}}%;"
+        {% if preview_pt != '' %}style="padding-top:{{ preview_pt }}%;"{% endif %}
         class="product-single__media{% if product.media.size > 1 %} product-single__media--has-thumbnails{% endif %}{% if enable_image_zoom %} js-zoom-enabled{% endif %}"
         {% if enable_image_zoom %} data-image-zoom-wrapper data-zoom="{{ media | img_url: image_zoom_size, scale: image_scale }}"{% endif %}
         data-image-loading-animation>
@@ -59,11 +87,11 @@
           {% if featured_media == media and request.page_type == 'product' %} onload="window.performance.mark('debut:product:image_visible');"{% endif %}>
       </div>
     {% when 'external_video' %}
-      <div class="product-single__media" style="padding-top: {{ 1 | divided_by: media.aspect_ratio | times: 100 }}%;">
+      <div class="product-single__media"{% if media_pt != '' %} style="padding-top: {{ media_pt }}%;"{% endif %}>
         {{ media | external_video_tag }}
       </div>
     {% when 'video' %}
-      <div class="product-single__media product-single__media--video product-single__media--{{ media.id }}" style="padding-top: {{ 1 | divided_by: media.aspect_ratio | times: 100 }}%;">
+      <div class="product-single__media product-single__media--video product-single__media--{{ media.id }}"{% if media_pt != '' %} style="padding-top: {{ media_pt }}%;"{% endif %}>
         {{ media | video_tag: class: 'media-video', image_size: image_size }}
       </div>
     {% when 'model' %}
@@ -71,7 +99,7 @@
         {{ media | model_viewer_tag: image_size: image_size, reveal: 'interaction', toggleable: true, data-model-id: media.id }}
       </div>
     {% else %}
-      <div class="product-single__media" style="padding-top: {{ 1 | divided_by: media.aspect_ratio | times: 100 }}%;">
+      <div class="product-single__media"{% if media_pt != '' %} style="padding-top: {{ media_pt }}%;"{% endif %}>
         {{ media | media_tag: class: 'media-item', image_size: image_size }}
       </div>
   {% endcase %}
