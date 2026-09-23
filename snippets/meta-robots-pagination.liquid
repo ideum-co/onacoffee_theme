@@ -19,12 +19,26 @@
   same snippet the paginated sections themselves read, so the two can never drift
   apart. Do not hardcode a page size here.
 
-  SAFETY PROPERTY: the counts used here (blog.articles_count, collection.products_count,
-  search.results_count) are always >= the number of items the section actually paginates
-  — on a tag-filtered blog view, articles_count stays the blog total. So the computed
-  page count can only ever be too HIGH, never too low. A wrong answer therefore means
-  "failed to noindex a thin page" (harmless), never "noindexed a real page" (harmful).
-  Preserve that direction if you change this.
+  CORRECTNESS DEPENDS ON: the counts used here (blog.articles_count,
+  collection.products_count, search.results_count) being scoped exactly the way the
+  section's own `paginate` is scoped. They are — each one already reflects the active
+  tag, filter or query, so the page count computed here matches the real one.
+
+  That is a real dependency, not a free safety margin. If a count were ever scoped
+  more NARROWLY than the section paginates, the computed page count would be too LOW
+  and this snippet would noindex a legitimate page. Re-verify before changing it.
+
+  How to re-verify (takes a minute, needs a tag that exists):
+    /blogs/news?page=N            -> indexable up to the last real page, noindex after
+    /blogs/news/tagged/<tag>?page=2 -> noindex when the tag has one page of articles
+  If articles_count were the blog total instead of the tag total, that second URL
+  would come back indexable. Measured 2026-09-23 on live: it is noindexed, i.e.
+  tag-scoped. Note the storefront returns a 403 "Verifying your connection" challenge
+  to plain curl — send full browser headers or the result is meaningless.
+
+  An earlier version of this comment claimed articles_count stays the blog total on a
+  tag-filtered view, and therefore that errors could only ever be harmless. That was
+  wrong. The behaviour of the code has not changed; only this description of it.
 {% enddoc %}
 
 {%- liquid
