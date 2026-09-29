@@ -1021,7 +1021,8 @@
         "text_color": "#f5f4ea",
         "padding-block-start": 64,
         "padding-block-end": 64
-      }
+      },
+      "disabled": true
     }
   },
   "order": [
