@@ -20,6 +20,12 @@
   assign show_image = false
   assign show_video = false
 
+  # Liquid does not allow filters inside an if tag, so normalise the values here instead.
+  # The image_position option value used to carry a trailing space ("contain "), and blocks
+  # configured before that was fixed still hold it.
+  assign image_position_normalised = block_settings.image_position | strip
+  assign video_position_normalised = block_settings.video_position | strip
+
 
   if block_settings.media_type == 'image'
     assign show_image = true
@@ -34,7 +40,7 @@
   class="
     media-block
     spacing-style
-    {% if show_image and block_settings.image_position == 'contain' or show_video and block_settings.video_position == 'contain' %}
+    {% if show_image and image_position_normalised == 'contain' or show_video and video_position_normalised == 'contain' %}
       media-block--contain
     {% endif %}
   "
