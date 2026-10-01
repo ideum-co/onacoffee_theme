@@ -1,7 +1,11 @@
 
 {% liquid
   assign unset_image_tag = false
-  if block.settings.image_position == 'contain'
+  # `| strip`: the option value here used to carry a trailing space ("contain "), so blocks
+  # configured before that typo was fixed still hold it. Without the strip they compare false
+  # and the focal point is never neutralised.
+  assign image_position_normalised = block.settings.image_position | strip
+  if image_position_normalised == 'contain'
     assign unset_image_tag = true
   endif
 %}
@@ -71,11 +75,33 @@
           "label": "t:options.cover"
         },
         {
-          "value": "contain ",
+          "value": "contain",
           "label": "t:options.contain"
         }
       ],
       "default": "cover",
+      "visible_if": "{{ block.settings.media_type == 'image' }}"
+    },
+    {
+      "type": "select",
+      "id": "image_position_mobile",
+      "label": "t:settings.image_position_mobile",
+      "info": "t:info.image_position_mobile",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.default"
+        },
+        {
+          "value": "cover",
+          "label": "t:options.cover"
+        },
+        {
+          "value": "contain",
+          "label": "t:options.contain"
+        }
+      ],
+      "default": "",
       "visible_if": "{{ block.settings.media_type == 'image' }}"
     },
     {
