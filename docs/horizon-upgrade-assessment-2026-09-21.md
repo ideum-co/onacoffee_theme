@@ -154,19 +154,28 @@ filter bug fix.
    is where 4.2's fixes can realistically land. Victor's call.
 
    **Not "free", and an earlier draft overstated this.** Being past the colour migration
-   establishes API compatibility, nothing more. That theme has modified stock files, and any
-   overlap between those and the set Shopify changed between 4.1.4 and 4.2.0 is a manual
-   conflict to resolve and test. The cost is a reviewable merge instead of a rewrite --
-   which is the whole argument for that theme -- but it is not zero.
+   establishes API compatibility, nothing more. That theme has modified stock files, and the
+   ones Shopify also changed between 4.1.4 and 4.2.0 overlap at the file level and have to be
+   merged and tested. The cost is a reviewable merge instead of a rewrite -- which is the
+   whole argument for that theme -- but it is not zero.
 
    > **Measured 2026-10-13 -- see
    > [Measured: what the `ona_theme2026` 4.1.4 -> 4.2.0 bump actually costs](#measured-what-the-ona_theme2026-414---420-bump-actually-costs)
-   > below, which supersedes the figures this item used to carry.** The "79 of 482 stock
-   > files modified" quoted here was measured 2026-09-21 and is stale: it is **117 of 531**
-   > today. The conclusion holds and is stronger than assumed -- 125 files drop in clean, 79
-   > conflict, but 57 of those are locales that merge as a key union with zero collisions,
-   > leaving **22 code conflicts of which only 5 overlap at the line level, 37 lines in
-   > total**. Do not act on the older numbers.
+   > below. It supersedes two things this item used to say, and both were wrong in the
+   > cautious direction.**
+   >
+   > It said **"79 of 482 stock files modified"**, measured 2026-09-21. Stale: it is
+   > **117 of 531** today, because `ona_theme2026/main` has moved on.
+   >
+   > It also said any such overlap **"is a manual conflict to resolve and test"**. That is
+   > the wrong unit. A file-level overlap is mostly not a manual conflict: of the 79
+   > overlapping files, 57 are locale catalogues that union mechanically with **zero**
+   > colliding keys, 17 more are same-file-different-region and three-way merge with no
+   > human decision, and only **5 files -- 37 lines -- actually need a person**. 125 further
+   > files drop in clean.
+   >
+   > The decision holds and is better supported than when it was written. Do not act on the
+   > older numbers or on "it has not been measured".
 3. **Do NOT delete the two `Updated copy of ...` themes yet.** An earlier draft recommended
    deleting them on the strength of their names. Checked properly on 2026-09-22, both carry
    ONA code found in no kept theme:
