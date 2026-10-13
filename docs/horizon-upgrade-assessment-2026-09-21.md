@@ -154,12 +154,19 @@ filter bug fix.
    is where 4.2's fixes can realistically land. Victor's call.
 
    **Not "free", and an earlier draft overstated this.** Being past the colour migration
-   establishes API compatibility, nothing more. That theme has **79 of 482 stock files
-   modified**, and any overlap between those 79 and the set Shopify changed between 4.1.4
-   and 4.2.0 is a manual conflict to resolve and test. The cost is a reviewable merge
-   instead of a rewrite -- which is the whole argument for that theme -- but it is not zero,
-   and it has not been measured. Measure it the same way as above: diff `f63ddf8` (its base)
-   against `f9aef27` (4.2.0) and intersect with our 79.
+   establishes API compatibility, nothing more. That theme has modified stock files, and any
+   overlap between those and the set Shopify changed between 4.1.4 and 4.2.0 is a manual
+   conflict to resolve and test. The cost is a reviewable merge instead of a rewrite --
+   which is the whole argument for that theme -- but it is not zero.
+
+   > **Measured 2026-10-13 -- see
+   > [Measured: what the `ona_theme2026` 4.1.4 -> 4.2.0 bump actually costs](#measured-what-the-ona_theme2026-414---420-bump-actually-costs)
+   > below, which supersedes the figures this item used to carry.** The "79 of 482 stock
+   > files modified" quoted here was measured 2026-09-21 and is stale: it is **117 of 531**
+   > today. The conclusion holds and is stronger than assumed -- 125 files drop in clean, 79
+   > conflict, but 57 of those are locales that merge as a key union with zero collisions,
+   > leaving **22 code conflicts of which only 5 overlap at the line level, 37 lines in
+   > total**. Do not act on the older numbers.
 3. **Do NOT delete the two `Updated copy of ...` themes yet.** An earlier draft recommended
    deleting them on the strength of their names. Checked properly on 2026-09-22, both carry
    ONA code found in no kept theme:
