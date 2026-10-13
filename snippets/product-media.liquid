@@ -145,35 +145,6 @@
 
   .product-media__image {
     object-position: var(--focal-point, center center);
-
-    /*
-     * ONA: let the product image use the width of its media column.
-     *
-     * Horizon lays this image out at its intrinsic size rather than stretching
-     * it, and `.product-media`'s `aspect-ratio` above computes to `auto` on the
-     * live theme (something later in the cascade overrides it), so the media box
-     * collapses to the image's own height. Measured on a 1166px viewport: the
-     * media column is 567px wide and every product shot -- Aspen, the drip bag
-     * boxes, In Sequence -- renders at 257px. That is 45% of the column, and it
-     * is independent of aspect ratio, so wide and tall products are equally
-     * short-changed.
-     *
-     * Filling the width is worth ~2.2x linear (257px -> 567px). `max-height`
-     * keeps the existing constrain-to-viewport cap honoured so tall bag shots
-     * still cannot outgrow the screen, and `object-fit: contain` means nothing
-     * is ever cropped.
-     *
-     * The gap to the details column tightens as a result: today's roomy 175px
-     * is an artefact of a 257px image sitting centred in a 567px column, not a
-     * designed value -- the real column gap is 20px. Dial the image back with
-     * --ona-product-media-max-width (e.g. 75%) to trade width for air; it is
-     * the single number to tune after previewing.
-     */
-    width: 100%;
-    height: auto;
-    max-width: var(--ona-product-media-max-width, 100%);
-    max-height: var(--constrained-height, none);
-    object-fit: contain;
   }
 
   /*** Media border-radius feature ****/

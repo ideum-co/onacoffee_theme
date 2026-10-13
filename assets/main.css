@@ -7018,28 +7018,20 @@ div.snize-ac-results ul li.snize-view-all-link span:hover:before {
 }
 
 .product-top .product-information__media img {
-  width: 307px;
+  /*
+   * ONA: the product image used to be pinned to a fixed pixel width here
+   * (307 / 257 / 207 / 167 per breakpoint), which is why every product shot --
+   * tall bags, wide drip-bag boxes, In Sequence -- rendered at exactly the same
+   * width and used only ~45% of its media column, regardless of aspect ratio.
+   * Letting it take the column width is ~2.2x linear. The breakpoint overrides
+   * below were removed with it; the column itself is already responsive.
+   * --ona-product-media-width is the one knob if we want to trade width for air.
+   */
+  width: var(--ona-product-media-width, 100%);
+  height: auto;
   position: relative;
   z-index: 2;
   background-color: transparent;
-}
-
-@media (max-width: 1199.98px) {
-  .product-top .product-information__media img {
-    width: 257px;
-  }
-}
-
-@media (max-width: 991.98px) {
-  .product-top .product-information__media img {
-    width: 207px;
-  }
-}
-
-@media (max-width: 575.98px) {
-  .product-top .product-information__media img {
-    width: 167px;
-  }
 }
 
 .product-top .product-details {
