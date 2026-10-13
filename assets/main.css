@@ -7017,7 +7017,7 @@ div.snize-ac-results ul li.snize-view-all-link span:hover:before {
   }
 }
 
-.product-top .product-information__media img {
+.product-top .product-information__media .media-fit-contain img {
   /*
    * ONA: the product image used to be pinned to a fixed pixel width here
    * (307 / 257 / 207 / 167 per breakpoint), which is why every product shot --
@@ -7026,6 +7026,14 @@ div.snize-ac-results ul li.snize-view-all-link span:hover:before {
    * Letting it take the column width is ~2.2x linear. The breakpoint overrides
    * below were removed with it; the column itself is already responsive.
    * --ona-product-media-width is the one knob if we want to trade width for air.
+   *
+   * Scoped to .media-fit-contain, which product-media-gallery-content.liquid
+   * puts on .product-media-container, so that a gallery configured for 'cover'
+   * (or for a fixed aspect ratio, which forces cover) keeps Horizon's
+   * width/height 100% + object-fit: cover instead of being letterboxed by
+   * these higher-specificity declarations. All three product JSON templates
+   * are 'contain' + 'adapt' today, so this changes nothing now; it stops the
+   * rule from silently winning if that setting is ever changed in the editor.
    */
   width: var(--ona-product-media-width, 100%);
   height: auto;
@@ -7056,7 +7064,7 @@ div.snize-ac-results ul li.snize-view-all-link span:hover:before {
  *    where the image most needs the full column.
  */
 @media screen and (min-width: 750px) {
-  .product-top .product-information__media img {
+  .product-top .product-information__media .media-fit-contain img {
     max-height: var(--constrained-height, none);
   }
 }
