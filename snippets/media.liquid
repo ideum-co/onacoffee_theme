@@ -1,106 +1,151 @@
-{% comment %}
-  Renders a media element for the product gallery.
-  Media types include: image, video, external_video and model.
-  Accepts:
-  - media: {Object} Media Liquid object (required)
-  - featured_media: {Object} Media Liquid object (required) - featured media of a given product or variant
-  - height: {Number} Maximum height of the gallery (required)
-  - image_zoom_size: {String} Size of the zoomed image (e.g., '1024x1024') (required for media type image)
-  - enable_image_zoom: {Boolean} Image zoom setting (required for media type image)
-  - image_scale:  {String} Image scale (e.g., '2') (required for media type image)
-
-  Usage:
-  {%- for media in product.media -%}
-    {% include 'media', media: media, featured_media: featured_media, height: height %}
-  {%- endfor -%}
-
-  {%- for media in product.media -%}
-    {% include 'media', media: media, featured_media: featured_media, height: height,
-     enable_image_zoom: enable_image_zoom, image_zoom_size: product_image_zoom_size, image_scale: product_image_scale %}
-  {%- endfor -%}
-{% endcomment %}
-
-{% capture media_id %}FeaturedMedia-{{ section.id }}-{{ media.id }}{% endcapture %}
-{% capture media_class %}product-featured-media{% endcapture %}
-{% capture media_wrapper_id %}{{ media_id }}-wrapper{% endcapture %}
-
 {%- comment -%}
-  Load different poster image sizes depending on the product layout
+  Ported from ona_theme2026 (Horizon 4.1.4) on 2026-09-29 to replace a Debut-era
+  snippet of the same name that was shadowing it. See snippets/ona-media-debut.liquid.
+
+  Two things were removed for this 3.5.1 theme, both of which could only ever fire when
+  a block defines `background_color` -- which `_media-without-appearance` here does not:
+    * `render 'contrast-override'` -- that snippet does not exist in this theme
+    * the `color-custom-<block-id>` class -- 4.x colour system, absent on 3.5.1
+  Restore both if this theme is ever moved to 4.x.
 {%- endcomment -%}
-{% capture image_size %}{{ height }}x{{ height }}{% endcapture %}
+{%- doc -%}
+  Renders media block contents (used in _media and _media-without-appearance blocks)
 
-{%- liquid
-  # Two separate faults showed up here.
-  #
-  # 1. Dividing 1 by the media aspect ratio raised "divided by 0" whenever an item
-  #    reported no usable ratio, and Shopify printed that error INTO the style attribute.
-  # 2. This snippet also runs when there is no media at all -- the home page
-  #    media-with-content block reaches it with an empty media object -- so the
-  #    intrinsic-ratio box reserved space for an image that never arrives.
-  #
-  # Defaulting the ratio to 1 fixes (1) but makes (2) far worse: an empty box with
-  # padding-top:100% becomes a full-width square of blank page. So when the ratio is
-  # unusable we emit NO padding-top at all and let the box collapse around whatever it
-  # actually contains -- nothing, when there is no media. Real galleries are unaffected:
-  # a valid ratio still gets its padding-top exactly as before.
-  assign media_ratio = media.aspect_ratio
-  assign preview_ratio = media.preview_image.aspect_ratio
+  @param {object} [block] - The block object
+  @param {boolean} [unset_image_tag] - if true, ignores the image focal point in the image
+{%- enddoc -%}
 
-  assign media_pt = ''
-  if media_ratio != blank and media_ratio > 0
-    assign media_pt = 1 | divided_by: media_ratio | times: 100
+{% liquid
+  assign block_settings = block.settings
+  assign show_image = false
+  assign show_video = false
+
+  # Liquid does not allow filters inside an if tag, so normalise the values here instead.
+  # The image_position option value used to carry a trailing space ("contain "), and blocks
+  # configured before that was fixed still hold it.
+  assign image_position_normalised = block_settings.image_position | strip
+  assign video_position_normalised = block_settings.video_position | strip
+
+
+  if block_settings.media_type == 'image'
+    assign show_image = true
   endif
 
-  assign preview_pt = ''
-  if preview_ratio != blank and preview_ratio > 0
-    assign preview_pt = 1 | divided_by: preview_ratio | times: 100
+  if block_settings.media_type == 'video'
+    assign show_video = true
   endif
--%}
+%}
 
-<div id="{{ media_wrapper_id }}"
-    class="product-single__media-wrapper js{% unless featured_media == media %} hide{% endunless %}"
-    {% if media.media_type == 'video' or media.media_type == 'external_video' %} data-product-media-type-video data-enable-video-looping="{{ section.settings.enable_video_looping }}"{% endif %}
-    {% if media.media_type == 'model' %} data-product-media-type-model{% endif %}
-    {% if media.media_type == 'external_video' %} data-video-id="{{ media.external_id }}"{% endif %}
-    data-product-single-media-wrapper
-    data-media-id="{{ section.id }}-{{ media.id }}"
-    tabindex="-1">
-  {% case media.media_type %}
-    {% when 'image' %}
-      {% capture zoom_media_id %}ImageZoom-{{ section.id }}-{{ media.id }}{% endcapture %}
-      {%- assign img_url = media | img_url: '1x1' | replace: '_1x1.', '_{width}x.' -%}
-      {% include 'image-style', height: height, wrapper_id: media_wrapper_id, img_id: media_id, image: media.preview_image %}
-      <div
-        id="{{ zoom_media_id }}"
-        {% if preview_pt != '' %}style="padding-top:{{ preview_pt }}%;"{% endif %}
-        class="product-single__media{% if product.media.size > 1 %} product-single__media--has-thumbnails{% endif %}{% if enable_image_zoom %} js-zoom-enabled{% endif %}"
-        {% if enable_image_zoom %} data-image-zoom-wrapper data-zoom="{{ media | img_url: image_zoom_size, scale: image_scale }}"{% endif %}
-        data-image-loading-animation>
-        <img id="{{ media_id }}"
-          class="feature-row__image {{ media_class }} lazyload{% unless featured_media == media %} lazypreload{% endunless %}"
-          data-src="{{ img_url }}"
-          data-widths="[180, 360, 540, 720, 900, 1080, 1296, 1512, 1728, 2048]"
-          data-aspectratio="{{ media.preview_image.aspect_ratio }}"
-          data-sizes="auto"
-          {% if enable_image_zoom %} data-image-zoom {% endif %}
-          alt="{{ media.alt | escape }}"
-          {% if featured_media == media and request.page_type == 'product' %} onload="window.performance.mark('debut:product:image_visible');"{% endif %}>
-      </div>
-    {% when 'external_video' %}
-      <div class="product-single__media"{% if media_pt != '' %} style="padding-top: {{ media_pt }}%;"{% endif %}>
-        {{ media | external_video_tag }}
-      </div>
-    {% when 'video' %}
-      <div class="product-single__media product-single__media--video product-single__media--{{ media.id }}"{% if media_pt != '' %} style="padding-top: {{ media_pt }}%;"{% endif %}>
-        {{ media | video_tag: class: 'media-video', image_size: image_size }}
-      </div>
-    {% when 'model' %}
-      <div class="product-single__media" style="padding-top: 100%">
-        {{ media | model_viewer_tag: image_size: image_size, reveal: 'interaction', toggleable: true, data-model-id: media.id }}
-      </div>
+<div
+  class="
+    media-block
+    spacing-style
+    {% if show_image and image_position_normalised == 'contain' or show_video and video_position_normalised == 'contain' %}
+      media-block--contain
+    {% endif %}
+  "
+  style="
+    {% render 'border-override', settings: block_settings %}
+    {% render 'spacing-style', settings: block_settings %}
+    --image-position: {{ block_settings.image_position }};
+    {%- if block_settings.image_position_mobile != blank %}
+      --image-position-mobile: {{ block_settings.image_position_mobile }};
+    {%- endif %}
+    --video-position: {{ block_settings.video_position }};
+  "
+  {{ block.shopify_attributes }}
+>
+  {%- if show_image -%}
+    {% capture image_tag %}
+      {% if block_settings.image != blank %}
+        {% render 'image',
+          image: block_settings.image,
+          class: 'media-block__media border-style',
+          unset_image_tag: unset_image_tag
+        %}
+      {% else %}
+        <div class="media-block__media border-style">
+          {{ 'detailed-apparel-1' | placeholder_svg_tag: 'media-block__placeholder' }}
+        </div>
+      {% endif %}
+    {% endcapture %}
+
+    {% if block_settings.link != blank %}
+      <a
+        href="{{ block_settings.link }}"
+        class="media-block__media-link"
+      >
+        {{ image_tag }}
+      </a>
     {% else %}
-      <div class="product-single__media"{% if media_pt != '' %} style="padding-top: {{ media_pt }}%;"{% endif %}>
-        {{ media | media_tag: class: 'media-item', image_size: image_size }}
-      </div>
-  {% endcase %}
+      {{ image_tag }}
+    {% endif %}
+  {%- elsif show_video -%}
+    {% render 'video',
+      video: block_settings.video,
+      video_autoplay: block_settings.video_autoplay,
+      video_loop: block_settings.video_loop,
+      video_class: 'media-block__media media-block__media--video border-style'
+    %}
+  {%- else -%}
+    <div class="media-block__media border-style">
+      {{ 'hero-apparel-3' | placeholder_svg_tag }}
+    </div>
+  {%- endif -%}
 </div>
+
+{% stylesheet %}
+  .media-block {
+    overflow: hidden;
+    position: relative;
+
+    @media screen and (min-width: 750px) {
+      min-height: var(--media-height);
+    }
+  }
+
+  .media-block__media {
+    height: var(--media-height-mobile, auto);
+
+    /* Unquoted: `'cover'` is not a valid `object-fit` keyword, so the declaration was invalid
+       whenever the variable was unset and the image fell back to `fill`, stretched.
+
+       The mobile value comes first because this is the base rule, and it falls back to the desktop
+       one when it is not set. A phone puts the media in a much shorter box, so a crop that reads
+       well on a wide screen can cut the subject badly there - hence the separate setting. */
+    object-fit: var(--image-position-mobile, var(--image-position, cover));
+    object-position: center center;
+    width: 100%;
+
+    @media screen and (min-width: 750px) {
+      height: 100%;
+      position: absolute;
+      object-fit: var(--image-position, cover);
+    }
+  }
+
+  deferred-media[class].media-block__media
+    :is(.deferred-media__poster-button img, .deferred-media__poster-button ~ video) {
+    object-fit: var(--video-position, cover);
+  }
+
+  /* This is to support corner radius on video and align the video to the center of the block */
+  .media-block__placeholder {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: center center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .media-block__media--video {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    @media screen and (max-width: 749px) {
+      --media-height-mobile: auto;
+    }
+  }
+{% endstylesheet %}

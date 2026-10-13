@@ -14,6 +14,22 @@
     </div>
   </div>
 </section>
+{% stylesheet %}
+  /* Vertical rhythm.
+     ona_theme2026 runs a consistent 80/80 padding rhythm across the home page
+     (120 for feature blocks, 100/80 for Learn with ONA, 64 for press quotes).
+     This theme instead carried a large margin-bottom in assets/main.css, which
+     produced 0px gaps between sections and no rhythm at all.
+
+     Overriding rather than editing main.css: that file is minified and shared.
+     `section.two-columns-image` is specificity (0,1,1), which beats the (0,1,0) rules in
+     main.css at every breakpoint, including the responsive variants. */
+  section.two-columns-image {
+    margin-bottom: 0;
+    padding-block: 80px;
+  }
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": {
