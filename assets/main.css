@@ -7029,6 +7029,15 @@ div.snize-ac-results ul li.snize-view-all-link span:hover:before {
    */
   width: var(--ona-product-media-width, 100%);
   height: auto;
+  /*
+   * Tall bag shots would otherwise run past the fold once they take the full
+   * column: Aspen at 567px wide is 926px tall against an 893px viewport.
+   * --constrained-height is Horizon's existing constrain-to-viewport value,
+   * set on .product-media-container, so this reuses the cap the theme already
+   * has rather than inventing one. Landscape shots never reach it.
+   */
+  max-height: var(--constrained-height, calc(100vh - 131px));
+  object-fit: contain;
   position: relative;
   z-index: 2;
   background-color: transparent;
