@@ -173,6 +173,130 @@ filter bug fix.
 The stale-cart-after-Back fix is the one with real customer impact. It arrives with the
 2026 theme rather than as a patch to live.
 
+## Measured: what the `ona_theme2026` 4.1.4 -> 4.2.0 bump actually costs
+
+**Measured 2026-10-13** against `ona_theme2026` `origin/main` at `08011ba` (2026-09-28).
+Decision 2 above said the cost "has not been measured" and gave the method. This is that
+measurement. It is cheaper than the decision assumed.
+
+Same extraction method as the top of this document, with `f63ddf8` (4.1.4) in place of
+3.5.1:
+
+```sh
+rm -rf /tmp/h414 /tmp/h420 && mkdir -p /tmp/h414 /tmp/h420
+git -C horizon archive f63ddf8 | tar -x -C /tmp/h414   # 4.1.4, the theme's base
+git -C horizon archive f9aef27 | tar -x -C /tmp/h420   # 4.2.0
+```
+
+### Upstream 4.1.4 -> 4.2.0
+
+| | count |
+|---|---|
+| modified | 204 |
+| added | **1** -- `snippets/view-transition-opt-in.liquid` |
+| removed | 48 -- **all of them `.cursor/rules/*.mdc`**, Cursor editor config, not theme code |
+
+The 48 removals look alarming in a raw file count and are not: nothing in a storefront
+renders them. The real surface is 204 modified files and one new snippet.
+
+### `ona_theme2026` vs pristine 4.1.4
+
+| | count |
+|---|---|
+| stock files present | 531 |
+| pristine | 414 |
+| **modified** | **117** (57 locales + 60 code/config) |
+| stock files dropped | 0 |
+| ONA-authored files | 176 |
+
+This supersedes the "79 of 482 stock files modified" in Decision 2, which was measured on
+2026-09-21; `origin/main` has had 17 commits since. Note the collision: 79 also happens to
+be the conflict count below, and they are different quantities.
+
+### The intersection -- the actual merge cost
+
+| | count |
+|---|---|
+| clean drop-in (4.2 changed it, we are pristine) | **125** |
+| conflict (we modified it AND 4.2 changed it) | **79** |
+| 4.2 changed a file we had dropped | 0 |
+| 4.2 removed a file we had modified | 0 |
+
+**57 of the 79 conflicts are `locales/*.json`, and all 57 resolve mechanically.** Flattening
+each file to dotted keys and comparing 4.1.4, 4.2.0 and ours three ways:
+
+| | result |
+|---|---|
+| the 55 non-English locale files | ONA **added** 3,179 keys and **changed or removed none** |
+| `locales/en.default.json` | ONA +7, ~0, -0; 4.2 +1, ~0, -1; **0 colliding keys** |
+| `locales/en.default.schema.json` | ONA +134, ~0, -0; 4.2 +6, ~0, -0; **0 colliding keys** |
+
+ONA has never edited a string upstream also owns -- every divergence is a new key. So all 57
+are a key-level union with no human decision in any of them, including the English ones.
+That is worth stating precisely, because "57 of 79 files conflict" reads like the bulk of
+the work and is in fact none of it.
+
+Note these files carry both a `/* */` header and `//` line comments, so a plain `json.load`
+fails on them; strip both before comparing, or you will conclude the English locales are
+unanalysable (they are not).
+
+That leaves **22 files of real code conflict**:
+
+| | files |
+|---|---|
+| sections | 8 |
+| snippets | 7 |
+| blocks | 4 |
+| layout | 2 |
+| config | 1 |
+
+### Where the conflicts actually bite
+
+File-level conflict overstates the work: two edits to the same file collide only if they
+touch the same lines. Diffing 4.1.4->4.2.0 and 4.1.4->ours separately and intersecting the
+changed line regions (+/-2 lines of context) gives, for the 22:
+
+| file | base lines | 4.2 churn | ONA churn | overlapping lines |
+|---|---|---|---|---|
+| `blocks/footer-policy-list.liquid` | 217 | 14 | 164 | **23** |
+| `sections/header.liquid` | 1768 | 77 | 440 | **5** |
+| `layout/password.liquid` | 153 | 23 | 1 | **4** |
+| `layout/theme.liquid` | 195 | 23 | 6 | **4** |
+| `sections/hero.liquid` | 1487 | 17 | 115 | **1** |
+| the other 17 | -- | 222 | 791 | **0** |
+
+**Only 5 files have any line-level overlap at all, and 37 lines in total.** The remaining 17
+are same-file-different-region, which `git merge-file` or a three-way merge resolves without
+a human deciding anything.
+
+Total upstream churn across all 22: **376 lines**. ONA's divergence in those same files is
+1,517 lines, which is why the files conflict at the file level and why none of this should
+be attempted by taking upstream's copy wholesale.
+
+### What this means for the decision
+
+Decision 2 stands, and is better supported than when it was written: this is a reviewable
+merge, in the order of a day's work, not a rewrite. Concretely:
+
+1. 125 files take upstream's version unchanged.
+2. All 57 locale files take upstream's version plus ONA's added keys -- a scripted union,
+   measured to have zero colliding keys in any file, English included.
+3. 17 code files three-way merge with no human decision.
+4. 5 code files need a person: `footer-policy-list`, `header`, `password`, `theme`, `hero`.
+   `footer-policy-list.liquid` is the only one where ONA's divergence (164 of 217 lines) is
+   large enough that "merge" may really mean "re-apply ONA's intent on top of 4.2".
+5. Add `snippets/view-transition-opt-in.liquid`.
+6. Ignore the 48 `.cursor/` deletions.
+
+What it buys, from 4.2.0's own release notes: the stale cart drawer/page after a browser
+Back (the one with real customer impact, called out above), Quick Add JS loading only when
+enabled, smaller product-card images in two-column mobile grids, the price-filter
+wipe-mid-edit fix, popup video in Safari, swatch rows widening rounded cards, and the
+account popover alignment. The rest is RTL, still irrelevant here.
+
+**Nothing in this changes Decision 1.** This measurement is about the 4.1.4-based theme. The
+live theme is still on 3.5.1 and still behind the 4.0 colour-system migration.
+
 ## Note on method: a 3-file fingerprint is not a content check
 
 The theme-cleanup work alongside this assessment initially classified themes as
