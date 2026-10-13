@@ -7017,28 +7017,89 @@ div.snize-ac-results ul li.snize-view-all-link span:hover:before {
   }
 }
 
-.product-top .product-information__media img {
-  width: 307px;
+.product-top .product-information__media .media-fit-contain:not(.dialog-zoomed-gallery *) img {
+  /*
+   * ONA: give every product shot the same AREA on the page, sized from the bag.
+   *
+   * The original rule set a fixed width per breakpoint (307 / 257 / 207 / 167).
+   * ONA's bag packshots are 0.6124:1 (1000x1633 blends, 918x1499 single
+   * origins), so 307px wide puts a bag at 307x501. The same 307px on a 1.405:1
+   * In Sequence box is 307x219 and on a 1.198:1 drip box 307x256 -- less than
+   * half the bag's area, which is why the boxes were the complaint and the bags
+   * never were.
+   *
+   * Matching HEIGHT instead was tried and is worse in the other direction: a
+   * 1.405:1 box at the bag's 501px height is 704x501, which is 2.3x the bag's
+   * area and reads as enormous.
+   *
+   * Equal area is the version that holds for every shape. The bag defines the
+   * area (its own width x height), and each image's height is
+   * sqrt(area / its aspect ratio), so a bag is unchanged by construction and
+   * everything else lands at the same visual weight:
+   *
+   *                    live        this rule
+   *   bag  (0.6124)    307x501  -> 307x501   identical, by definition
+   *   bundle (0.673)   307x456  -> 322x478
+   *   instant (0.945)  307x325  -> 381x403
+   *   drip box (1.198) 307x256  -> 429x358
+   *   In Sequence      307x219  -> 465x331
+   *
+   * --ratio is Horizon's own per-image custom property, set from
+   * media.aspect_ratio in snippets/product-media.liquid. Its fallback is the
+   * bag ratio, so a missing value renders as a bag rather than unconstrained.
+   *
+   * .media-fit-contain scopes this to the fit it was written for, so a gallery
+   * set to 'cover' keeps Horizon's width/height 100% + object-fit: cover.
+   * :not(.dialog-zoomed-gallery *) follows the theme's own idiom
+   * (product-media-gallery-content.liquid:218) so an enabled zoom dialog keeps
+   * its full-size presentation.
+   */
+  --ona-bag-w: 307;
+  --ona-bag-ar: 0.6124;
+
+  width: calc(var(--ona-bag-w) * 1px);
+  height: auto;
+  object-fit: contain;
   position: relative;
   z-index: 2;
   background-color: transparent;
 }
 
+/*
+ * The equal-area sizing needs CSS sqrt(). Where it is missing the declarations
+ * above stand on their own and reproduce the current site exactly, so an old
+ * browser sees today's page rather than a broken one.
+ */
+@supports (max-height: calc(sqrt(4) * 1px)) {
+  .product-top .product-information__media .media-fit-contain:not(.dialog-zoomed-gallery *) img {
+    width: var(--ona-product-media-width, 100%);
+    max-height: min(
+      calc(
+        sqrt(
+          var(--ona-bag-w) * var(--ona-bag-w) / var(--ona-bag-ar) /
+            var(--ratio, var(--ona-bag-ar))
+        ) * 1px
+      ),
+      var(--constrained-height, 100vh)
+    );
+  }
+}
+
 @media (max-width: 1199.98px) {
-  .product-top .product-information__media img {
-    width: 257px;
+  .product-top .product-information__media .media-fit-contain:not(.dialog-zoomed-gallery *) img {
+    --ona-bag-w: 257;
   }
 }
 
 @media (max-width: 991.98px) {
-  .product-top .product-information__media img {
-    width: 207px;
+  .product-top .product-information__media .media-fit-contain:not(.dialog-zoomed-gallery *) img {
+    --ona-bag-w: 207;
   }
 }
 
 @media (max-width: 575.98px) {
-  .product-top .product-information__media img {
-    width: 167px;
+  .product-top .product-information__media .media-fit-contain:not(.dialog-zoomed-gallery *) img {
+    --ona-bag-w: 167;
   }
 }
 
