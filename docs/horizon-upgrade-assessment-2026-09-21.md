@@ -304,11 +304,23 @@ merge, in the order of a day's work, not a rewrite. Concretely:
 5. Add `snippets/view-transition-opt-in.liquid`.
 6. Ignore the 48 `.cursor/` deletions.
 
-What it buys, from 4.2.0's own release notes: the stale cart drawer/page after a browser
-Back (the one with real customer impact, called out above), Quick Add JS loading only when
-enabled, smaller product-card images in two-column mobile grids, the price-filter
-wipe-mid-edit fix, popup video in Safari, swatch rows widening rounded cards, and the
-account popover alignment. The rest is RTL, still irrelevant here.
+What it buys. 4.2.0's release notes list nine fixes that affect an ordinary left-to-right
+storefront -- this is all of them, not a selection:
+
+- the cart drawer and cart page showing stale line items after a browser Back (the one with
+  real customer impact, called out above)
+- Quick Add's JavaScript loading only when Quick Add is enabled
+- smaller product-card images in two-column mobile collection and search grids
+- price filter values being wiped mid-edit when the shopper moves between the low and high
+  boxes
+- uploaded videos in popup link blocks not playing in Safari
+- swatch rows widening rounded product cards before their layout initializes
+- the account popover opening from the bottom of the header instead of the account button
+- the Catalog link in menus rendering as a Liquid error when no product image is available
+- the filters drawer leaving empty space beside the "See items" button when no filters are
+  applied
+
+Everything else in 4.2.0 is RTL work, which is still irrelevant for an AU-only storefront.
 
 **Nothing in this changes Decision 1.** This measurement is about the 4.1.4-based theme. The
 live theme is still on 3.5.1 and still behind the 4.0 colour-system migration.
