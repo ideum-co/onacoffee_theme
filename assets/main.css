@@ -7044,28 +7044,36 @@ div.snize-ac-results ul li.snize-view-all-link span:hover:before {
 }
 
 /*
- * Tall bag shots would otherwise run past the fold once they take the full
- * column: Aspen at 764px wide is 1248px tall against an 851px viewport.
- * --constrained-height is Horizon's existing constrain-to-viewport value, set
- * on .product-media-container when the gallery block's constrain_to_viewport
- * setting is on, so this reuses the cap the theme already has rather than
- * inventing one. Landscape shots never reach it.
+ * Normalise product shots by HEIGHT, not width.
  *
- * Two things this rule deliberately does NOT do:
+ * The old rule sized every shot to the same *width* (307px), which is why the
+ * landscape products were the ones that looked broken: a 1.4:1 In Sequence box
+ * at 307px wide is only 219px tall, while a 0.61:1 Aspen bag at the same width
+ * is 501px. Same width, less than half the visual size.
  *
- * 1. No hard-coded fallback. Where a template turns constrain_to_viewport off
- *    the variable is undefined and no cap applies, so the setting is honoured
- *    instead of silently overridden.
- * 2. Desktop only, matching base.css:1555-1558, which sets the container's
- *    own max-height to none below 750px. The variable stays defined there --
- *    max(300px, 100vh - 400px) -- so applying it to the image would bypass
- *    that mobile exception and cap a portrait bag at 444px on a 844px-tall
- *    phone, or 300px on a short one, shrinking it to ~184px wide. Mobile is
- *    where the image most needs the full column.
+ * Letting the image simply fill the column over-corrected in the other
+ * direction: Aspen then rendered ~655x1070 on a 1296px viewport and dominated
+ * the page, which is what the first preview got wrong.
+ *
+ * Capping the height instead makes every product read at a consistent size
+ * whatever its aspect ratio -- portrait bags barely move from where they are
+ * today, landscape boxes roughly double -- because width now follows the
+ * aspect ratio up to the column width. --ona-product-media-height is the one
+ * number to tune.
+ *
+ * min() keeps Horizon's own constrain-to-viewport cap when it is the smaller
+ * of the two, so a short screen still cannot be overrun.
+ *
+ * Desktop only, matching base.css:1555-1558, which sets the container's own
+ * max-height to none below 750px: on a phone the media column is full width
+ * and the image should use it.
  */
 @media screen and (min-width: 750px) {
   .product-top .product-information__media .media-fit-contain img {
-    max-height: var(--constrained-height, none);
+    max-height: min(
+      var(--ona-product-media-height, 600px),
+      var(--constrained-height, 100vh)
+    );
   }
 }
 
