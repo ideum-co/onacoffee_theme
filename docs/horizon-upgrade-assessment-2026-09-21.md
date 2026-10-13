@@ -304,7 +304,7 @@ merge, in the order of a day's work, not a rewrite. Concretely:
 5. Add `snippets/view-transition-opt-in.liquid`.
 6. Ignore the 48 `.cursor/` deletions.
 
-What it buys. 4.2.0's release notes list nine fixes that affect an ordinary left-to-right
+What it buys. 4.2.0's release notes list ten fixes that affect an ordinary left-to-right
 storefront -- this is all of them, not a selection:
 
 - the cart drawer and cart page showing stale line items after a browser Back (the one with
@@ -319,6 +319,12 @@ storefront -- this is all of them, not a selection:
 - the Catalog link in menus rendering as a Liquid error when no product image is available
 - the filters drawer leaving empty space beside the "See items" button when no filters are
   applied
+- the header language selector's dropdown arrow keeping the top-row text colour instead of
+  following the transparent header's text colour. Nothing to do with text direction, so it
+  belongs here -- but it only bites a storefront that has a language selector in a
+  transparent header, and onacoffee.com.au has neither: the storefront renders no
+  `form[action*="/localization"]` and no locale selector at all (checked 2026-10-13,
+  `Shopify.locale` is `en`).
 
 Everything else in 4.2.0 is RTL work, which is still irrelevant for an AU-only storefront.
 
